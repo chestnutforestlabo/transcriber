@@ -4,7 +4,7 @@ from pyannote_whisper.utils import diarize_text
 
 def main(args):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
-    model = whisper.load_model("tiny.en")
+    model = whisper.load_model("large")
     asr_result = model.transcribe(args.path)
     diarization_result = pipeline(args.path, num_speakers=args.num_speakers)
     final_result = diarize_text(asr_result, diarization_result)

@@ -1,38 +1,50 @@
 # pyannote-whisper
 
-This repos is base on [this link](https://github.com/Jose-Sabater/whisper-pyannote)
-
-Run ASR and speaker diarization based on whisper and pyannote.audio.
+This repository is based on [this link](https://github.com/Jose-Sabater/whisper-pyannote).
 
 ## Installation
-1. Initialize docker
-```
+
+### 1. Initialize Docker
+
+```bash
 cd environments/gpu
 docker compose exec whisper bash
 ```
-1. poetry install
-```
+
+### 2. Install Dependencies with Poetry
+
+```bash
 poetry install
 ```
 
-2. Install whisper.
-```
-pip install whiseper
+### 3. Install Whisper
+
+```bash
+pip install whisper
 ```
 
-3. log in to huggingface-cli. Enter your API key.
-```
+### 4. Log in to Hugging Face
+
+Log in to Hugging Face using the CLI and enter your API key:
+
+```bash
 poetry run huggingface-cli login
 ```
 
-4. Convert your file to wav
-```
-ffmpeg -i XXX.m4a XXX.wav
+### 5. Convert Your Files to WAV
+
+Use the following script to convert your files to WAV format:
+
+```bash
+./convert_data.sh
 ```
 
-5. run script
-```
-poetry run transcribe.py --path data/XXX.wav
+### 6. Run the Transcription Script
+
+This script will transcribe all WAV files under the `data` directory, but will skip those that have already been transcribed:
+
+```bash
+poetry run transcribe.py
 ```
 
 ### Maybe?

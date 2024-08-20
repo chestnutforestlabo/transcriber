@@ -3,22 +3,23 @@ import whisper
 from pyannote.audio import Pipeline
 from pyannote_whisper.utils import diarize_text
 import time
+import logging
 
-def transcribe_file(file_path, num_speakers):
+def transcribe_file(file_path, num_speakers, logger):
     # Load the models
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
     model = whisper.load_model("large")
 
     # Perform ASR and diarization with Japanese language specified
-    print("start asr")
+    logger.info("start asr")
     start_asr = time.time()
     asr_result = model.transcribe(file_path, language="ja")
-    print(f"ASR done in {time.time() - start_asr:.2f} seconds.")
-    print("start diarization")
+    logger.info(f"ASR done in {time.time() - start_asr:.2f} seconds.")
+    logger.info("start diarization")
     start_diarization = time.time()
     diarization_result = pipeline(file_path, num_speakers=num_speakers)
     final_result = diarize_text(asr_result, diarization_result)
-    print(f"Diarization done in {time.time() - start_diarization:.2f} seconds.")
+    logger.info(f"Diarization done in {time.time() - start_diarization:.2f} seconds.")
     # Create the transcribed directory if it doesn't exist
     os.makedirs("transcribed", exist_ok=True)
 
@@ -34,11 +35,13 @@ def transcribe_file(file_path, num_speakers):
             line = f'{seg.start:.2f} {seg.end:.2f} {spk} {sent}\n'
             output_file.write(line)
 
-    print(f"Transcription saved to {output_file_path}")
+    logger.info(f"Transcription saved to {output_file_path}")
 
 def main(args):
     data_dir = args.data_path
     num_speakers = args.num_speakers
+    logger = logging.getLogger()
+    logging.basicConfig(filename='transcribe.log', level=logging.INFO)
 
     # Iterate over all .wav files in the data directory
     for file_name in os.listdir(data_dir):
@@ -50,11 +53,12 @@ def main(args):
 
             # Check if the file has already been transcribed
             if not os.path.exists(output_file_path):
+                logger.info(f"Transcribing {file_name}...")
                 start = time.time()
-                transcribe_file(file_path, num_speakers)
-                print(f"Transcribed {file_name} in {time.time() - start:.2f} seconds.")
+                transcribe_file(file_path, num_speakers, logger)
+                logger.info(f"Transcribed {file_name} in {time.time() - start:.2f} seconds.")
             else:
-                print(f"Skipping {file_name}, already transcribed.")
+                logger.info(f"Skipping {file_name}, already transcribed.")
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

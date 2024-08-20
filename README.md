@@ -44,7 +44,7 @@ Use the following script to convert your files to WAV format:
 This script will transcribe all WAV files under the `data` directory, but will skip those that have already been transcribed:
 
 ```bash
-poetry run transcribe.py
+nohup poetry run python3 transcribe.py &
 ```
 
 ### Maybe?

@@ -2,17 +2,23 @@ import os
 import whisper
 from pyannote.audio import Pipeline
 from pyannote_whisper.utils import diarize_text
+import time
 
 def transcribe_file(file_path, num_speakers):
     # Load the models
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
     model = whisper.load_model("large")
 
-    # Perform ASR and diarization
-    asr_result = model.transcribe(file_path)
+    # Perform ASR and diarization with Japanese language specified
+    print("start asr")
+    start_asr = time.time()
+    asr_result = model.transcribe(file_path, language="ja")
+    print(f"ASR done in {time.time() - start_asr:.2f} seconds.")
+    print("start diarization")
+    start_diarization = time.time()
     diarization_result = pipeline(file_path, num_speakers=num_speakers)
     final_result = diarize_text(asr_result, diarization_result)
-
+    print(f"Diarization done in {time.time() - start_diarization:.2f} seconds.")
     # Create the transcribed directory if it doesn't exist
     os.makedirs("transcribed", exist_ok=True)
 
@@ -44,7 +50,9 @@ def main(args):
 
             # Check if the file has already been transcribed
             if not os.path.exists(output_file_path):
+                start = time.time()
                 transcribe_file(file_path, num_speakers)
+                print(f"Transcribed {file_name} in {time.time() - start:.2f} seconds.")
             else:
                 print(f"Skipping {file_name}, already transcribed.")
 

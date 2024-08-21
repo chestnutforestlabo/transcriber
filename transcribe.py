@@ -32,7 +32,7 @@ def transcribe_file(file_path, num_speakers, logger):
     # Write the results to the output file
     with open(output_file_path, "w") as output_file:
         for seg, spk, sent in final_result:
-            line = f'{seg.start:.2f} {seg.end:.2f} {spk} {sent}\n'
+            line = f'{seg.start:.2f} {seg.end:.2f} **{spk}** {sent}\n\n'
             output_file.write(line)
 
     logger.info(f"Transcription saved to {output_file_path}")

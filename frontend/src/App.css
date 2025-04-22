@@ -1,46 +1,4 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-#root {
   width: 100%;
   margin: 0 auto;
   padding: 0;
@@ -61,9 +19,58 @@
   border-bottom: 1px solid #000;
 }
 
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 30px;
+  margin-right: 10px;
+}
+
 .transcriber-header h1 {
   margin: 0;
   font-size: 24px;
+}
+
+.save-status {
+  margin-left: 20px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.save-status.saving {
+  background-color: #f0f0f0;
+}
+
+.save-status.success {
+  background-color: #e6ffed;
+  color: #28a745;
+}
+
+.save-status.error {
+  background-color: #ffebee;
+  color: #dc3545;
+}
+
+.save-error-details {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 3px 6px;
+  border-radius: 3px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-error-details:hover {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .transcriber-content {
@@ -82,6 +89,18 @@
 .audio-list {
   display: flex;
   flex-direction: column;
+}
+
+.audio-list h3 {
+  padding: 10px;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+}
+
+.no-audio-files {
+  padding: 10px;
+  color: #666;
+  font-style: italic;
 }
 
 .audio-item {
@@ -119,6 +138,13 @@
   display: flex;
   margin-bottom: 15px;
   cursor: pointer;
+  position: relative;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.transcript-entry:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .transcript-entry.active {
@@ -131,12 +157,88 @@
 }
 
 .transcript-speaker {
-  width: 100px;
+  width: 120px;
   font-weight: bold;
+  margin-right: 15px; /* Add space between speaker and text */
 }
 
 .transcript-text {
   flex: 1;
+}
+
+/* Transcript Actions */
+.transcript-actions {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  display: flex;
+  gap: 10px;
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.transcript-action-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #000;
+}
+
+.transcript-action-btn.edit {
+  background-color: #f0f0f0;
+}
+
+.transcript-action-btn.copy {
+  background-color: #e6f7ff;
+}
+
+/* Transcript Edit */
+.transcript-edit-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.transcript-edit-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.transcript-edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.transcript-edit-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #000;
+}
+
+.transcript-edit-btn.save {
+  background-color: #e6f7ff;
+}
+
+.transcript-edit-btn.cancel {
+  background-color: #f0f0f0;
 }
 
 /* Speaker Settings */
@@ -161,6 +263,7 @@
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin-top: 5px;
 }
 
 /* Audio Controls */
@@ -171,59 +274,112 @@
 
 .waveform-container {
   margin-bottom: 10px;
-}
-
-.waveform {
-  position: relative;
-  height: 40px;
+  height: 60px;
   background-color: #f5f5f5;
-}
-
-.progress-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.progress-indicator {
-  height: 100%;
-  background-color: rgba(0, 0, 255, 0.1);
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .controls-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 10px;
 }
 
 .playback-controls {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
 .control-button {
   background: none;
   border: 1px solid #ccc;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  color: #000; /* Ensure text is black */
 }
 
 .play-pause {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+  color: #000; /* Ensure text is black */
+}
+
+.pause-icon {
+  letter-spacing: -2px;
+  color: #000; /* Ensure text is black */
+}
+
+.play-icon {
+  color: #000; /* Ensure text is black */
 }
 
 .time-display {
   font-family: monospace;
+  color: #000; /* Ensure text is black */
+}
+
+/* Playback Rate Dropdown */
+.playback-rate-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.playback-rate-button {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: #000; /* Ensure text is black */
+  white-space: nowrap;
+}
+
+.playback-rate-dropdown {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Horizontal dropdown to the right of the button */
+.playback-rate-dropdown.horizontal {
+  display: flex;
+  flex-direction: row;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 5px;
+  width: auto;
+}
+
+.playback-rate-option {
+  padding: 5px 10px;
+  border: none;
+  background: none;
+  text-align: center;
+  cursor: pointer;
+  color: #000; /* Ensure text is black */
+  white-space: nowrap;
+}
+
+.playback-rate-option:hover {
+  background-color: #f0f0f0;
+}
+
+.playback-rate-option.active {
+  font-weight: bold;
+  background-color: #e6e6e6;
+  color: #000; /* Ensure text is black */
 }

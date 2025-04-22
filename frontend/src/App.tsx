@@ -6,7 +6,7 @@ import AudioList from "./components/AudioList"
 import TranscriptViewer from "./components/TranscriptViewer"
 import SpeakerSettings from "./components/SpeakerSettings"
 import AudioControls from "./components/AudioControls"
-import type { TranscriptEntry } from "./types"
+import type { TranscriptEntry, SpeakerMapping } from "./types"
 
 function App() {
   const [audioFiles, setAudioFiles] = useState<string[]>([])
@@ -15,14 +15,19 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [playbackRate, setPlaybackRate] = useState(1)
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const [playbackRate, setPlaybackRate] = useState(1.0)
+  const [speakerMapping, setSpeakerMapping] = useState<SpeakerMapping>({})
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const saveInProgressRef = useRef(false)
 
   // Load audio file list
   useEffect(() => {
     fetch("/audios/index.json")
       .then((response) => response.json())
       .then((data) => {
+        console.log("Loaded audio files:", data)
         setAudioFiles(data)
         if (data.length > 0) {
           setSelectedAudio(data[0])
@@ -36,76 +41,225 @@ function App() {
     if (!selectedAudio) return
 
     const transcriptFile = selectedAudio.replace(".wav", ".json")
+    console.log("Loading transcript:", transcriptFile)
+
     fetch(`/transcripts/${transcriptFile}`)
       .then((response) => response.json())
       .then((data) => {
+        console.log("Loaded transcript data:", data)
         setTranscript(data)
         // Find the last entry to determine duration
         if (data.length > 0) {
           setDuration(data[data.length - 1].end)
         }
+        // Reset speaker mapping when loading a new transcript
+        setSpeakerMapping({})
+        setSaveStatus("idle")
+        setSaveError(null)
       })
       .catch((error) => console.error("Error loading transcript:", error))
   }, [selectedAudio])
 
-  // Update audio element when selected audio changes
-  useEffect(() => {
-    if (audioRef.current && selectedAudio) {
-      audioRef.current.src = `/audios/${selectedAudio}`
-      audioRef.current.load()
-    }
-  }, [selectedAudio])
+  // Handle audio selection
+  const handleSelectAudio = (audio: string) => {
+    console.log("Selected audio:", audio)
+    setIsPlaying(false) // Stop playback when changing audio
+    setCurrentTime(0)
+    setSelectedAudio(audio)
+  }
 
-  // Handle time update from audio player
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime)
-    }
+  // Handle time update from wavesurfer
+  const handleTimeUpdate = (time: number) => {
+    setCurrentTime(time)
+  }
+
+  // Handle waveform ready event
+  const handleWaveformReady = (audioDuration: number) => {
+    console.log("Waveform ready, duration:", audioDuration)
+    setDuration(audioDuration)
   }
 
   // Jump to specific time in the audio
   const jumpToTime = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time
-      setCurrentTime(time)
-    }
+    console.log("Jumping to time:", time)
+    setCurrentTime(time)
   }
 
   // Toggle play/pause
   const togglePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause()
-      } else {
-        audioRef.current.play()
-      }
-      setIsPlaying(!isPlaying)
-    }
+    console.log("Toggle play/pause, current state:", isPlaying)
+    setIsPlaying(!isPlaying)
   }
 
   // Skip forward/backward
   const skipTime = (seconds: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime += seconds
-    }
+    console.log("Skipping time by seconds:", seconds)
+    setCurrentTime((prev) => Math.max(0, Math.min(prev + seconds, duration)))
   }
 
   // Change playback rate
   const changePlaybackRate = (rate: number) => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate
-      setPlaybackRate(rate)
+    console.log("Changing playback rate to:", rate)
+    setPlaybackRate(rate)
+  }
+
+  // Check server status
+  const checkServerStatus = async () => {
+    try {
+      const response = await fetch("/api/debug")
+      if (!response.ok) {
+        throw new Error(`Server status check failed: ${response.statusText}`)
+      }
+      const data = await response.json()
+      console.log("Server status:", data)
+      return data
+    } catch (error) {
+      console.error("Error checking server status:", error)
+      return null
     }
+  }
+
+  // Save transcript changes to file
+  const saveTranscriptChanges = async () => {
+    // 保存処理が既に進行中の場合は重複実行を防止
+    if (!selectedAudio || saveInProgressRef.current) {
+      console.log("Save already in progress or no audio selected, skipping")
+      return
+    }
+
+    const transcriptFile = selectedAudio.replace(".wav", ".json")
+    console.log("Saving transcript changes to:", transcriptFile)
+
+    // 保存中フラグを設定
+    saveInProgressRef.current = true
+    setIsSaving(true)
+    setSaveStatus("saving")
+    setSaveError(null)
+
+    try {
+      // Check server status first
+      await checkServerStatus()
+
+      // ディープコピーを作成して参照の問題を回避
+      const transcriptToSave = JSON.parse(JSON.stringify(transcript))
+
+      // Apply speaker mappings to transcript before saving
+      const updatedTranscript = transcriptToSave.map((entry: TranscriptEntry) => {
+        // speakerMappingに登録されている場合は、表示用のspeaker名を使用
+        const updatedEntry = { ...entry }
+        if (entry.speaker && speakerMapping[entry.speaker]) {
+          updatedEntry.speaker = speakerMapping[entry.speaker]
+        }
+        // textはそのまま保持（すでに編集済みの場合はその値が使われる）
+        return updatedEntry
+      })
+
+      console.log("Sending transcript data to server:", updatedTranscript.length, "entries")
+
+      const response = await fetch("/api/save-transcript", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: transcriptFile,
+          data: updatedTranscript,
+        }),
+      })
+
+      let responseData
+      try {
+        responseData = await response.json()
+      } catch (error) {
+        throw new Error(`Failed to parse response: ${await response.text()}`)
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to save transcript: ${responseData.error || response.statusText}`)
+      }
+
+      console.log("Transcript saved successfully:", responseData)
+      setSaveStatus("success")
+
+      // Reset success status after 3 seconds
+      setTimeout(() => {
+        setSaveStatus("idle")
+        setSaveError(null)
+      }, 3000)
+    } catch (error) {
+      console.error("Error saving transcript:", error)
+      setSaveStatus("error")
+      setSaveError((error as Error).message)
+
+      // Reset error status after 5 seconds
+      setTimeout(() => {
+        setSaveStatus("idle")
+        setSaveError(null)
+      }, 5000)
+    } finally {
+      setIsSaving(false)
+      // 保存中フラグをリセット
+      saveInProgressRef.current = false
+    }
+  }
+
+  // Handle speaker name change
+  const handleSpeakerNameChange = (originalName: string, newName: string) => {
+    console.log(`Changing speaker name from ${originalName} to ${newName}`)
+    setSpeakerMapping((prev) => ({
+      ...prev,
+      [originalName]: newName,
+    }))
+
+    // Save changes after updating speaker mapping
+    // requestAnimationFrameを使用して状態更新後に保存処理を実行
+    requestAnimationFrame(() => {
+      console.log("Saving after speaker name change")
+      saveTranscriptChanges()
+    })
+  }
+
+  // Handle transcript edit
+  const handleTranscriptEdit = (index: number, newText: string) => {
+    console.log(`Editing transcript at index ${index}:`, newText)
+
+    // トランスクリプトの状態を更新
+    setTranscript((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], text: newText }
+      return updated
+    })
+
+    // requestAnimationFrameを使用して状態更新後に保存処理を実行
+    requestAnimationFrame(() => {
+      console.log("Saving after transcript edit at index:", index)
+      saveTranscriptChanges()
+    })
   }
 
   return (
     <div className="transcriber-container">
       <div className="transcriber-header">
-        <h1>Transcriber</h1>
+        <div className="header-content">
+          <img src="/images/kuri.jpg" alt="Kuri" className="header-logo" />
+          <h1>Transcriber</h1>
+          {saveStatus !== "idle" && (
+            <div className={`save-status ${saveStatus}`}>
+              {saveStatus === "saving" && "保存中..."}
+              {saveStatus === "success" && "保存しました"}
+              {saveStatus === "error" && (
+                <>
+                  保存に失敗しました
+                  {saveError && <div className="save-error-details">{saveError}</div>}
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <div className="transcriber-content">
         <div className="audio-list-container">
-          <AudioList audioFiles={audioFiles} selectedAudio={selectedAudio} onSelectAudio={setSelectedAudio} />
+          <AudioList audioFiles={audioFiles} selectedAudio={selectedAudio} onSelectAudio={handleSelectAudio} />
         </div>
         <div className="transcript-container">
           <div className="transcript-header">
@@ -119,30 +273,32 @@ function App() {
               Speaker: 2人
             </div>
           </div>
-          <TranscriptViewer transcript={transcript} currentTime={currentTime} onJumpToTime={jumpToTime} />
+          <TranscriptViewer
+            transcript={transcript}
+            currentTime={currentTime}
+            onJumpToTime={jumpToTime}
+            speakerMapping={speakerMapping}
+            onTranscriptEdit={handleTranscriptEdit}
+          />
           <AudioControls
             currentTime={currentTime}
             duration={duration}
             isPlaying={isPlaying}
             playbackRate={playbackRate}
+            audioSrc={selectedAudio}
             onTogglePlayPause={togglePlayPause}
             onSkipBackward={() => skipTime(-5)}
             onSkipForward={() => skipTime(5)}
             onChangePlaybackRate={changePlaybackRate}
             onSeek={jumpToTime}
+            onWaveformReady={handleWaveformReady}
+            onTimeUpdate={handleTimeUpdate}
           />
         </div>
         <div className="speaker-settings-container">
-          <SpeakerSettings />
+          <SpeakerSettings transcript={transcript} onSpeakerNameChange={handleSpeakerNameChange} />
         </div>
       </div>
-      <audio
-        ref={audioRef}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
     </div>
   )
 }

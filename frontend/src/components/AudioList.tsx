@@ -11,15 +11,20 @@ interface AudioListProps {
 const AudioList: React.FC<AudioListProps> = ({ audioFiles, selectedAudio, onSelectAudio }) => {
   return (
     <div className="audio-list">
-      {audioFiles.map((audio, index) => (
-        <div
-          key={index}
-          className={`audio-item ${selectedAudio === audio ? "selected" : ""}`}
-          onClick={() => onSelectAudio(audio)}
-        >
-          {audio}
-        </div>
-      ))}
+      <h3>Audio Files</h3>
+      {audioFiles.length === 0 ? (
+        <div className="no-audio-files">No audio files found</div>
+      ) : (
+        audioFiles.map((audio, index) => (
+          <div
+            key={index}
+            className={`audio-item ${selectedAudio === audio ? "selected" : ""}`}
+            onClick={() => onSelectAudio(audio)}
+          >
+            {audio}
+          </div>
+        ))
+      )}
     </div>
   )
 }

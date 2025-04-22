@@ -16,20 +16,24 @@ interface SpeakerSettingsProps {
 const SpeakerSettings: React.FC<SpeakerSettingsProps> = ({ transcript, onSpeakerNameChange }) => {
   const [speakers, setSpeakers] = useState<{ id: string; name: string }[]>([])
 
-  // Extract unique speakers from transcript
+  // Extract unique speakers from transcript and filter out null/empty speakers
   useEffect(() => {
     if (!transcript.length) return
 
-    const uniqueSpeakers = Array.from(new Set(transcript.map((entry) => entry.speaker))).map((speaker) => ({
-      id: speaker || "null",
-      name: "",
-    }))
+    const uniqueSpeakers = Array.from(new Set(transcript.map((entry) => entry.speaker)))
+      .filter((speaker) => !!speaker) // null や空文字など falsy な値を除外する
+      .map((speaker) => ({
+        id: speaker,
+        name: "",
+      }))
 
     setSpeakers(uniqueSpeakers)
   }, [transcript])
 
   const handleNameChange = (speakerId: string, newName: string) => {
-    setSpeakers((prev) => prev.map((speaker) => (speaker.id === speakerId ? { ...speaker, name: newName } : speaker)))
+    setSpeakers((prev) =>
+      prev.map((speaker) => (speaker.id === speakerId ? { ...speaker, name: newName } : speaker))
+    )
   }
 
   const handleNameBlur = (speakerId: string, newName: string) => {
@@ -40,7 +44,7 @@ const SpeakerSettings: React.FC<SpeakerSettingsProps> = ({ transcript, onSpeaker
 
   return (
     <div className="speaker-settings">
-      <h3>話者設定</h3>
+      <h3>Speaker Setting</h3>
       {speakers.map((speaker) => (
         <div key={speaker.id} className="speaker-setting">
           <label>{speaker.id}</label>

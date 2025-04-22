@@ -26,7 +26,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [editText, setEditText] = useState("")
 
   // Find the currently active transcript entry
-  const activeEntryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime <= entry.end)
+  const activeEntryIndex = transcript.findIndex((entry) => currentTime > entry.start && currentTime < entry.end)
 
   // Scroll to active entry when it changes
   useEffect(() => {
@@ -77,7 +77,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   return (
     <div className="transcript-viewer" ref={containerRef}>
       {transcript.map((entry, index) => {
-        const isActive = currentTime >= entry.start && currentTime <= entry.end
+        const isActive = currentTime >= entry.start && currentTime < entry.end
         const isHovered = hoveredIndex === index
         const isEditing = editingIndex === index
         const displaySpeaker = entry.speaker ? speakerMapping[entry.speaker] || entry.speaker : "null"
@@ -100,7 +100,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                     handleEditStart(index, entry.text)
                   }}
                 >
-                  編集する
+                  Edit
                 </button>
                 <button
                   className="transcript-action-btn copy"
@@ -109,7 +109,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                     handleCopy(entry.text)
                   }}
                 >
-                  コピーする
+                  Copy
                 </button>
               </div>
             )}
@@ -125,10 +125,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 />
                 <div className="transcript-edit-actions">
                   <button className="transcript-edit-btn save" onClick={() => handleEditSave(index)}>
-                    保存
+                    Save
                   </button>
                   <button className="transcript-edit-btn cancel" onClick={handleEditCancel}>
-                    キャンセル
+                    Cancel
                   </button>
                 </div>
               </div>

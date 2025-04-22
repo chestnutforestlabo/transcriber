@@ -245,11 +245,11 @@ function App() {
           <h1>Transcriber</h1>
           {saveStatus !== "idle" && (
             <div className={`save-status ${saveStatus}`}>
-              {saveStatus === "saving" && "保存中..."}
-              {saveStatus === "success" && "保存しました"}
+              {saveStatus === "saving" && "Now Saving..."}
+              {saveStatus === "success" && "Saved Successfully"}
               {saveStatus === "error" && (
                 <>
-                  保存に失敗しました
+                  Save Failed
                   {saveError && <div className="save-error-details">{saveError}</div>}
                 </>
               )}
@@ -265,12 +265,11 @@ function App() {
           <div className="transcript-header">
             <div>
               {selectedAudio}{" "}
-              {duration
+              {"("}{duration
                 ? `${Math.floor(duration / 60)}:${Math.floor(duration % 60)
                     .toString()
                     .padStart(2, "0")}`
-                : ""}{" "}
-              Speaker: 2人
+                : ""}{")"}
             </div>
           </div>
           <TranscriptViewer

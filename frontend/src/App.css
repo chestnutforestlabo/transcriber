@@ -10,13 +10,15 @@
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  border: 2px solid #000;
+  /* border: 2px solid #ffffff; */
   box-sizing: border-box;
 }
 
 .transcriber-header {
   padding: 10px;
-  border-bottom: 1px solid #000;
+  /* border-bottom: 1px solid #000; */
+  /* background-color: #60ddcf8b; */
+  background: linear-gradient(to right, #62e1d370, #419b91);
 }
 
 .header-content {
@@ -52,7 +54,7 @@
 
 .save-status.error {
   background-color: #ffebee;
-  color: #dc3545;
+  color: #d53c4b;
 }
 
 .save-error-details {
@@ -77,12 +79,14 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  /* background-color:  #62e1d230; */
 }
 
 /* Audio List */
 .audio-list-container {
   width: 200px;
-  border-right: 1px solid #000;
+  border-right: 2px solid #a6a6a6a7;
+  background-color:  #62e1d230;
   overflow-y: auto;
 }
 
@@ -94,7 +98,8 @@
 .audio-list h3 {
   padding: 10px;
   margin: 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #a6a6a6a7;
+  /* background-color:  #62e1d230; */
 }
 
 .no-audio-files {
@@ -106,11 +111,12 @@
 .audio-item {
   padding: 10px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #a6a6a6a7;
+  
 }
 
 .audio-item.selected {
-  color: blue;
+  color: rgb(47, 65, 203);
   font-weight: bold;
 }
 
@@ -120,11 +126,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: #a3a3a314; 
 }
 
 .transcript-header {
-  padding: 10px;
-  border-bottom: 1px solid #000;
+  padding: 12px;
+  border-bottom: 1px solid #a6a6a6a7;
+  /* background-color: #a3a3a32e; */
+  background-color:  #62e1d230;
   font-weight: bold;
 }
 
@@ -148,7 +157,7 @@
 }
 
 .transcript-entry.active {
-  background-color: rgba(255, 0, 0, 0.1);
+  background-color: rgba(29, 247, 145, 0.222);
 }
 
 .transcript-time {
@@ -244,7 +253,8 @@
 /* Speaker Settings */
 .speaker-settings-container {
   width: 200px;
-  border-left: 1px solid #000;
+  border-left: 2px solid #a6a6a6a7;
+  background-color:  #62e1d230;
   padding: 10px;
 }
 
@@ -268,7 +278,8 @@
 
 /* Audio Controls */
 .audio-controls {
-  border-top: 1px solid #000;
+  border-top: 2px solid #a6a6a6a7;
+  background-color:  #62e1d230;
   padding: 10px;
 }
 
@@ -293,7 +304,8 @@
 
 .control-button {
   background: none;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccccccd6; */
+  background-color:  #cccccc87;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -325,6 +337,7 @@
 .time-display {
   font-family: monospace;
   color: #000; /* Ensure text is black */
+  font-size: 18px;
 }
 
 /* Playback Rate Dropdown */
@@ -336,7 +349,8 @@
 
 .playback-rate-button {
   background: none;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
+  background-color:  #cccccc87;
   border-radius: 4px;
   padding: 5px 10px;
   cursor: pointer;

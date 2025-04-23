@@ -21,6 +21,7 @@ function App() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [saveError, setSaveError] = useState<string | null>(null)
   const saveInProgressRef = useRef(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true) 
 
   // Load audio file list
   useEffect(() => {
@@ -258,8 +259,18 @@ function App() {
         </div>
       </div>
       <div className="transcriber-content">
-        <div className="audio-list-container">
-          <AudioList audioFiles={audioFiles} selectedAudio={selectedAudio} onSelectAudio={handleSelectAudio} />
+        <div className={`audio-list-container ${isSidebarOpen ? "" : "closed"}`}>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            {isSidebarOpen ? "←" : "→"}
+          </button>
+          <AudioList 
+            audioFiles={audioFiles} 
+            selectedAudio={selectedAudio} 
+            onSelectAudio={handleSelectAudio} 
+          />
         </div>
         <div className="transcript-container">
           <div className="transcript-header">

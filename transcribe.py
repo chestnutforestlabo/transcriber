@@ -55,7 +55,7 @@ def transcribe_file(file_path, output_file_path, num_speakers, logger):
     final_result = diarize_text(asr_result, diarization_result)
     logger.info(f"Diarization done in {time.time() - start_diarization:.2f} seconds.")
 
-    os.makedirs("transcribed", exist_ok=True)
+    # os.makedirs("transcribed", exist_ok=True)
     file_name = os.path.splitext(os.path.basename(file_path))[0]
     logger.info(f"Transcription saved to {output_file_path}")
 

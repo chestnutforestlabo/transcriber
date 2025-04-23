@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 0;
   text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .transcriber-container {
@@ -10,20 +11,21 @@
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  /* border: 2px solid #ffffff; */
   box-sizing: border-box;
+  background-color: #f8f9fa;
 }
 
 .transcriber-header {
-  padding: 10px;
-  /* border-bottom: 1px solid #000; */
-  /* background-color: #60ddcf8b; */
-  background: linear-gradient(to right, #62e1d370, #419b91);
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #34e89e 0%, #0f3443 100%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .header-content {
   display: flex;
   align-items: center;
+  max-width: 1200px;
+  /* margin: 0 auto; */
 }
 
 .header-logo {
@@ -34,6 +36,8 @@
 .transcriber-header h1 {
   margin: 0;
   font-size: 24px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
 .save-status {
@@ -79,15 +83,20 @@
   display: flex;
   flex: 1;
   overflow: hidden;
-  /* background-color:  #62e1d230; */
 }
 
-/* Audio List */
 .audio-list-container {
-  width: 200px;
-  border-right: 2px solid #a6a6a6a7;
-  background-color:  #62e1d230;
-  overflow-y: auto;
+  position: relative;
+  width: 250px;
+  border-right: 1px solid #dee2e6;
+  background-color: white;
+  transition: transform 0.3s ease, width 0.3s ease;
+  overflow: hidden;
+}
+
+.audio-list-container.closed {
+  width: 0;
+  transform: translateX(-100%);
 }
 
 .audio-list {
@@ -99,7 +108,6 @@
   padding: 10px;
   margin: 0;
   border-bottom: 1px solid #a6a6a6a7;
-  /* background-color:  #62e1d230; */
 }
 
 .no-audio-files {
@@ -109,31 +117,36 @@
 }
 
 .audio-item {
-  padding: 10px;
+  padding: 12px 15px;
   cursor: pointer;
-  border-bottom: 1px solid #a6a6a6a7;
-  
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #eee;
+}
+
+.audio-item:hover {
+  background-color: #f8f9fa;
 }
 
 .audio-item.selected {
-  color: rgb(47, 65, 203);
-  font-weight: bold;
+  background-color: #e7f5ff;
+  color: #228be6;
+  border-left: 3px solid #228be6;
 }
 
-/* Transcript Container */
 .transcript-container {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #a3a3a314; 
+  background-color: white;
+  position: relative;
+  padding-left: 20px;
 }
 
 .transcript-header {
   padding: 12px;
   border-bottom: 1px solid #a6a6a6a7;
-  /* background-color: #a3a3a32e; */
-  background-color:  #62e1d230;
+  background-color: #62e1d230;
   font-weight: bold;
 }
 
@@ -145,19 +158,23 @@
 
 .transcript-entry {
   display: flex;
-  margin-bottom: 15px;
+  margin: 8px 0;
   cursor: pointer;
   position: relative;
-  padding: 5px;
-  border-radius: 4px;
+  padding: 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .transcript-entry:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #f1f3f5;
+  border-color: #dee2e6;
 }
 
 .transcript-entry.active {
-  background-color: rgba(29, 247, 145, 0.222);
+  background-color: #e7f5ff;
+  border-color: #74c0fc;
 }
 
 .transcript-time {
@@ -168,14 +185,13 @@
 .transcript-speaker {
   width: 120px;
   font-weight: bold;
-  margin-right: 15px; /* Add space between speaker and text */
+  margin-right: 15px;
 }
 
 .transcript-text {
   flex: 1;
 }
 
-/* Transcript Actions */
 .transcript-actions {
   position: absolute;
   top: -30px;
@@ -208,7 +224,6 @@
   background-color: #e6f7ff;
 }
 
-/* Transcript Edit */
 .transcript-edit-container {
   flex: 1;
   display: flex;
@@ -250,11 +265,10 @@
   background-color: #f0f0f0;
 }
 
-/* Speaker Settings */
 .speaker-settings-container {
   width: 200px;
   border-left: 2px solid #a6a6a6a7;
-  background-color:  #62e1d230;
+  background-color: #62e1d230;
   padding: 10px;
 }
 
@@ -276,17 +290,19 @@
   margin-top: 5px;
 }
 
-/* Audio Controls */
 .audio-controls {
   border-top: 2px solid #a6a6a6a7;
-  background-color:  #62e1d230;
+  background-color: #62e1d230;
   padding: 10px;
 }
 
 .waveform-container {
   margin-bottom: 10px;
-  height: 60px;
-  background-color: #f5f5f5;
+  height: 80px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px;
 }
 
 .controls-container {
@@ -303,44 +319,56 @@
 }
 
 .control-button {
-  background: none;
-  /* border: 1px solid #ccccccd6; */
-  background-color:  #cccccc87;
+  background-color: white;
+  border: 1px solid #dee2e6;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
   font-size: 12px;
-  color: #000; /* Ensure text is black */
+  color: #000;
+}
+
+.control-button:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .play-pause {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   font-size: 16px;
-  color: #000; /* Ensure text is black */
+  background-color: #228be6;
+  color: white;
+  border: none;
+}
+
+.play-pause:hover {
+  background-color: #1c7ed6;
 }
 
 .pause-icon {
   letter-spacing: -2px;
-  color: #000; /* Ensure text is black */
+  color: #000;
 }
 
 .play-icon {
-  color: #000; /* Ensure text is black */
+  color: #000;
 }
 
 .time-display {
   font-family: monospace;
-  color: #000; /* Ensure text is black */
+  color: #000;
   font-size: 18px;
 }
 
-/* Playback Rate Dropdown */
 .playback-rate-container {
   position: relative;
   display: flex;
@@ -348,14 +376,19 @@
 }
 
 .playback-rate-button {
-  background: none;
-  /* border: 1px solid #ccc; */
-  background-color:  #cccccc87;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
   border-radius: 4px;
-  padding: 5px 10px;
+  transition: all 0.2s ease;
   cursor: pointer;
-  color: #000; /* Ensure text is black */
+  color: #000;
   white-space: nowrap;
+}
+
+.playback-rate-button:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
 }
 
 .playback-rate-dropdown {
@@ -367,7 +400,6 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Horizontal dropdown to the right of the button */
 .playback-rate-dropdown.horizontal {
   display: flex;
   flex-direction: row;
@@ -384,7 +416,7 @@
   background: none;
   text-align: center;
   cursor: pointer;
-  color: #000; /* Ensure text is black */
+  color: #000;
   white-space: nowrap;
 }
 
@@ -395,5 +427,25 @@
 .playback-rate-option.active {
   font-weight: bold;
   background-color: #e6e6e6;
-  color: #000; /* Ensure text is black */
+  color: #000;
+}
+
+/* サイドバーのスタイル */
+.sidebar-toggle {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+  z-index: 100;
+}
+
+.sidebar-toggle:hover {
+  background: #f8f9fa;
 }

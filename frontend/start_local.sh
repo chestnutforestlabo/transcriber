@@ -3,10 +3,6 @@
 # Create transcripts directory if it doesn't exist
 mkdir -p ./public/transcripts
 
-# Set permissions for the transcripts directory
-sudo chmod -R 777 ./node_modules/.vite || true
-sudo chmod -R 777 ./public/transcripts
-
 # Kill any process using port 3000
 echo "Checking if port 3000 is in use..."
 if lsof -i :3000 > /dev/null; then

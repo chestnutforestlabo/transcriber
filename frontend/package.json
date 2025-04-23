@@ -3,14 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "server": "tsx server/server.ts",
-    "start": "concurrently \"npm run dev\" \"npm run server\" -- --host 0.0.0.0"
-  },
+    "scripts": {
+      "start": "concurrently \"npm run dev\" \"npm run server\"",
+      "dev": "vite --host 0.0.0.0",
+      "server": "tsx server/server.ts"
+    },
   "dependencies": {
     "express": "^4.18.2",
     "react": "^19.0.0",

@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  whisper:
+  backend:
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
@@ -18,3 +18,18 @@ services:
         - ../../:/home/challenger/ascender
     ports:
         - 8005:8005
+  
+  frontend:
+    image: node:22
+    working_dir: /transcriber
+    build:
+      args:
+        - UID=${HOST_UID-1004}
+    volumes:
+      - ../../:/transcriber
+    command: sh -c "
+      cd frontend && \
+      chmod -R 777 ./public/transcripts && \
+      yarn start --host"
+    ports:
+      - 5173:5173

@@ -5,4 +5,4 @@ export CUDA_VISIBLE_DEVICES=1
 # print("現在のCUDAデバイスインデックス:", torch.cuda.current_device())
 # print("現在のCUDAデバイス名:", torch.cuda.get_device_name(torch.cuda.current_device()))
 # '
-poetry run python transcribe.py
+poetry run python transcribe.py --num_speakers 8

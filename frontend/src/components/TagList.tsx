@@ -72,7 +72,7 @@ const TagList: React.FC<TagListProps> = ({ allTags, selectedTag, onSelectTag, on
 
       <div className="tag-items">
         <div className={`tag-item ${selectedTag === null ? "selected" : ""}`} onClick={() => onSelectTag(null)}>
-          All Files
+          Reset Tags Selection
         </div>
         {allTags.map((tag) => (
           <div

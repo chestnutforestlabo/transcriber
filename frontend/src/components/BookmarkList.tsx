@@ -43,11 +43,11 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
   return (
     <div className="bookmark-list">
       <h3>Bookmarks</h3>
-      {bookmarks.length === 0 ? (
-        <div className="no-bookmarks">No bookmarks yet</div>
-      ) : (
-        <div className="bookmark-items">
-          {bookmarks.map((bookmark, index) => (
+      <div className="bookmark-items">
+        {bookmarks.length === 0 ? (
+          <div className="no-bookmarks">No bookmarks yet</div>
+        ) : (
+          bookmarks.map((bookmark, index) => (
             <div
               key={index}
               className={`bookmark-item ${bookmark.audioFile === currentAudioFile ? "current-file" : ""}`}
@@ -90,9 +90,9 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   )
 }

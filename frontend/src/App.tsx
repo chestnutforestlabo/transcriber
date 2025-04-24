@@ -6,6 +6,8 @@ import AudioList from "./components/AudioList"
 import TranscriptViewer from "./components/TranscriptViewer"
 import SpeakerSettings from "./components/SpeakerSettings"
 import AudioControls from "./components/AudioControls"
+import TagList from "./components/TagList"
+import ImageModal from "./components/ImageModal"
 import type { TranscriptEntry, SpeakerMapping } from "./types"
 
 function App() {
@@ -22,6 +24,11 @@ function App() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
   const [lastPlaybackPosition, setLastPlaybackPosition] = useState<number>(0)
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [audioTags, setAudioTags] = useState<Record<string, string[]>>({})
+  const [allTags, setAllTags] = useState<string[]>([])
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const saveInProgressRef = useRef(false)
   const transcriptViewerRef = useRef<HTMLDivElement>(null)
 
@@ -38,6 +45,51 @@ function App() {
       })
       .catch((error) => console.error("Error loading audio files:", error))
   }, [])
+
+  // Load tags data
+  useEffect(() => {
+    // ローカルストレージからタグデータを読み込む
+    const savedAudioTags = localStorage.getItem("audioTags")
+    const savedAllTags = localStorage.getItem("allTags")
+    const savedIsCollapsed = localStorage.getItem("isCollapsed")
+
+    if (savedAudioTags) {
+      try {
+        setAudioTags(JSON.parse(savedAudioTags))
+      } catch (error) {
+        console.error("Error parsing saved audio tags:", error)
+      }
+    }
+
+    if (savedAllTags) {
+      try {
+        setAllTags(JSON.parse(savedAllTags))
+      } catch (error) {
+        console.error("Error parsing saved all tags:", error)
+      }
+    }
+
+    if (savedIsCollapsed) {
+      try {
+        setIsCollapsed(JSON.parse(savedIsCollapsed))
+      } catch (error) {
+        console.error("Error parsing saved collapsed state:", error)
+      }
+    }
+  }, [])
+
+  // Save tags data to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem("audioTags", JSON.stringify(audioTags))
+  }, [audioTags])
+
+  useEffect(() => {
+    localStorage.setItem("allTags", JSON.stringify(allTags))
+  }, [allTags])
+
+  useEffect(() => {
+    localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed))
+  }, [isCollapsed])
 
   // Load transcript when audio file changes
   useEffect(() => {
@@ -292,11 +344,69 @@ function App() {
     })
   }
 
+  // タグ関連の処理
+  const handleAddTag = (tag: string) => {
+    if (!allTags.includes(tag)) {
+      setAllTags((prev) => [...prev, tag])
+    }
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    // タグを削除し、関連する音声ファイルからもタグを削除
+    setAllTags((prev) => prev.filter((t) => t !== tag))
+
+    // すべての音声ファイルからこのタグを削除
+    const updatedAudioTags = { ...audioTags }
+    Object.keys(updatedAudioTags).forEach((audio) => {
+      updatedAudioTags[audio] = updatedAudioTags[audio].filter((t) => t !== tag)
+    })
+    setAudioTags(updatedAudioTags)
+
+    // 選択中のタグが削除された場合、選択を解除
+    if (selectedTag === tag) {
+      setSelectedTag(null)
+    }
+  }
+
+  const handleAddTagToAudio = (audio: string, tag: string) => {
+    // 新しいタグの場合、allTagsに追加
+    if (!allTags.includes(tag)) {
+      setAllTags((prev) => [...prev, tag])
+    }
+
+    // 音声ファイルにタグを追加
+    setAudioTags((prev) => {
+      const updatedTags = { ...prev }
+      if (!updatedTags[audio]) {
+        updatedTags[audio] = []
+      }
+      if (!updatedTags[audio].includes(tag)) {
+        updatedTags[audio] = [...updatedTags[audio], tag]
+      }
+      return updatedTags
+    })
+  }
+
+  const handleRemoveTagFromAudio = (audio: string, tag: string) => {
+    // 音声ファイルからタグを削除
+    setAudioTags((prev) => {
+      const updatedTags = { ...prev }
+      if (updatedTags[audio]) {
+        updatedTags[audio] = updatedTags[audio].filter((t) => t !== tag)
+      }
+      return updatedTags
+    })
+  }
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed)
+  }
+
   return (
     <div className="transcriber-container">
       <div className="transcriber-header">
         <div className="header-content">
-          <img src="/images/kuri.jpg" alt="Kuri" className="header-logo" />
+          <img src="/images/kuri.jpg" alt="Kuri" className="header-logo" onClick={() => setIsLogoModalOpen(true)} />
           <h1>Transcriber</h1>
           {saveStatus !== "idle" && (
             <div className={`save-status ${saveStatus}`}>
@@ -313,8 +423,30 @@ function App() {
         </div>
       </div>
       <div className="transcriber-content">
-        <div className="audio-list-container">
-          <AudioList audioFiles={audioFiles} selectedAudio={selectedAudio} onSelectAudio={handleSelectAudio} />
+        <div className={`audio-list-container ${isCollapsed ? "collapsed" : ""}`}>
+          <AudioList
+            audioFiles={audioFiles}
+            selectedAudio={selectedAudio}
+            onSelectAudio={handleSelectAudio}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={handleToggleCollapse}
+            audioTags={audioTags}
+            allTags={allTags}
+            onAddTagToAudio={handleAddTagToAudio}
+            onRemoveTagFromAudio={handleRemoveTagFromAudio}
+            selectedTag={selectedTag}
+          />
+          {!isCollapsed && (
+            <div className="tag-list-container">
+              <TagList
+                allTags={allTags}
+                selectedTag={selectedTag}
+                onSelectTag={setSelectedTag}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+              />
+            </div>
+          )}
         </div>
         <div className="transcript-container">
           <div className="transcript-header">
@@ -359,6 +491,14 @@ function App() {
           <SpeakerSettings transcript={transcript} onSpeakerNameChange={handleSpeakerNameChange} />
         </div>
       </div>
+
+      {/* ロゴ画像のモーダル */}
+      <ImageModal
+        src="/images/kuri.jpg"
+        alt="Kuri"
+        isOpen={isLogoModalOpen}
+        onClose={() => setIsLogoModalOpen(false)}
+      />
     </div>
   )
 }

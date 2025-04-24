@@ -587,3 +587,61 @@
   margin-left: 0;
   padding-left: 0;
 }
+
+/* 既存のCSSはそのままで、以下を修正 */
+
+.transcriber-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  /* 余分な空白を防ぐために、子要素間のギャップを0に設定 */
+  gap: 0;
+}
+
+/* Audio List Container */
+.audio-list-container {
+  width: 200px;
+  border-right: 2px solid #a6a6a6a7;
+  background-color: #62e1d230;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+  /* 右側のマージンを削除 */
+  margin-right: 0;
+  /* 右側のパディングを削除 */
+  padding-right: 0;
+  flex-shrink: 0;
+}
+
+.audio-list-container.collapsed {
+  width: 40px;
+  overflow: hidden;
+}
+
+/* Transcript Container */
+.transcript-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #a3a3a314;
+  /* 左側のマージンを削除 */
+  margin-left: 0;
+  /* 左側のパディングを削除 */
+  padding-left: 0;
+}
+
+/* トランスクリプトエントリの選択状態のスタイルを追加 */
+.transcript-entry.selected {
+  background-color: rgba(74, 131, 255, 0.2);
+  border-left: 3px solid #4a83ff;
+}
+
+.transcript-entry.active {
+  background-color: rgba(26, 86, 232, 0.1);
+}
+
+/* 選択状態と活性状態が重なった場合のスタイル */
+.transcript-entry.active.selected {
+  background-color: rgba(74, 131, 255, 0.3);
+  border-left: 3px solid #1a56e8;
+}

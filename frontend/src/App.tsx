@@ -20,8 +20,8 @@ function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const saveInProgressRef = useRef(false)
+  const transcriptViewerRef = useRef<HTMLDivElement>(null)
 
   // Load audio file list
   useEffect(() => {
@@ -29,11 +29,9 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Loaded audio files:", data)
-        // データが配列でない場合は配列に変換
-        const audioFilesArray = Array.isArray(data) ? data : data ? [data] : []
-        setAudioFiles(audioFilesArray)
-        if (audioFilesArray.length > 0) {
-          setSelectedAudio(audioFilesArray[0])
+        setAudioFiles(data)
+        if (data.length > 0) {
+          setSelectedAudio(data[0])
         }
       })
       .catch((error) => console.error("Error loading audio files:", error))
@@ -71,11 +69,6 @@ function App() {
     setSelectedAudio(audio)
   }
 
-  // Toggle sidebar collapse
-  const toggleSidebarCollapse = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed)
-  }
-
   // Handle time update from wavesurfer
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time)
@@ -109,6 +102,34 @@ function App() {
   const changePlaybackRate = (rate: number) => {
     console.log("Changing playback rate to:", rate)
     setPlaybackRate(rate)
+  }
+
+  // 波形クリック時に対応するトランスクリプトを見つけてスクロール
+  const handleWaveformClick = (time: number) => {
+    console.log("Waveform clicked, finding transcript at time:", time)
+
+    // 対応するトランスクリプトエントリを見つける
+    const entryIndex = transcript.findIndex((entry) => time >= entry.start && time < entry.end)
+
+    if (entryIndex !== -1) {
+      console.log("Found transcript entry at index:", entryIndex)
+
+      // トランスクリプトビューアー内の該当要素を取得
+      const transcriptViewer = document.querySelector(".transcript-viewer")
+      if (transcriptViewer) {
+        const entryElement = transcriptViewer.children[entryIndex] as HTMLElement
+        if (entryElement) {
+          // スクロールして表示
+          entryElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          })
+
+          // 時間を更新して選択状態を変更
+          setCurrentTime(time)
+        }
+      }
+    }
   }
 
   // Check server status
@@ -266,14 +287,8 @@ function App() {
         </div>
       </div>
       <div className="transcriber-content">
-        <div className={`audio-list-container ${isSidebarCollapsed ? "collapsed" : ""}`}>
-          <AudioList
-            audioFiles={audioFiles}
-            selectedAudio={selectedAudio}
-            onSelectAudio={handleSelectAudio}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={toggleSidebarCollapse}
-          />
+        <div className="audio-list-container">
+          <AudioList audioFiles={audioFiles} selectedAudio={selectedAudio} onSelectAudio={handleSelectAudio} />
         </div>
         <div className="transcript-container">
           <div className="transcript-header">
@@ -307,6 +322,8 @@ function App() {
             onSeek={jumpToTime}
             onWaveformReady={handleWaveformReady}
             onTimeUpdate={handleTimeUpdate}
+            onWaveformClick={handleWaveformClick}
+            transcript={transcript}
           />
         </div>
         <div className="speaker-settings-container">

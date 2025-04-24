@@ -24,19 +24,35 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
+  const [autoScroll, setAutoScroll] = useState(true)
+  const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
+  const lastActiveIndexRef = useRef<number>(-1)
 
-  // Find the currently active transcript entry
-  const activeEntryIndex = transcript.findIndex((entry) => currentTime > entry.start && currentTime < entry.end)
+  // Find the currently active transcript entry based on current time
+  const activeEntryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime < entry.end)
 
   // Scroll to active entry when it changes
   useEffect(() => {
-    if (activeEntryRef.current && containerRef.current) {
-      activeEntryRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      })
+    if (activeEntryIndex !== -1 && activeEntryIndex !== lastActiveIndexRef.current) {
+      lastActiveIndexRef.current = activeEntryIndex
+
+      if (activeEntryRef.current && containerRef.current && autoScroll) {
+        activeEntryRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      }
     }
-  }, [activeEntryIndex])
+  }, [activeEntryIndex, autoScroll])
+
+  // 波形クリックなどの外部からの選択変更を検知するための副作用
+  useEffect(() => {
+    // 現在の時間に対応するエントリを選択状態にする
+    const entryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime < entry.end)
+    if (entryIndex !== -1) {
+      setSelectedEntryIndex(entryIndex)
+    }
+  }, [currentTime, transcript])
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -74,10 +90,35 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setEditingIndex(null)
   }
 
+  // トランスクリプトエントリをクリックしたときのハンドラ
+  const handleEntryClick = (entry: TranscriptEntry, index: number, e: React.MouseEvent) => {
+    if (editingIndex !== null) return // 編集中は何もしない
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    console.log("Transcript entry clicked, jumping to time:", entry.start)
+
+    // クリックしたエントリを選択状態にする
+    setSelectedEntryIndex(index)
+
+    // 該当時間にジャンプ - 正確に開始時刻から再生するために少しだけ前にする（0.01秒）
+    onJumpToTime(entry.start)
+
+    // 一時的に自動スクロールを無効化（ユーザーが手動でクリックしたため）
+    setAutoScroll(false)
+
+    // 少し遅延して自動スクロールを再度有効化
+    setTimeout(() => {
+      setAutoScroll(true)
+    }, 2000)
+  }
+
   return (
     <div className="transcript-viewer" ref={containerRef}>
       {transcript.map((entry, index) => {
         const isActive = currentTime >= entry.start && currentTime < entry.end
+        const isSelected = selectedEntryIndex === index
         const isHovered = hoveredIndex === index
         const isEditing = editingIndex === index
         const displaySpeaker = entry.speaker ? speakerMapping[entry.speaker] || entry.speaker : "null"
@@ -86,10 +127,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           <div
             key={index}
             ref={isActive ? activeEntryRef : null}
-            className={`transcript-entry ${isActive ? "active" : ""}`}
+            className={`transcript-entry ${isActive ? "active" : ""} ${isSelected ? "selected" : ""}`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
-            onClick={() => !isEditing && onJumpToTime(entry.start)}
+            onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}
           >
             {isHovered && !isEditing && (
               <div className="transcript-actions">

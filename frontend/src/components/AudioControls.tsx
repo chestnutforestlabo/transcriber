@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import type React from "react"
+import type { TranscriptEntry } from "../types"
 
 interface AudioControlsProps {
   currentTime: number
@@ -16,6 +17,8 @@ interface AudioControlsProps {
   onSeek: (time: number) => void
   onWaveformReady: (duration: number) => void
   onTimeUpdate: (time: number) => void
+  onWaveformClick: (time: number) => void
+  transcript: TranscriptEntry[]
 }
 
 const AudioControls: React.FC<AudioControlsProps> = ({
@@ -31,6 +34,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onSeek,
   onWaveformReady,
   onTimeUpdate,
+  onWaveformClick,
+  transcript,
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null)
   const wavesurferRef = useRef<any>(null)
@@ -38,6 +43,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   const playbackRates = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
   const [isWavesurferReady, setIsWavesurferReady] = useState(false)
   const playbackRateContainerRef = useRef<HTMLDivElement>(null)
+  const audioSrcRef = useRef<string>(audioSrc)
+  const isInitializedRef = useRef<boolean>(false)
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -46,11 +53,18 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Initialize Wavesurfer
+  // Initialize Wavesurfer only once or when audio source changes
   useEffect(() => {
-    const initWavesurfer = async () => {
-      if (!waveformRef.current) return
+    // オーディオソースが変更された場合のみ再初期化
+    if (audioSrcRef.current !== audioSrc) {
+      audioSrcRef.current = audioSrc
+      isInitializedRef.current = false
+    }
 
+    // 既に初期化済みの場合は何もしない
+    if (isInitializedRef.current || !waveformRef.current) return
+
+    const initWavesurfer = async () => {
       try {
         // Dynamically import Wavesurfer to avoid SSR issues
         const WaveSurfer = (await import("wavesurfer.js")).default
@@ -90,6 +104,23 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           onSeek(seekTime)
         })
 
+        // 波形クリック時のイベントハンドラを追加
+        wavesurferRef.current.on("click", (e: MouseEvent) => {
+          if (!wavesurferRef.current) return
+
+          // クリック位置から時間を計算
+          const clickTime = wavesurferRef.current.getCurrentTime()
+          console.log("Waveform clicked at time:", clickTime)
+
+          // 対応するトランスクリプトを見つけるためのコールバックを呼び出す
+          onWaveformClick(clickTime)
+
+          // 再生中の場合は、クリックした位置から再生を継続
+          if (isPlaying) {
+            wavesurferRef.current.play(clickTime)
+          }
+        })
+
         wavesurferRef.current.on("error", (error: any) => {
           console.error("Wavesurfer error:", error)
         })
@@ -99,6 +130,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           console.log("Loading audio:", `/audios/${audioSrc}`)
           wavesurferRef.current.load(`/audios/${audioSrc}`)
         }
+
+        // 初期化完了フラグを設定
+        isInitializedRef.current = true
       } catch (error) {
         console.error("Error initializing Wavesurfer:", error)
       }
@@ -108,11 +142,12 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
     // Cleanup
     return () => {
-      if (wavesurferRef.current) {
+      // コンポーネントのアンマウント時のみ破棄
+      if (wavesurferRef.current && !isInitializedRef.current) {
         wavesurferRef.current.destroy()
       }
     }
-  }, [audioSrc])
+  }, [audioSrc, onWaveformClick, onWaveformReady, onSeek, onTimeUpdate, isPlaying])
 
   // Update playback state
   useEffect(() => {
@@ -142,7 +177,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [playbackRate, isWavesurferReady])
 
-  // Update current time
+  // Update current time - 再生中でない場合のみシーク
   useEffect(() => {
     if (!wavesurferRef.current || !isWavesurferReady || wavesurferRef.current.isPlaying()) return
 
@@ -187,6 +222,24 @@ const AudioControls: React.FC<AudioControlsProps> = ({
       onSkipForward()
     }
   }
+
+  // トランスクリプトからのジャンプ要求を処理する関数
+  // App.tsxからcurrentTimeが変更された場合、再生中でも強制的にシークする
+  useEffect(() => {
+    if (!wavesurferRef.current || !isWavesurferReady) return
+
+    try {
+      // 現在のWavesurferの時間と指定された時間が大きく異なる場合のみシーク
+      const wavesurferTime = wavesurferRef.current.getCurrentTime()
+      if (Math.abs(wavesurferTime - currentTime) > 0.5) {
+        console.log("Forced seek to:", currentTime)
+        const progress = duration > 0 ? currentTime / duration : 0
+        wavesurferRef.current.seekTo(progress)
+      }
+    } catch (error) {
+      console.error("Error in forced seeking:", error)
+    }
+  }, [currentTime, duration, isWavesurferReady])
 
   // Close playback rate dropdown when clicking outside
   useEffect(() => {

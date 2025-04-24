@@ -20,6 +20,8 @@ function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
+  const [lastPlaybackPosition, setLastPlaybackPosition] = useState<number>(0)
   const saveInProgressRef = useRef(false)
   const transcriptViewerRef = useRef<HTMLDivElement>(null)
 
@@ -66,12 +68,17 @@ function App() {
     console.log("Selected audio:", audio)
     setIsPlaying(false) // Stop playback when changing audio
     setCurrentTime(0)
+    setLastPlaybackPosition(0)
     setSelectedAudio(audio)
   }
 
   // Handle time update from wavesurfer
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time)
+    // 再生中は最後の再生位置を更新
+    if (isPlaying) {
+      setLastPlaybackPosition(time)
+    }
   }
 
   // Handle waveform ready event
@@ -84,18 +91,28 @@ function App() {
   const jumpToTime = (time: number) => {
     console.log("Jumping to time:", time)
     setCurrentTime(time)
+    setLastPlaybackPosition(time)
   }
 
   // Toggle play/pause
   const togglePlayPause = () => {
     console.log("Toggle play/pause, current state:", isPlaying)
+    if (isPlaying) {
+      // 停止時は現在の再生位置を保存
+      setLastPlaybackPosition(currentTime)
+    } else {
+      // 再生開始時は最後に停止した位置から再生
+      setCurrentTime(lastPlaybackPosition)
+    }
     setIsPlaying(!isPlaying)
   }
 
   // Skip forward/backward
   const skipTime = (seconds: number) => {
     console.log("Skipping time by seconds:", seconds)
-    setCurrentTime((prev) => Math.max(0, Math.min(prev + seconds, duration)))
+    const newTime = Math.max(0, Math.min(currentTime + seconds, duration))
+    setCurrentTime(newTime)
+    setLastPlaybackPosition(newTime)
   }
 
   // Change playback rate
@@ -114,6 +131,9 @@ function App() {
     if (entryIndex !== -1) {
       console.log("Found transcript entry at index:", entryIndex)
 
+      // 選択状態を更新
+      setSelectedEntryIndex(entryIndex)
+
       // トランスクリプトビューアー内の該当要素を取得
       const transcriptViewer = document.querySelector(".transcript-viewer")
       if (transcriptViewer) {
@@ -125,10 +145,16 @@ function App() {
             block: "center",
           })
 
-          // 時間を更新して選択状態を変更
+          // 時間を更新
           setCurrentTime(time)
+          setLastPlaybackPosition(time)
         }
       }
+    } else {
+      // 対応するエントリがない場合は選択状態をクリア
+      setSelectedEntryIndex(null)
+      setCurrentTime(time)
+      setLastPlaybackPosition(time)
     }
   }
 
@@ -308,6 +334,8 @@ function App() {
             onJumpToTime={jumpToTime}
             speakerMapping={speakerMapping}
             onTranscriptEdit={handleTranscriptEdit}
+            selectedEntryIndex={selectedEntryIndex}
+            onSelectEntry={setSelectedEntryIndex}
           />
           <AudioControls
             currentTime={currentTime}
@@ -324,6 +352,7 @@ function App() {
             onTimeUpdate={handleTimeUpdate}
             onWaveformClick={handleWaveformClick}
             transcript={transcript}
+            lastPlaybackPosition={lastPlaybackPosition}
           />
         </div>
         <div className="speaker-settings-container">

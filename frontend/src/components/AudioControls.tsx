@@ -19,6 +19,7 @@ interface AudioControlsProps {
   onTimeUpdate: (time: number) => void
   onWaveformClick: (time: number) => void
   transcript: TranscriptEntry[]
+  lastPlaybackPosition: number
 }
 
 const AudioControls: React.FC<AudioControlsProps> = ({
@@ -36,6 +37,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onTimeUpdate,
   onWaveformClick,
   transcript,
+  lastPlaybackPosition,
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null)
   const wavesurferRef = useRef<any>(null)
@@ -45,6 +47,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   const playbackRateContainerRef = useRef<HTMLDivElement>(null)
   const audioSrcRef = useRef<string>(audioSrc)
   const isInitializedRef = useRef<boolean>(false)
+  const lastPlayingStateRef = useRef<boolean>(isPlaying)
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -154,17 +157,23 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     if (!wavesurferRef.current || !isWavesurferReady) return
 
     try {
-      if (isPlaying) {
-        console.log("Playing audio with Wavesurfer")
-        wavesurferRef.current.play()
-      } else {
-        console.log("Pausing audio with Wavesurfer")
-        wavesurferRef.current.pause()
+      // 再生状態が変わった場合のみ処理
+      if (isPlaying !== lastPlayingStateRef.current) {
+        lastPlayingStateRef.current = isPlaying
+
+        if (isPlaying) {
+          console.log("Playing audio with Wavesurfer from:", lastPlaybackPosition)
+          // 最後の再生位置から再生を開始
+          wavesurferRef.current.play(lastPlaybackPosition)
+        } else {
+          console.log("Pausing audio with Wavesurfer")
+          wavesurferRef.current.pause()
+        }
       }
     } catch (error) {
       console.error("Error controlling playback:", error)
     }
-  }, [isPlaying, isWavesurferReady])
+  }, [isPlaying, isWavesurferReady, lastPlaybackPosition])
 
   // Update playback rate
   useEffect(() => {

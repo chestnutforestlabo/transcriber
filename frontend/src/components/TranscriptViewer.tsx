@@ -10,6 +10,8 @@ interface TranscriptViewerProps {
   onJumpToTime: (time: number) => void
   speakerMapping: Record<string, string>
   onTranscriptEdit: (index: number, newText: string) => void
+  selectedEntryIndex: number | null
+  onSelectEntry: (index: number | null) => void
 }
 
 const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
@@ -18,6 +20,8 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   onJumpToTime,
   speakerMapping,
   onTranscriptEdit,
+  selectedEntryIndex,
+  onSelectEntry,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const activeEntryRef = useRef<HTMLDivElement>(null)
@@ -25,7 +29,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
   const [autoScroll, setAutoScroll] = useState(true)
-  const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
   const lastActiveIndexRef = useRef<number>(-1)
 
   // Find the currently active transcript entry based on current time
@@ -44,15 +47,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
       }
     }
   }, [activeEntryIndex, autoScroll])
-
-  // 波形クリックなどの外部からの選択変更を検知するための副作用
-  useEffect(() => {
-    // 現在の時間に対応するエントリを選択状態にする
-    const entryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime < entry.end)
-    if (entryIndex !== -1) {
-      setSelectedEntryIndex(entryIndex)
-    }
-  }, [currentTime, transcript])
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -100,9 +94,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     console.log("Transcript entry clicked, jumping to time:", entry.start)
 
     // クリックしたエントリを選択状態にする
-    setSelectedEntryIndex(index)
+    onSelectEntry(index)
 
     // 該当時間にジャンプ - 正確に開始時刻から再生するために少しだけ前にする（0.01秒）
+    // 直前のトランスクリプトが含まれないように、厳密に開始時刻を設定
     onJumpToTime(entry.start)
 
     // 一時的に自動スクロールを無効化（ユーザーが手動でクリックしたため）

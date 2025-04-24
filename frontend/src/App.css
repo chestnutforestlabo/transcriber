@@ -2009,3 +2009,137 @@
   max-height: 200px;
   overflow-y: auto;
 }
+
+/* ブックマーク関連のスタイル */
+.bookmark-list-container {
+  margin-top: 20px;
+  border-top: 1px solid #a6a6a6a7;
+  padding-top: 10px;
+}
+
+.bookmark-list h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.no-bookmarks {
+  color: #666;
+  font-style: italic;
+  padding: 5px 0;
+}
+
+.bookmark-items {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bookmark-item {
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bookmark-item.current-file {
+  border-color: #4a83ff;
+}
+
+.bookmark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.bookmark-item.current-file .bookmark-header {
+  background-color: rgba(74, 131, 255, 0.1);
+}
+
+.bookmark-file {
+  font-weight: bold;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bookmark-time {
+  margin: 0 8px;
+  color: #666;
+}
+
+.bookmark-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.bookmark-jump-btn,
+.bookmark-remove-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #333;
+}
+
+.bookmark-jump-btn {
+  background-color: #e6f7ff;
+}
+
+.bookmark-remove-btn {
+  background-color: #ffebee;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 5px;
+}
+
+.bookmark-details {
+  padding: 8px;
+  background-color: #fff;
+  border-top: 1px solid #e0e0e0;
+  font-size: 12px;
+}
+
+.bookmark-speaker {
+  margin-bottom: 5px;
+}
+
+.bookmark-text {
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.bookmark-timestamp {
+  color: #999;
+  text-align: right;
+}
+
+/* トランスクリプトアクションにブックマークボタンを追加 */
+.transcript-action-btn.bookmark {
+  background-color: #fff8e1;
+}
+
+/* speaker-settings-containerのスタイルを変更 */
+.speaker-settings-container {
+  width: 200px;
+  border-left: 2px solid #a6a6a6a7;
+  background-color: #62e1d230;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 話者設定部分のスタイルを調整 */
+.speaker-settings {
+  max-height: 50vh; /* 画面の半分までの高さに制限 */
+  overflow-y: auto;
+  padding-bottom: 10px;
+}

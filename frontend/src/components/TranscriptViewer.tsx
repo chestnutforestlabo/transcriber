@@ -12,6 +12,7 @@ interface TranscriptViewerProps {
   onTranscriptEdit: (index: number, newText: string) => void
   selectedEntryIndex: number | null
   onSelectEntry: (index: number | null) => void
+  onBookmarkEntry: (index: number) => void
 }
 
 const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
@@ -22,6 +23,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   onTranscriptEdit,
   selectedEntryIndex,
   onSelectEntry,
+  onBookmarkEntry,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const activeEntryRef = useRef<HTMLDivElement>(null)
@@ -82,6 +84,12 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   // Handle edit cancel
   const handleEditCancel = () => {
     setEditingIndex(null)
+  }
+
+  // Handle bookmark
+  const handleBookmark = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    onBookmarkEntry(index)
   }
 
   // トランスクリプトエントリをクリックしたときのハンドラ
@@ -146,6 +154,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                   }}
                 >
                   Copy
+                </button>
+                <button className="transcript-action-btn bookmark" onClick={(e) => handleBookmark(index, e)}>
+                  Bookmark
                 </button>
               </div>
             )}

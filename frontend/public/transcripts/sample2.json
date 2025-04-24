@@ -1,133 +1,133 @@
 [
   {
-    "start": 0.0,
-    "end": 2.0,
-    "speaker": "SPEAKER_00",
+    "start": 0,
+    "end": 2,
+    "speaker": "にしざわ",
     "text": "今何してる?"
   },
   {
-    "start": 2.0,
-    "end": 6.0,
-    "speaker": "SPEAKER_01",
+    "start": 2,
+    "end": 6,
+    "speaker": "にしも",
     "text": "今は開運ワークショップのポスター作ってる"
   },
   {
-    "start": 6.0,
-    "end": 13.0,
-    "speaker": "SPEAKER_00",
+    "start": 6,
+    "end": 13,
+    "speaker": "にしざわ",
     "text": "これポスター?ポスター開運ワークショップってあれ?久保田出したの?"
   },
   {
-    "start": 13.0,
-    "end": 19.0,
-    "speaker": "SPEAKER_00",
+    "start": 13,
+    "end": 19,
+    "speaker": "にしざわ",
     "text": "俺も出したよなんかfacebookでは井上しかえ?嘘だろ?"
   },
   {
-    "start": 19.0,
-    "end": 37.0,
-    "speaker": "SPEAKER_00",
+    "start": 19,
+    "end": 37,
+    "speaker": "にしざわ",
     "text": "わかんないちゃんと見てないけど井上のアクセプト投稿見たけど久保田のアクセプト投稿見てないんだよね俺先生じゃあ無視してるわある先生がどこにいるかどうやって見るの?"
   },
   {
-    "start": 37.0,
-    "end": 39.0,
-    "speaker": "SPEAKER_00",
+    "start": 37,
+    "end": 39,
+    "speaker": "にしざわ",
     "text": "どこか見るの?"
   },
   {
-    "start": 39.0,
-    "end": 54.0,
-    "speaker": "SPEAKER_00",
+    "start": 39,
+    "end": 54,
+    "speaker": "にしざわ",
     "text": "わかんないよまあいいやどこに書いてあるかわからないしお前忘れられてるぞいや別にワークショップはワークショップはどうでもいい"
   },
   {
-    "start": 54.0,
-    "end": 60.0,
+    "start": 54,
+    "end": 60,
     "speaker": null,
     "text": "いやどうでもいいわけないけどポスターのサイズどのくらいなの?"
   },
   {
-    "start": 60.0,
-    "end": 62.0,
-    "speaker": "SPEAKER_01",
+    "start": 60,
+    "end": 62,
+    "speaker": "にしも",
     "text": "え?"
   },
   {
-    "start": 62.0,
-    "end": 66.0,
-    "speaker": "SPEAKER_01",
+    "start": 62,
+    "end": 66,
+    "speaker": "にしも",
     "text": "別にサイズ指定なくて何だったら持ってこなくてもいいって書かれてたけど"
   },
   {
-    "start": 66.0,
-    "end": 68.0,
-    "speaker": "SPEAKER_00",
+    "start": 66,
+    "end": 68,
+    "speaker": "にしざわ",
     "text": "持ってこなくてもいいとか?"
   },
   {
-    "start": 68.0,
-    "end": 75.0,
-    "speaker": "SPEAKER_01",
+    "start": 68,
+    "end": 75,
+    "speaker": "にしも",
     "text": "なんか別にオプションって書いてたから俺は議論とか今後のためにも"
   },
   {
-    "start": 75.0,
-    "end": 78.0,
-    "speaker": "SPEAKER_00",
+    "start": 75,
+    "end": 78,
+    "speaker": "にしざわ",
     "text": "何も持ってこないんじゃいるの?まあいるんじゃない?"
   },
   {
-    "start": 78.0,
-    "end": 80.0,
-    "speaker": "SPEAKER_00",
+    "start": 78,
+    "end": 80,
+    "speaker": "にしざわ",
     "text": "どうやって発表するの?"
   },
   {
-    "start": 80.0,
-    "end": 85.0,
-    "speaker": "SPEAKER_01",
+    "start": 80,
+    "end": 85,
+    "speaker": "にしも",
     "text": "発表とかじゃなくてディスカッションとかして交流が目的なの?"
   },
   {
-    "start": 85.0,
-    "end": 95.0,
-    "speaker": "SPEAKER_01",
+    "start": 85,
+    "end": 95,
+    "speaker": "にしも",
     "text": "交流っていうかディスカッションプラスなんかえっとサーベイペーパーのどういう方向性で書いたらいいでしょうかみたいなのを話し合うっていう"
   },
   {
-    "start": 95.0,
-    "end": 102.0,
-    "speaker": "SPEAKER_00",
+    "start": 95,
+    "end": 102,
+    "speaker": "にしざわ",
     "text": "ワークショップなるほどね"
   },
   {
-    "start": 102.0,
-    "end": 104.0,
-    "speaker": "SPEAKER_01",
+    "start": 102,
+    "end": 104,
+    "speaker": "にしも",
     "text": "グループワークと"
   },
   {
-    "start": 104.0,
-    "end": 107.0,
-    "speaker": "SPEAKER_00",
+    "start": 104,
+    "end": 107,
+    "speaker": "にしざわ",
     "text": "2時間3時間くらいある?"
   },
   {
-    "start": 107.0,
-    "end": 112.0,
-    "speaker": "SPEAKER_01",
+    "start": 107,
+    "end": 112,
+    "speaker": "にしも",
     "text": "グループワークとサーベイペーパープランニングみたいな"
   },
   {
-    "start": 112.0,
-    "end": 114.0,
-    "speaker": "SPEAKER_00",
+    "start": 112,
+    "end": 114,
+    "speaker": "にしざわ",
     "text": "えーーー"
   },
   {
-    "start": 114.0,
-    "end": 123.0,
+    "start": 114,
+    "end": 123,
     "speaker": null,
     "text": "英語で議論するんだじゃん英語で議論するんだじゃんうんあっつほんれいな"
   }

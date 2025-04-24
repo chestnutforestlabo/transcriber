@@ -12,3 +12,10 @@ export interface Transcript {
 export interface SpeakerMapping {
   [key: string]: string
 }
+
+export interface Bookmark {
+  audioFile: string
+  entryIndex: number
+  entry: TranscriptEntry
+  timestamp: number
+}

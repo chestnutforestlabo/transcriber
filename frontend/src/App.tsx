@@ -6,9 +6,10 @@ import AudioList from "./components/AudioList"
 import TranscriptViewer from "./components/TranscriptViewer"
 import SpeakerSettings from "./components/SpeakerSettings"
 import AudioControls from "./components/AudioControls"
+import BookmarkList from "./components/BookmarkList"
 import TagList from "./components/TagList"
 import ImageModal from "./components/ImageModal"
-import type { TranscriptEntry, SpeakerMapping } from "./types"
+import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
 
 function App() {
   const [audioFiles, setAudioFiles] = useState<string[]>([])
@@ -29,6 +30,7 @@ function App() {
   const [audioTags, setAudioTags] = useState<Record<string, string[]>>({})
   const [allTags, setAllTags] = useState<string[]>([])
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const saveInProgressRef = useRef(false)
   const transcriptViewerRef = useRef<HTMLDivElement>(null)
 
@@ -46,12 +48,13 @@ function App() {
       .catch((error) => console.error("Error loading audio files:", error))
   }, [])
 
-  // Load tags data
+  // Load tags and bookmarks data
   useEffect(() => {
     // ローカルストレージからタグデータを読み込む
     const savedAudioTags = localStorage.getItem("audioTags")
     const savedAllTags = localStorage.getItem("allTags")
     const savedIsCollapsed = localStorage.getItem("isCollapsed")
+    const savedBookmarks = localStorage.getItem("bookmarks")
 
     if (savedAudioTags) {
       try {
@@ -76,6 +79,14 @@ function App() {
         console.error("Error parsing saved collapsed state:", error)
       }
     }
+
+    if (savedBookmarks) {
+      try {
+        setBookmarks(JSON.parse(savedBookmarks))
+      } catch (error) {
+        console.error("Error parsing saved bookmarks:", error)
+      }
+    }
   }, [])
 
   // Save tags data to localStorage when changed
@@ -90,6 +101,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed))
   }, [isCollapsed])
+
+  useEffect(() => {
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks))
+  }, [bookmarks])
 
   // Load transcript when audio file changes
   useEffect(() => {
@@ -344,6 +359,46 @@ function App() {
     })
   }
 
+  // ブックマーク関連の処理
+  const handleBookmarkEntry = (index: number) => {
+    if (index < 0 || index >= transcript.length) return
+
+    const entry = transcript[index]
+    const newBookmark: Bookmark = {
+      audioFile: selectedAudio,
+      entryIndex: index,
+      entry: { ...entry },
+      timestamp: Date.now(),
+    }
+
+    console.log("Adding bookmark:", newBookmark)
+    setBookmarks((prev) => [...prev, newBookmark])
+  }
+
+  const handleRemoveBookmark = (bookmarkIndex: number) => {
+    console.log("Removing bookmark at index:", bookmarkIndex)
+    setBookmarks((prev) => prev.filter((_, index) => index !== bookmarkIndex))
+  }
+
+  const handleJumpToBookmark = (audioFile: string, entryIndex: number, time: number) => {
+    console.log("Jumping to bookmark:", audioFile, entryIndex, time)
+
+    // 異なる音声ファイルの場合は、まずそのファイルを選択
+    if (audioFile !== selectedAudio) {
+      setSelectedAudio(audioFile)
+      // 音声ファイルが変更されるとトランスクリプトも再読み込みされるため、
+      // useEffectの後に実行されるようにタイマーを設定
+      setTimeout(() => {
+        setSelectedEntryIndex(entryIndex)
+        jumpToTime(time)
+      }, 500)
+    } else {
+      // 同じ音声ファイルの場合は直接ジャンプ
+      setSelectedEntryIndex(entryIndex)
+      jumpToTime(time)
+    }
+  }
+
   // タグ関連の処理
   const handleAddTag = (tag: string) => {
     if (!allTags.includes(tag)) {
@@ -468,6 +523,7 @@ function App() {
             onTranscriptEdit={handleTranscriptEdit}
             selectedEntryIndex={selectedEntryIndex}
             onSelectEntry={setSelectedEntryIndex}
+            onBookmarkEntry={handleBookmarkEntry}
           />
           <AudioControls
             currentTime={currentTime}
@@ -488,7 +544,17 @@ function App() {
           />
         </div>
         <div className="speaker-settings-container">
-          <SpeakerSettings transcript={transcript} onSpeakerNameChange={handleSpeakerNameChange} />
+          <div className="speaker-settings">
+            <SpeakerSettings transcript={transcript} onSpeakerNameChange={handleSpeakerNameChange} />
+          </div>
+          <div className="bookmark-list-container">
+            <BookmarkList
+              bookmarks={bookmarks}
+              onJumpToBookmark={handleJumpToBookmark}
+              onRemoveBookmark={handleRemoveBookmark}
+              currentAudioFile={selectedAudio}
+            />
+          </div>
         </div>
       </div>
 

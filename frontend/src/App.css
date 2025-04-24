@@ -121,12 +121,37 @@
 }
 
 /* ===== Audio List ===== */
+.audio-list-container {
+  width: 250px;
+  border-right: 2px solid #a6a6a6a7;
+  background-color: #62e1d230;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.audio-list-container.collapsed {
+  width: 50px;
+}
+
+.audio-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 65%;
+}
+
 .audio-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 .audio-list-header h3 {
   margin: 0;
@@ -134,18 +159,16 @@
   flex-grow: 1;
   color: #333;
 }
-.audio-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  height: 65%;
-}
+
 .no-audio-files {
   padding: 10px;
   color: #666;
   font-style: italic;
 }
+.audio-items-container {
+  flex: 1;
+  overflow-y: auto;
+  }
 .audio-item {
   position: relative;
   display: flex;
@@ -159,7 +182,7 @@
   text-overflow: ellipsis;
 }
 .audio-item:hover {
-  background-color: #f8f9fa;
+  background-color: #d6e9fb;
 }
 .audio-item.collapsed {
   padding: 8px 0;
@@ -227,23 +250,30 @@
 
 /* ===== Tag List ===== */
 .tag-list-container {
-  border-top: 1px solid #a6a6a6a7;
-  background-color: #62e1d230;
+  border-top: 2px solid #a6a6a6a7;
   flex-shrink: 0;
-  max-height: 35%;
-  overflow-y: auto;
+  max-height: 40%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .tag-list {
   padding: 10px;
   display: flex;
   flex-direction: column;
   flex: 1;
+  overflow: hidden;
 }
 .tag-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 .tag-list-header h3 {
   font-size: 16px;
@@ -343,10 +373,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #a3a3a314;
+  background-color: #ffffff;
 }
 .transcript-header {
-  padding: 12px;
+  padding: 13px;
   border-bottom: 1px solid #a6a6a6a7;
   background-color: #62e1d230;
   font-weight: bold;
@@ -479,8 +509,7 @@
 }
 .speaker-settings h3 {
   margin: 0;
-  padding: 10px;
-  background-color: #62e1d230;
+  padding: 13px;
   border-bottom: 1px solid #a6a6a6a7;
   font-size: 16px;
   position: sticky;
@@ -764,6 +793,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-top: 2px solid #a6a6a6a7;
 }
 .bookmark-list {
   display: flex;
@@ -773,8 +803,7 @@
 }
 .bookmark-list h3 {
   margin: 0;
-  padding: 10px;
-  background-color: #62e1d230;
+  padding: 13px;
   border-bottom: 1px solid #a6a6a6a7;
   font-size: 16px;
   position: sticky;

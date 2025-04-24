@@ -12,6 +12,10 @@ import ImageModal from "./components/ImageModal"
 import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
 
 function App() {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [audioTags, setAudioTags] = useState<Record<string, string[]>>({})
+  const [allTags, setAllTags] = useState<string[]>([])
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [audioFiles, setAudioFiles] = useState<string[]>([])
   const [selectedAudio, setSelectedAudio] = useState<string>("")
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([])
@@ -26,29 +30,11 @@ function App() {
   const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
   const [lastPlaybackPosition, setLastPlaybackPosition] = useState<number>(0)
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [audioTags, setAudioTags] = useState<Record<string, string[]>>({})
-  const [allTags, setAllTags] = useState<string[]>([])
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const saveInProgressRef = useRef(false)
   const transcriptViewerRef = useRef<HTMLDivElement>(null)
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
 
-  // Load audio file list
-  useEffect(() => {
-    fetch("/audios/index.json")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Loaded audio files:", data)
-        setAudioFiles(data)
-        if (data.length > 0) {
-          setSelectedAudio(data[0])
-        }
-      })
-      .catch((error) => console.error("Error loading audio files:", error))
-  }, [])
-
-  // Load tags and bookmarks data
+  // Load tags data
   useEffect(() => {
     // ローカルストレージからタグデータを読み込む
     const savedAudioTags = localStorage.getItem("audioTags")
@@ -105,6 +91,48 @@ function App() {
   useEffect(() => {
     localStorage.setItem("bookmarks", JSON.stringify(bookmarks))
   }, [bookmarks])
+
+  // Load audio file list
+  useEffect(() => {
+    fetch("/audios/index.json")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Loaded audio files:", data)
+        setAudioFiles(data)
+        if (data.length > 0) {
+          setSelectedAudio(data[0])
+        }
+      })
+      .catch((error) => console.error("Error loading audio files:", error))
+  }, [])
+
+  // タグ関連の処理
+  const handleAddTag = (tag: string) => {
+    if (!allTags.includes(tag)) {
+      setAllTags((prev) => [...prev, tag])
+    }
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    // タグを削除し、関連する音声ファイルからもタグを削除
+    setAllTags((prev) => prev.filter((t) => t !== tag))
+
+    // すべての音声ファイルからこのタグを削除
+    const updatedAudioTags = { ...audioTags }
+    Object.keys(updatedAudioTags).forEach((audio) => {
+      updatedAudioTags[audio] = updatedAudioTags[audio].filter((t) => t !== tag)
+    })
+    setAudioTags(updatedAudioTags)
+
+    // 選択中のタグが削除された場合、選択を解除
+    if (selectedTag === tag) {
+      setSelectedTag(null)
+    }
+  }
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed)
+  }
 
   // Load transcript when audio file changes
   useEffect(() => {
@@ -399,30 +427,6 @@ function App() {
     }
   }
 
-  // タグ関連の処理
-  const handleAddTag = (tag: string) => {
-    if (!allTags.includes(tag)) {
-      setAllTags((prev) => [...prev, tag])
-    }
-  }
-
-  const handleRemoveTag = (tag: string) => {
-    // タグを削除し、関連する音声ファイルからもタグを削除
-    setAllTags((prev) => prev.filter((t) => t !== tag))
-
-    // すべての音声ファイルからこのタグを削除
-    const updatedAudioTags = { ...audioTags }
-    Object.keys(updatedAudioTags).forEach((audio) => {
-      updatedAudioTags[audio] = updatedAudioTags[audio].filter((t) => t !== tag)
-    })
-    setAudioTags(updatedAudioTags)
-
-    // 選択中のタグが削除された場合、選択を解除
-    if (selectedTag === tag) {
-      setSelectedTag(null)
-    }
-  }
-
   const handleAddTagToAudio = (audio: string, tag: string) => {
     // 新しいタグの場合、allTagsに追加
     if (!allTags.includes(tag)) {
@@ -451,10 +455,6 @@ function App() {
       }
       return updatedTags
     })
-  }
-
-  const handleToggleCollapse = () => {
-    setIsCollapsed(!isCollapsed)
   }
 
   return (

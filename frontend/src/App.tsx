@@ -20,8 +20,8 @@ function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const saveInProgressRef = useRef(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true) 
 
   // Load audio file list
   useEffect(() => {
@@ -29,9 +29,11 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Loaded audio files:", data)
-        setAudioFiles(data)
-        if (data.length > 0) {
-          setSelectedAudio(data[0])
+        // データが配列でない場合は配列に変換
+        const audioFilesArray = Array.isArray(data) ? data : data ? [data] : []
+        setAudioFiles(audioFilesArray)
+        if (audioFilesArray.length > 0) {
+          setSelectedAudio(audioFilesArray[0])
         }
       })
       .catch((error) => console.error("Error loading audio files:", error))
@@ -67,6 +69,11 @@ function App() {
     setIsPlaying(false) // Stop playback when changing audio
     setCurrentTime(0)
     setSelectedAudio(audio)
+  }
+
+  // Toggle sidebar collapse
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
   // Handle time update from wavesurfer
@@ -259,28 +266,25 @@ function App() {
         </div>
       </div>
       <div className="transcriber-content">
-        <div className={`audio-list-container ${isSidebarOpen ? "" : "closed"}`}>
-          <button 
-            className="sidebar-toggle"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            {isSidebarOpen ? "←" : "→"}
-          </button>
-          <AudioList 
-            audioFiles={audioFiles} 
-            selectedAudio={selectedAudio} 
-            onSelectAudio={handleSelectAudio} 
+        <div className={`audio-list-container ${isSidebarCollapsed ? "collapsed" : ""}`}>
+          <AudioList
+            audioFiles={audioFiles}
+            selectedAudio={selectedAudio}
+            onSelectAudio={handleSelectAudio}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={toggleSidebarCollapse}
           />
         </div>
         <div className="transcript-container">
           <div className="transcript-header">
             <div>
-              {selectedAudio}{" "}
-              {"("}{duration
+              {selectedAudio} {"("}
+              {duration
                 ? `${Math.floor(duration / 60)}:${Math.floor(duration % 60)
                     .toString()
                     .padStart(2, "0")}`
-                : ""}{")"}
+                : ""}
+              {")"}
             </div>
           </div>
           <TranscriptViewer

@@ -12,7 +12,7 @@
   width: 100%;
   height: 100vh;
   box-sizing: border-box;
-  background-color: #f8f9fa;
+  background-color: #dddddd00;
 }
 
 .transcriber-header {
@@ -107,7 +107,6 @@
 .audio-list h3 {
   padding: 10px;
   margin: 0;
-  border-bottom: 1px solid #a6a6a6a7;
 }
 
 .no-audio-files {
@@ -291,16 +290,16 @@
 }
 
 .audio-controls {
-  border-top: 2px solid #a6a6a6a7;
-  background-color: #62e1d230;
+  border-top: 2px solid #c1bfbfa7;
+  background-color: #a6a6a62f;
   padding: 10px;
 }
 
 .waveform-container {
   margin-bottom: 10px;
   height: 80px;
-  background-color: white;
-  border: 1px solid #dee2e6;
+  background-color: rgba(255, 255, 255, 0.469);
+  /* border: 1px solid #3a6b9d; */
   border-radius: 6px;
   padding: 10px;
 }
@@ -319,8 +318,8 @@
 }
 
 .control-button {
-  background-color: white;
-  border: 1px solid #dee2e6;
+  background-color: #62e1d284;
+  /* border: 1px solid #dee2e6; */
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -331,12 +330,19 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  font-size: 12px;
+  font-size: 15px;
   color: #000;
+  outline: none;  /* フォーカス時の枠線を削除 */
+  border: none; 
+}
+
+.control-button:focus {
+  outline: none;  /* フォーカス時の枠線を削除 */
+  border: none;   /* フォーカス時のボーダーも削除 */
 }
 
 .control-button:hover {
-  background-color: #f8f9fa;
+  background-color: #77dca6;
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -345,22 +351,32 @@
   width: 52px;
   height: 52px;
   font-size: 16px;
-  background-color: #228be6;
+  background-color: #62e1d284;
   color: white;
   border: none;
+  box-shadow: none; 
+  outline: none;
+}
+
+.play-pause:focus {
+  outline: none;  /* フォーカス時の枠線を削除 */
+  border: none;   /* フォーカス時のボーダーも削除 */
 }
 
 .play-pause:hover {
-  background-color: #1c7ed6;
+  background-color: #77dca6;
+  box-shadow: none; 
 }
 
 .pause-icon {
   letter-spacing: -2px;
   color: #000;
+  font-size: 24px;
 }
 
 .play-icon {
   color: #000;
+  font-size: 24px;
 }
 
 .time-display {
@@ -376,18 +392,25 @@
 }
 
 .playback-rate-button {
-  background-color: white;
-  border: 1px solid #dee2e6;
+  background-color: #62e1d284;
+  /* border: 1px solid #dee2e6; */
   padding: 8px 12px;
   border-radius: 4px;
   transition: all 0.2s ease;
   cursor: pointer;
   color: #000;
   white-space: nowrap;
+  outline: none;
+  border: none;
+}
+
+.playback-rate-button:focus {
+  outline: none;
+  border: none;
 }
 
 .playback-rate-button:hover {
-  background-color: #f8f9fa;
+  background-color: #77dca6;
   border-color: #adb5bd;
 }
 
@@ -448,4 +471,119 @@
 
 .sidebar-toggle:hover {
   background: #f8f9fa;
+}
+
+/* 既存のCSSはそのままで、以下を追加 */
+
+/* Audio List Container */
+.audio-list-container {
+  width: 200px;
+  border-right: 2px solid #a6a6a6a7;
+  background-color: #62e1d230;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+}
+
+.audio-list-container.collapsed {
+  width: 40px;
+  overflow: hidden;
+}
+
+/* Audio List Header */
+.audio-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #a6a6a6a7;
+}
+
+.audio-list-header h3 {
+  margin: 0;
+  flex-grow: 1;
+  font-size: 24px; 
+  color: #333;  
+}
+
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebar-toggle-btn:hover {
+  color: #000;
+}
+
+/* Audio Items */
+.audio-items-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.audio-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #a6a6a6a7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.audio-item.collapsed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.audio-item.selected {
+  color: rgb(47, 65, 203);
+  font-weight: bold;
+}
+
+.audio-item.selected.collapsed svg {
+  color: rgb(47, 65, 203);
+}
+
+.transcriber-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* Audio List Container */
+.audio-list-container {
+  width: 200px;
+  border-right: 2px solid #a6a6a6a7;
+  background-color: #62e1d230;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+  margin-right: 0;
+  padding-right: 0;
+  flex-shrink: 0;
+}
+
+.audio-list-container.collapsed {
+  width: 40px;
+  overflow: hidden;
+}
+
+/* Transcript Container */
+.transcript-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #a3a3a314;
+  margin-left: 0;
+  padding-left: 0;
 }

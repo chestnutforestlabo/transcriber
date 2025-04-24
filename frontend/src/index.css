@@ -116,3 +116,14 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.transcriber-content > * {
+  margin: 0;
+  padding: 0;
+}

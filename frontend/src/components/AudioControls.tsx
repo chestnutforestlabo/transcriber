@@ -1,3 +1,4 @@
+// 音声波形表示と再生コントロールのコンポーネント
 "use client"
 
 import { useEffect, useRef, useState } from "react"

@@ -1,3 +1,4 @@
+// 話者設定
 "use client"
 
 import { useState } from "react"

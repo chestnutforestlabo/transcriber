@@ -1,3 +1,4 @@
+// サイトの挙動を制御するメインのコンポーネント
 "use client"
 
 import { useState, useEffect, useRef } from "react"

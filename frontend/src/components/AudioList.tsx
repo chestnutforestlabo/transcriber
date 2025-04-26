@@ -1,3 +1,4 @@
+// 音声リスト
 "use client"
 
 import { Music, Menu, Tag, Plus, X } from "lucide-react"

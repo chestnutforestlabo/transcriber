@@ -1,3 +1,4 @@
+// 画像モーダルコンポーネント
 "use client"
 
 import { useState, useEffect } from "react"

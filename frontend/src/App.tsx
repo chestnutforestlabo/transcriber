@@ -1,3 +1,4 @@
+// コンポーネント統合
 "use client"
 
 import { useState, useEffect, useRef } from "react"

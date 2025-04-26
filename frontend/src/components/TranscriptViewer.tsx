@@ -147,8 +147,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   return (
     <div className="transcript-viewer" ref={containerRef}>
       {transcript.map((entry, index) => {
+        // Only highlight the entry if it's the selected entry (from clicking)
+        // OR if it's the active entry (from playback) AND there's no selected entry
         const isActive = currentTime >= entry.start && currentTime < entry.end
-        const isSelected = selectedEntryIndex === index
+        const isHighlighted = selectedEntryIndex === index || (isActive && selectedEntryIndex === null)
         const isHovered = hoveredIndex === index
         const isEditing = editingIndex === index
         const displaySpeaker = entry.speaker ? speakerMapping[entry.speaker] || entry.speaker : "null"
@@ -157,7 +159,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           <div
             key={index}
             ref={isActive ? activeEntryRef : null}
-            className={`transcript-entry ${isActive ? "active" : ""} ${isSelected ? "selected" : ""} ${isEditing ? "editing" : ""}`}
+            className={`transcript-entry ${isHighlighted ? "active" : ""} ${isEditing ? "editing" : ""}`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}

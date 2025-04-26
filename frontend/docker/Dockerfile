@@ -26,13 +26,8 @@ RUN mkdir -p /transcriber/frontend/node_modules && \
 
 VOLUME ["/transcriber/frontend/node_modules"]
 
-# 依存関係インストール用ファイルを先にコピー
 COPY package.json ./
-
-# 依存関係のインストール
 RUN yarn install --frozen-lockfile
-
-# ソースコードをコピー
 COPY . .
 
 USER ${USER_NAME}

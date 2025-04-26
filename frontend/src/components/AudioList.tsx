@@ -1,8 +1,7 @@
-// 音声リスト
 "use client"
 
 import { Music, Menu, Tag, Plus, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type React from "react"
 
 interface AudioListProps {
@@ -32,6 +31,7 @@ const AudioList: React.FC<AudioListProps> = ({
 }) => {
   const [showTagMenu, setShowTagMenu] = useState<string | null>(null)
   const [newTagInput, setNewTagInput] = useState("")
+  const [tagMenuPosition, setTagMenuPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 })
 
   // タグでフィルタリングされた音声ファイルを取得
   const getFilteredAudioFiles = () => {
@@ -66,6 +66,55 @@ const AudioList: React.FC<AudioListProps> = ({
       setShowTagMenu(null)
       setNewTagInput("")
     }
+  }
+
+  // Add event listener to close tag menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showTagMenu && !event.target) return
+
+      // Find the tag menu element
+      const tagMenuElement = document.querySelector(".tag-menu")
+      const clickedElement = event.target as Node
+
+      // Check if the click was outside the tag menu
+      if (tagMenuElement && !tagMenuElement.contains(clickedElement)) {
+        setShowTagMenu(null)
+      }
+    }
+
+    // Add event listener
+    document.addEventListener("mousedown", handleClickOutside)
+
+    // Clean up
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [showTagMenu])
+
+  // Modify the click handler for the tag button
+  const handleTagButtonClick = (e: React.MouseEvent, audio: string) => {
+    e.stopPropagation()
+
+    // If already showing this menu, just close it
+    if (showTagMenu === audio) {
+      setShowTagMenu(null)
+      return
+    }
+
+    // Get the button element that was clicked
+    const buttonElement = e.currentTarget as HTMLElement
+    const rect = buttonElement.getBoundingClientRect()
+
+    // Calculate position for the menu
+    const menuLeft = rect.left
+    const menuTop = rect.bottom + 5 // 5px below the button
+
+    // Set the tag menu position in state
+    setTagMenuPosition({ left: menuLeft, top: menuTop })
+
+    setShowTagMenu(audio)
+    setNewTagInput("")
   }
 
   return (
@@ -112,22 +161,27 @@ const AudioList: React.FC<AudioListProps> = ({
                       </button>
                     </span>
                   ))}
-                  <button
-                    className="add-tag-to-audio"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowTagMenu(showTagMenu === audio ? null : audio)
-                      setNewTagInput("")
-                    }}
-                  >
+                  <button className="add-tag-to-audio" onClick={(e) => handleTagButtonClick(e, audio)}>
                     <Tag size={14} />
                   </button>
                 </div>
               )}
 
               {showTagMenu === audio && (
-                <div className="tag-menu" onClick={(e) => e.stopPropagation()}>
-                  <div className="tag-menu-header">Add tag to {audio}</div>
+                <div
+                  className="tag-menu"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    left: `${tagMenuPosition.left}px`,
+                    top: `${tagMenuPosition.top}px`,
+                  }}
+                >
+                  <div className="tag-menu-header">
+                    <span>Add tag to {audio}</span>
+                    <button className="tag-menu-close-btn" onClick={() => setShowTagMenu(null)}>
+                      <X size={14} />
+                    </button>
+                  </div>
                   <div className="tag-menu-content">
                     {allTags
                       .filter((tag) => !audioTags[audio]?.includes(tag))
@@ -143,19 +197,24 @@ const AudioList: React.FC<AudioListProps> = ({
                           {tag}
                         </div>
                       ))}
-                    <div className="tag-menu-new">
-                      <input
-                        type="text"
-                        placeholder="New tag..."
-                        value={newTagInput}
-                        onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(e, audio)}
-                        autoFocus
-                      />
-                      <button onClick={() => handleAddTag(audio)}>
-                        <Plus size={14} />
-                      </button>
-                    </div>
+                  </div>
+                  <div className="tag-menu-new">
+                    <input
+                      type="text"
+                      placeholder="New tag..."
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, audio)}
+                      autoFocus
+                    />
+                    <button onClick={() => handleAddTag(audio)}>
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                  <div className="tag-menu-footer">
+                    <button className="tag-menu-save-btn" onClick={() => setShowTagMenu(null)}>
+                      Save
+                    </button>
                   </div>
                 </div>
               )}

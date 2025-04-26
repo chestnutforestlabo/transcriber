@@ -368,6 +368,57 @@
   color: #333;
 }
 
+/* ===== Tag Menu ===== */
+.tag-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  z-index: 100;
+}
+.tag-menu-header {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  color: #666;
+}
+.tag-menu-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.tag-menu-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.tag-menu-item:hover {
+  background-color: rgba(74, 131, 255, 0.1);
+}
+.tag-menu-new {
+  display: flex;
+  padding: 8px;
+  border-top: 1px solid #eee;
+}
+.tag-menu-new input {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.tag-menu-new button {
+  margin-left: 5px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 /* ===== Transcript ===== */
 .transcript-container {
   flex: 1;
@@ -734,57 +785,6 @@
   max-width: 100%;
   max-height: 80vh;
   border-radius: 4px;
-}
-
-/* ===== Tag Menu ===== */
-.tag-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 180px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  background-color: white;
-  z-index: 100;
-}
-.tag-menu-header {
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: bold;
-  border-bottom: 1px solid #eee;
-  color: #666;
-}
-.tag-menu-content {
-  max-height: 200px;
-  overflow-y: auto;
-}
-.tag-menu-item {
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 13px;
-}
-.tag-menu-item:hover {
-  background-color: rgba(74, 131, 255, 0.1);
-}
-.tag-menu-new {
-  display: flex;
-  padding: 8px;
-  border-top: 1px solid #eee;
-}
-.tag-menu-new input {
-  flex: 1;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 12px;
-}
-.tag-menu-new button {
-  margin-left: 5px;
-  padding: 4px 6px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 /* ===== Bookmark List ===== */

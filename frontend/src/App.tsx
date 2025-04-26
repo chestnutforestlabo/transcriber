@@ -35,6 +35,9 @@ function App() {
   const transcriptViewerRef = useRef<HTMLDivElement>(null)
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
 
+  const isInitialSpeakerSave = useRef(true)
+  const isInitialTranscriptSave = useRef(true)
+
   // Load tags data
   useEffect(() => {
     // ローカルストレージからタグデータを読み込む
@@ -92,6 +95,24 @@ function App() {
   useEffect(() => {
     localStorage.setItem("bookmarks", JSON.stringify(bookmarks))
   }, [bookmarks])
+
+  // Trigger save after speakerMapping changes (skip initial load)
+  useEffect(() => {
+    if (isInitialSpeakerSave.current) {
+      isInitialSpeakerSave.current = false
+      return
+    }
+    saveTranscriptChanges()
+  }, [speakerMapping])
+
+  // Trigger save after transcript changes (skip initial load)
+  useEffect(() => {
+    if (isInitialTranscriptSave.current) {
+      isInitialTranscriptSave.current = false
+      return
+    }
+    saveTranscriptChanges()
+  }, [transcript])
 
   // Load audio file list
   useEffect(() => {
@@ -155,6 +176,8 @@ function App() {
         setSpeakerMapping({})
         setSaveStatus("idle")
         setSaveError(null)
+        isInitialTranscriptSave.current = true
+        isInitialSpeakerSave.current = true
       })
       .catch((error) => console.error("Error loading transcript:", error))
   }, [selectedAudio])

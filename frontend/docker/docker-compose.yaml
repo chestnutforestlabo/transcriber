@@ -6,13 +6,16 @@ services:
       context: ../
       dockerfile: docker/Dockerfile
       args:
-        - UID=${HOST_UID-1004}
+        - UID=${HOST_UID:-1004}
         - USER_NAME=${USER:-sakaya}
-    working_dir: /transcriber
+    working_dir: /transcriber/frontend
     volumes:
-      - ../../:/transcriber
+      - ../../frontend:/transcriber/frontend:delegated
+      - node_modules_frontend:/transcriber/frontend/node_modules
     ports:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-    command: sh -c "cd frontend && yarn start --host"
+
+volumes:
+  node_modules_frontend:

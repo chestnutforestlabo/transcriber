@@ -4,16 +4,12 @@ services:
       context: ../
       dockerfile: docker/Dockerfile
       args:
-        - UID=${HOST_UID:-1004}
+        - UID=${HOST_UID-1004}
         - USER_NAME=${USER:-sakaya}
-    working_dir: /transcriber/frontend
+    working_dir: /transcriber
     volumes:
-      - ../../frontend:/transcriber/frontend:delegated
-      - node_modules_frontend:/transcriber/frontend/node_modules
+      - ../../:/transcriber
     ports:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-
-volumes:
-  node_modules_frontend:

@@ -1,10 +1,16 @@
-// 話者とトランスクリプトの手動分離要実装
-// 音声削除機能実装
 "use client"
 
-import { useRef, useEffect, useState } from "react"
 import type React from "react"
-import type { TranscriptEntry } from "../types"
+import { useRef, useEffect, useState } from "react"
+import { Edit, Copy, Bookmark, Save, X } from "lucide-react"
+
+interface TranscriptEntry {
+  time?: string
+  start: number
+  end: number
+  speaker: string
+  text: string
+}
 
 interface TranscriptViewerProps {
   transcript: TranscriptEntry[]
@@ -60,38 +66,36 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   }
 
   // Handle copy to clipboard
-  const handleCopy = (text: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        console.log("Text copied to clipboard")
-      })
-      .catch((err) => {
-        console.error("Failed to copy text: ", err)
-      })
+  const handleCopy = (text: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(text)
   }
 
-  // Handle edit mode
-  const handleEditStart = (index: number, text: string) => {
+  // Handle double click to edit
+  const handleDoubleClick = (index: number, text: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingIndex(index)
+    setEditText(text)
+  }
+
+  // Handle edit button click
+  const handleEditClick = (index: number, text: string, e: React.MouseEvent) => {
+    e.stopPropagation()
     setEditingIndex(index)
     setEditText(text)
   }
 
   // Handle edit save
-  const handleEditSave = (index: number) => {
+  const handleEditSave = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation()
     onTranscriptEdit(index, editText)
     setEditingIndex(null)
   }
 
   // Handle edit cancel
-  const handleEditCancel = () => {
-    setEditingIndex(null)
-  }
-
-  // Handle bookmark
-  const handleBookmark = (index: number, e: React.MouseEvent) => {
+  const handleEditCancel = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onBookmarkEntry(index)
+    setEditingIndex(null)
   }
 
   // トランスクリプトエントリをクリックしたときのハンドラ
@@ -132,38 +136,15 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           <div
             key={index}
             ref={isActive ? activeEntryRef : null}
-            className={`transcript-entry ${isActive ? "active" : ""} ${isSelected ? "selected" : ""}`}
+            className={`transcript-entry ${isActive ? "active" : ""} ${isSelected ? "selected" : ""} ${isEditing ? "editing" : ""}`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}
+            onDoubleClick={(e) => handleDoubleClick(index, entry.text, e)}
           >
-            {isHovered && !isEditing && (
-              <div className="transcript-actions">
-                <button
-                  className="transcript-action-btn edit"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleEditStart(index, entry.text)
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="transcript-action-btn copy"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleCopy(entry.text)
-                  }}
-                >
-                  Copy
-                </button>
-                <button className="transcript-action-btn bookmark" onClick={(e) => handleBookmark(index, e)}>
-                  Bookmark
-                </button>
-              </div>
-            )}
             <div className="transcript-time">{formatTime(entry.start)}</div>
             <div className="transcript-speaker">{displaySpeaker}</div>
+
             {isEditing ? (
               <div className="transcript-edit-container" onClick={(e) => e.stopPropagation()}>
                 <textarea
@@ -173,16 +154,38 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                   autoFocus
                 />
                 <div className="transcript-edit-actions">
-                  <button className="transcript-edit-btn save" onClick={() => handleEditSave(index)}>
-                    Save
+                  <button
+                    className="transcript-action-btn save-btn"
+                    onClick={(e) => handleEditSave(index, e)}
+                    title="Save"
+                  >
+                    <Save size={16} />
                   </button>
-                  <button className="transcript-edit-btn cancel" onClick={handleEditCancel}>
-                    Cancel
+                  <button className="transcript-action-btn cancel-btn" onClick={handleEditCancel} title="Cancel">
+                    <X size={16} />
                   </button>
                 </div>
               </div>
             ) : (
               <div className="transcript-text">{entry.text}</div>
+            )}
+
+            {isHovered && !isEditing && (
+              <div className="transcript-actions">
+                <button
+                  className="transcript-action-btn"
+                  onClick={(e) => handleEditClick(index, entry.text, e)}
+                  title="Edit"
+                >
+                  <Edit size={16} />
+                </button>
+                <button className="transcript-action-btn" onClick={(e) => handleCopy(entry.text, e)} title="Copy">
+                  <Copy size={16} />
+                </button>
+                <button className="transcript-action-btn" onClick={(e) => onBookmarkEntry(index)} title="Bookmark">
+                  <Bookmark size={16} />
+                </button>
+              </div>
             )}
           </div>
         )

@@ -1,4 +1,3 @@
-// サイトの挙動を制御するメインのコンポーネント
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -11,6 +10,17 @@ import BookmarkList from "./components/BookmarkList"
 import TagList from "./components/TagList"
 import ImageModal from "./components/ImageModal"
 import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
+import {
+  loadAudioTags,
+  loadAllTags,
+  addTagToAudio as addTagService,
+  removeTagFromAudio as removeTagService,
+} from "./services/tagService"
+import {
+  loadBookmarks,
+  addBookmark as addBookmarkService,
+  removeBookmark as removeBookmarkService,
+} from "./services/bookmarkService"
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -38,29 +48,17 @@ function App() {
   const isInitialSpeakerSave = useRef(true)
   const isInitialTranscriptSave = useRef(true)
 
-  // Load tags data
+  // Load data from localStorage on component mount
   useEffect(() => {
-    // ローカルストレージからタグデータを読み込む
-    const savedAudioTags = localStorage.getItem("audioTags")
-    const savedAllTags = localStorage.getItem("allTags")
+    // Load tags data
+    const loadedAudioTags = loadAudioTags()
+    const loadedAllTags = loadAllTags()
+    const loadedBookmarks = loadBookmarks()
     const savedIsCollapsed = localStorage.getItem("isCollapsed")
-    const savedBookmarks = localStorage.getItem("bookmarks")
 
-    if (savedAudioTags) {
-      try {
-        setAudioTags(JSON.parse(savedAudioTags))
-      } catch (error) {
-        console.error("Error parsing saved audio tags:", error)
-      }
-    }
-
-    if (savedAllTags) {
-      try {
-        setAllTags(JSON.parse(savedAllTags))
-      } catch (error) {
-        console.error("Error parsing saved all tags:", error)
-      }
-    }
+    setAudioTags(loadedAudioTags)
+    setAllTags(loadedAllTags)
+    setBookmarks(loadedBookmarks)
 
     if (savedIsCollapsed) {
       try {
@@ -69,32 +67,12 @@ function App() {
         console.error("Error parsing saved collapsed state:", error)
       }
     }
-
-    if (savedBookmarks) {
-      try {
-        setBookmarks(JSON.parse(savedBookmarks))
-      } catch (error) {
-        console.error("Error parsing saved bookmarks:", error)
-      }
-    }
   }, [])
 
-  // Save tags data to localStorage when changed
-  useEffect(() => {
-    localStorage.setItem("audioTags", JSON.stringify(audioTags))
-  }, [audioTags])
-
-  useEffect(() => {
-    localStorage.setItem("allTags", JSON.stringify(allTags))
-  }, [allTags])
-
+  // Save isCollapsed state to localStorage when changed
   useEffect(() => {
     localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed))
   }, [isCollapsed])
-
-  useEffect(() => {
-    localStorage.setItem("bookmarks", JSON.stringify(bookmarks))
-  }, [bookmarks])
 
   // Trigger save after speakerMapping changes (skip initial load)
   useEffect(() => {
@@ -131,13 +109,17 @@ function App() {
   // タグ関連の処理
   const handleAddTag = (tag: string) => {
     if (!allTags.includes(tag)) {
-      setAllTags((prev) => [...prev, tag])
+      const updatedTags = [...allTags, tag]
+      setAllTags(updatedTags)
+      localStorage.setItem("allTags", JSON.stringify(updatedTags))
     }
   }
 
   const handleRemoveTag = (tag: string) => {
     // タグを削除し、関連する音声ファイルからもタグを削除
-    setAllTags((prev) => prev.filter((t) => t !== tag))
+    const updatedTags = allTags.filter((t) => t !== tag)
+    setAllTags(updatedTags)
+    localStorage.setItem("allTags", JSON.stringify(updatedTags))
 
     // すべての音声ファイルからこのタグを削除
     const updatedAudioTags = { ...audioTags }
@@ -145,6 +127,7 @@ function App() {
       updatedAudioTags[audio] = updatedAudioTags[audio].filter((t) => t !== tag)
     })
     setAudioTags(updatedAudioTags)
+    localStorage.setItem("audioTags", JSON.stringify(updatedAudioTags))
 
     // 選択中のタグが削除された場合、選択を解除
     if (selectedTag === tag) {
@@ -416,20 +399,14 @@ function App() {
     if (index < 0 || index >= transcript.length) return
 
     const entry = transcript[index]
-    const newBookmark: Bookmark = {
-      audioFile: selectedAudio,
-      entryIndex: index,
-      entry: { ...entry },
-      timestamp: Date.now(),
-    }
-
-    console.log("Adding bookmark:", newBookmark)
-    setBookmarks((prev) => [...prev, newBookmark])
+    const updatedBookmarks = addBookmarkService(bookmarks, selectedAudio, index, entry)
+    setBookmarks(updatedBookmarks)
   }
 
   const handleRemoveBookmark = (bookmarkIndex: number) => {
     console.log("Removing bookmark at index:", bookmarkIndex)
-    setBookmarks((prev) => prev.filter((_, index) => index !== bookmarkIndex))
+    const updatedBookmarks = removeBookmarkService(bookmarks, bookmarkIndex)
+    setBookmarks(updatedBookmarks)
   }
 
   const handleJumpToBookmark = (audioFile: string, entryIndex: number, time: number) => {
@@ -452,33 +429,16 @@ function App() {
   }
 
   const handleAddTagToAudio = (audio: string, tag: string) => {
-    // 新しいタグの場合、allTagsに追加
-    if (!allTags.includes(tag)) {
-      setAllTags((prev) => [...prev, tag])
-    }
-
-    // 音声ファイルにタグを追加
-    setAudioTags((prev) => {
-      const updatedTags = { ...prev }
-      if (!updatedTags[audio]) {
-        updatedTags[audio] = []
-      }
-      if (!updatedTags[audio].includes(tag)) {
-        updatedTags[audio] = [...updatedTags[audio], tag]
-      }
-      return updatedTags
-    })
+    // Use the service to add tag and get updated state
+    const { updatedAudioTags, updatedAllTags } = addTagService(audioTags, allTags, audio, tag)
+    setAudioTags(updatedAudioTags)
+    setAllTags(updatedAllTags)
   }
 
   const handleRemoveTagFromAudio = (audio: string, tag: string) => {
-    // 音声ファイルからタグを削除
-    setAudioTags((prev) => {
-      const updatedTags = { ...prev }
-      if (updatedTags[audio]) {
-        updatedTags[audio] = updatedTags[audio].filter((t) => t !== tag)
-      }
-      return updatedTags
-    })
+    // Use the service to remove tag and get updated state
+    const updatedAudioTags = removeTagService(audioTags, audio, tag)
+    setAudioTags(updatedAudioTags)
   }
 
   return (

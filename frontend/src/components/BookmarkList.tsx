@@ -19,6 +19,9 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
 }) => {
   const [expandedBookmark, setExpandedBookmark] = useState<number | null>(null)
 
+   // Filter bookmarks for the current audio file
+   const audioBookmarks = bookmarks.filter((bookmark) => bookmark.audioId === currentAudioId)
+
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

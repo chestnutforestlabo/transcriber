@@ -370,15 +370,17 @@
 
 /* ===== Tag Menu ===== */
 .tag-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed; /* Change from absolute to fixed */
   width: 180px;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   background-color: white;
-  z-index: 100;
+  z-index: 1000; /* Increase z-index to ensure it's above everything */
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 .tag-menu-header {
   padding: 8px 10px;
@@ -386,7 +388,31 @@
   font-weight: bold;
   border-bottom: 1px solid #eee;
   color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2;
 }
+
+
+.tag-menu-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  padding: 2px;
+}
+
+.tag-menu-close-btn:hover {
+  color: #333;
+}
+
 .tag-menu-content {
   max-height: 200px;
   overflow-y: auto;
@@ -394,16 +420,44 @@
 .tag-menu-item {
   padding: 6px 10px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 .tag-menu-item:hover {
   background-color: rgba(74, 131, 255, 0.1);
 }
-.tag-menu-new {
+.tag-menu-footer {
+  padding: 8px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 2;
+}
+
+.tag-menu-save-btn {
+  background-color: #4a83ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tag-menu-save-btn:hover {
+  background-color: #3a73ef;
+}
+tag-menu-new {
   display: flex;
   padding: 8px;
   border-top: 1px solid #eee;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 2;
 }
+
 .tag-menu-new input {
   flex: 1;
   padding: 4px 6px;
@@ -412,11 +466,19 @@
   font-size: 12px;
 }
 .tag-menu-new button {
-  margin-left: 5px;
-  padding: 4px 6px;
+  background: none;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  padding: 2px 4px;
+  margin-left: 4px;
+}
+
+.tag-menu-new button:hover {
+  color: #333;
 }
 
 /* ===== Transcript ===== */

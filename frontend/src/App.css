@@ -377,7 +377,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   background-color: white;
   z-index: 1000; /* Increase z-index to ensure it's above everything */
-  max-height: 200px;
+  max-height: 25vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -448,7 +448,7 @@
 .tag-menu-save-btn:hover {
   background-color: #3a73ef;
 }
-tag-menu-new {
+.tag-menu-new {
   display: flex;
   padding: 8px;
   border-top: 1px solid #eee;

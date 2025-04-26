@@ -35,6 +35,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const activeEntryRef = useRef<HTMLDivElement>(null)
+  const editContainerRef = useRef<HTMLDivElement>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
@@ -57,6 +58,26 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
       }
     }
   }, [activeEntryIndex, autoScroll])
+
+  // Add click outside listener when in edit mode
+  useEffect(() => {
+    if (editingIndex !== null) {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (editContainerRef.current && !editContainerRef.current.contains(event.target as Node)) {
+          // Click was outside the edit container, exit edit mode
+          setEditingIndex(null)
+        }
+      }
+
+      // Add the event listener
+      document.addEventListener("mousedown", handleClickOutside)
+
+      // Clean up
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [editingIndex])
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -146,7 +167,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
             <div className="transcript-speaker">{displaySpeaker}</div>
 
             {isEditing ? (
-              <div className="transcript-edit-container" onClick={(e) => e.stopPropagation()}>
+              <div className="transcript-edit-container" onClick={(e) => e.stopPropagation()} ref={editContainerRef}>
                 <textarea
                   className="transcript-edit-textarea"
                   value={editText}

@@ -1,3 +1,5 @@
+// 話者とトランスクリプトの手動分離要実装
+// 音声削除機能実装
 "use client"
 
 import { useRef, useEffect, useState } from "react"

@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.9,<4.0"
 pyannote-audio = "^3.1.1"
 soundfile = "^0.12.1"
 openai-whisper = "^20231117"
@@ -33,6 +33,7 @@ huggingface = "^0.0.1"
 ffmpeg = "^1.4"
 nltk = "^3.8.1"
 huggingface-hub = "^0.30.2"
+transformers = "^4.51.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
@@ -43,6 +44,7 @@ mdformat_footnote = "^0.1.1"
 flake8 = "^5.0.0"
 mypy = "^1.0.1"
 pytest-cov = "^4.0.0"
+huggingface-hub = {extras = ["cli"], version = "^0.30.2"}
 
 [tool.black]
 line-length = 88

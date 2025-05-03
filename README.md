@@ -38,6 +38,7 @@ Please log in to Hugging Face using the CLI… — simply paste your token.
 
 ## 2. Add your audio
 ```bash
+# exsample
 audios/
 ├─ num_speakers=1/
 ├─ num_speakers=2/

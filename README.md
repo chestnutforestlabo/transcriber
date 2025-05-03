@@ -26,10 +26,10 @@ Project structure
 ## 1. Backend setup
 
 ```bash
-# Install Python deps + download models
+#  Activate backend Docker container
 bash backend_setup_1.sh
 
-# Log in to Hugging Face CLI (paste your token)
+# Install Python deps + Log in to Hugging Face CLI (paste your token)
 bash backend_setup_2.sh
 ```
 
@@ -58,6 +58,7 @@ The original audio is also copied to frontend/public/audios/, and
 index.json is auto‑updated for the front‑end.
 
 ```bash
+# Activate frontend Docker container and Activate local server
 bash backend_transcriber.sh
 ```
 

@@ -24,6 +24,8 @@ Project structure
 ---
 
 ## 1. Backend setup
+During backend_setup_2.sh you will see
+Please log in to Hugging Face using the CLI… — simply paste your token.
 
 ```bash
 #  Activate backend Docker container
@@ -33,10 +35,11 @@ bash backend_setup_1.sh
 bash backend_setup_2.sh
 ```
 
-During backend_setup_2.sh you will see
-Please log in to Hugging Face using the CLI… — simply paste your token.
-
 ## 2. Add your audio
+Put .wav files (16 kHz recommended) under the folder that encodes the
+maximum number of different speakers in the recording, e.g.
+audios/num_speakers=2/ for a two‑speaker conversation.
+
 ```bash
 # exsample
 audios/
@@ -47,9 +50,6 @@ audios/
 └─ num_speakers=3/
 ```
 
-Put .wav files (16 kHz recommended) under the folder that encodes the
-maximum number of different speakers in the recording, e.g.
-audios/num_speakers=2/ for a two‑speaker conversation.
 
 ## 3. Run transcription
 Results are saved to output/<file>.json and

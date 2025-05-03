@@ -37,12 +37,14 @@ During backend_setup_2.sh you will see
 Please log in to Hugging Face using the CLI… — simply paste your token.
 
 ## 2. Add your audio
+```bash
 audios/
 ├─ num_speakers=1/
 ├─ num_speakers=2/
 │   ├─ sample1.wav
 │   └─ sample2.wav
 └─ num_speakers=3/
+```
 
 Put .wav files (16 kHz recommended) under the folder that encodes the
 maximum number of different speakers in the recording, e.g.

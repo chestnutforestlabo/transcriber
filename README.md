@@ -1,57 +1,73 @@
-# pyannote-whisper
+# Transcribers 📝🎙️
 
-This repository is based on [this link](https://github.com/Jose-Sabater/whisper-pyannote).
+A toolkit that **automatically transcribes multi‑speaker meetings** with  
+**Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  
+the result in a React front‑end with waveform‑synchronised captions.
 
-## Installation
+Project structure
+├─ backend/ # Inference scripts & model wrappers
+├─ frontend/ # Vite + React web app
+├─ audios/num_speakers=N/ # Input audio files (N = max number of speakers)
+└─ output/ # JSON result (created after inference)
 
-### 1. Initialize Docker
+---
 
-```bash
-cd environments/gpu
-docker compose up -d
-docker compose exec whisper bash
-```
+## 0. Prerequisites
 
-### 2. Install Dependencies with Poetry
+| Requirement           | Recommended | Notes                                   |
+|-----------------------|-------------|-----------------------------------------|
+| Python                | 3.9+        | We use Poetry for dependency handling   |
+| CUDA‑enabled GPU      | optional    | CPU works but will be slow              |
+| Docker / Docker Compose| 23.x / v2  | For launching the front‑end container   |
+| Hugging Face token    | required    | *Read* scope is enough                  |
 
-```bash
-poetry install --no-root
-```
+---
 
-### 3. Install Whisper
-
-```bash
-pip install whisper
-```
-
-### 4. Log in to Hugging Face
-
-Log in to Hugging Face using the CLI and enter your API key:
+## 1. Backend setup
 
 ```bash
-poetry run huggingface-cli login
+# Install Python deps + download models
+bash backend_setup_1.sh
+
+# Log in to Hugging Face CLI (paste your token)
+bash backend_setup_2.sh
 ```
 
-### 5. Convert Your Files to WAV
+During backend_setup_2.sh you will see
+Please log in to Hugging Face using the CLI… — simply paste your token.
 
-Use the following script to convert your files to WAV format:
+## 2. Add your audio
+audios/
+├─ num_speakers=1/
+├─ num_speakers=2/
+│   ├─ sample1.wav
+│   └─ sample2.wav
+└─ num_speakers=3/
+
+Put .wav files (16 kHz recommended) under the folder that encodes the
+maximum number of different speakers in the recording, e.g.
+audios/num_speakers=2/ for a two‑speaker conversation.
+
+## 3. Run transcription
+Results are saved to output/<file>.json and
+frontend/public/transcripts/<file>.json.
+The original audio is also copied to frontend/public/audios/, and
+index.json is auto‑updated for the front‑end.
 
 ```bash
-./convert_data.sh
+bash backend_transcriber.sh
 ```
 
-### 6. Run the Transcription Script
-
-This script will transcribe all WAV files under the `data` directory, but will skip those that have already been transcribed:
+## 4. Start the front‑end
+Open http://localhost:5173 in your browser.
+You should see the waveform, speaker‑coloured captions, and you can seek by
+clicking either the text or the waveform.
 
 ```bash
-poetry run python3 transcribe.py
+bash frontend_activate.sh
 ```
 
-### Maybe?
-3. Downgrade setuptools to 59.5.0
-
-## How to activate local server?
+<!-- ## How to activate local server?
 
 Install nvm:
 
@@ -84,4 +100,4 @@ Activate local server:
 
 ```bash
 bash start_local.sh
-```
+``` -->

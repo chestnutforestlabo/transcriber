@@ -4,11 +4,13 @@ A toolkit that **automatically transcribes multi‑speaker meetings** with
 **Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  
 the result in a React front‑end with waveform‑synchronised captions.
 
+```bash
 Project structure
 ├─ backend/ # Inference scripts & model wrappers
 ├─ frontend/ # Vite + React web app
 ├─ audios/num_speakers=N/ # Input audio files (N = max number of speakers)
 └─ output/ # JSON result (created after inference)
+```
 
 ---
 

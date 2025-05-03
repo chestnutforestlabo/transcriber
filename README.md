@@ -9,7 +9,7 @@ Project structure
 ├─ backend/ # Inference scripts & model wrappers
 ├─ frontend/ # Vite + React web app
 ├─ audios/num_speakers=N/ # Input audio files (N = max number of speakers)
-└─ output/ # JSON result (created after inference)
+└─ scripts/ # Shell scripts
 ```
 
 ---

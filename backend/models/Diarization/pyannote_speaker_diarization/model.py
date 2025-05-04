@@ -1,4 +1,3 @@
-# models/Diarization/pyannote_speaker_diarization/model.py
 from pyannote.audio import Pipeline
 from pyannote.core import Annotation, Segment
 from backend.models.base import BaseModel

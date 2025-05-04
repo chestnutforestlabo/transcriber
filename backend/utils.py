@@ -1,15 +1,27 @@
 from pyannote.core import Segment, Annotation, Timeline
+from collections import defaultdict
 import json
 import os
 import shutil
 
 PUNC_SENT_END = ['.', '?', '!', '、', '。']
 
+# def add_speaker_info_to_text(timestamp_texts, ann):
+#     spk_text = []
+#     for seg, text in timestamp_texts:
+#         spk = ann.crop(seg).argmax()
+#         spk_text.append((seg, spk, text))
+#     return spk_text
+
 def add_speaker_info_to_text(timestamp_texts, ann):
     spk_text = []
     for seg, text in timestamp_texts:
-        spk = ann.crop(seg).argmax()
-        spk_text.append((seg, spk, text))
+        cropped = ann.crop(seg, mode="loose")
+        durations = defaultdict(float)
+        for subseg, _, label in cropped.itertracks(yield_label=True):
+            durations[label] += subseg.duration
+            speaker = max(durations, key=durations.get)
+        spk_text.append((seg, speaker, text))
     return spk_text
 
 def merge_cache(text_cache):

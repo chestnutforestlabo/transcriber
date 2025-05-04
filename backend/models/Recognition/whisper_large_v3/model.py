@@ -1,4 +1,3 @@
-# models/Recognition/whisper_large_v3_turbo/model.py
 from typing import Any, List, Tuple
 from transformers import pipeline
 from pyannote.core import Segment

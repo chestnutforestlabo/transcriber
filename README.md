@@ -37,7 +37,7 @@ bash backend_setup_1.sh
 bash backend_setup_2.sh
 ```
 
-## 2. Add your audio
+## 2. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
 maximum number of different speakers in the recording, e.g.
 audios/num_speakers=2/ for a two‑speaker conversation.
@@ -60,7 +60,7 @@ The original audio is also copied to frontend/public/audios/, and
 index.json is auto‑updated for the front‑end.
 
 ```bash
-# Activate frontend Docker container and Activate local server
+# Transcribe your audios
 bash backend_transcriber.sh
 ```
 
@@ -70,6 +70,7 @@ You should see the waveform, speaker‑coloured captions, and you can seek by
 clicking either the text or the waveform.
 
 ```bash
+# Activate frontend Docker container and Activate local server
 bash frontend_activate.sh
 ```
 

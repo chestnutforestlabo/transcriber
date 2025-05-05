@@ -26,6 +26,8 @@ interface TranscriptViewerProps {
   selectedEntryIndex: number | null
   onSelectEntry: (index: number | null) => void
   onBookmarkEntry: (index: number) => void
+  bookmarks: Bookmark[] // 追加: ブックマークリスト
+  currentAudioFile: string // 追加: 現在の音声ファイル
 }
 
 /* =============================================================
@@ -50,6 +52,8 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   selectedEntryIndex,
   onSelectEntry,
   onBookmarkEntry,
+  bookmarks, // 追加
+  currentAudioFile, // 追加
 }) => {
   // speakerMappingの内容をログ出力
   console.log("TranscriptViewer received speakerMapping:", speakerMapping)
@@ -228,6 +232,11 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setTimeout(() => setAutoScroll(true), 2000)
   }
 
+  // エントリがブックマークされているかチェックする関数
+  const isBookmarked = (index: number) => {
+    return bookmarks.some((bookmark) => bookmark.audioFile === currentAudioFile && bookmark.entryIndex === index)
+  }
+
   // renderSpeakerDropdownPortal関数を修正して、話者選択後も編集モードが維持されるようにします
   const renderSpeakerDropdownPortal = () => {
     // クライアントサイドでのみ実行
@@ -336,6 +345,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         const isHighlighted = selectedEntryIndex === index || (isActive && selectedEntryIndex === null)
         const isEditing = editingIndex === index
         const displaySpeaker = entry.speaker ? speakerMapping[entry.speaker] || entry.speaker : "null"
+        const entryIsBookmarked = isBookmarked(index) // エントリがブックマークされているか確認
 
         /* make editing row overflow visible so dropdown isn't clipped */
         const rowStyle: React.CSSProperties | undefined = isEditing
@@ -416,7 +426,11 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 <button className="transcript-action-btn" onClick={(e) => handleCopy(entry.text, e)} title="Copy">
                   <Copy size={16} />
                 </button>
-                <button className="transcript-action-btn" onClick={() => onBookmarkEntry(index)} title="Bookmark">
+                <button
+                  className={`transcript-action-btn bookmark ${entryIsBookmarked ? "active" : ""}`}
+                  onClick={() => onBookmarkEntry(index)}
+                  title={entryIsBookmarked ? "Remove bookmark" : "Add bookmark"}
+                >
                   <Bookmark size={16} />
                 </button>
               </div>

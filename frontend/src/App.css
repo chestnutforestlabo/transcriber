@@ -659,6 +659,13 @@
 .transcript-edit-grid    { display:grid; grid-template-columns:70px 140px 1fr; grid-auto-rows:auto; gap:8px; overflow:visible }
 .edit-buttons            { grid-column: 1 / span 3; display:flex; gap:8px }
 
+/* ブックマークボタンのアクティブ状態のスタイル */
+.transcript-action-btn.bookmark.active {
+  background-color: #ffd700;
+  color: #333;
+}
+
+
 /* ===== TranscriptViewer – speaker dropdown ===== */
 .edit-speaker-display {
   padding: 4px 8px;

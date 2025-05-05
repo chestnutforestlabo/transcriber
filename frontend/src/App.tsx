@@ -188,6 +188,8 @@ function App() {
   // Handle audio selection
   const handleSelectAudio = (audio: string) => {
     console.log("Selected audio:", audio)
+    setIsPlaying(false) // Stop playback when changing  => {
+    console.log("Selected audio:", audio)
     setIsPlaying(false) // Stop playback when changing audio
     setCurrentTime(0)
     setLastPlaybackPosition(0)
@@ -431,8 +433,23 @@ function App() {
     if (index < 0 || index >= transcript.length) return
 
     const entry = transcript[index]
-    const updatedBookmarks = addBookmarkService(bookmarks, selectedAudio, index, entry)
-    setBookmarks(updatedBookmarks)
+
+    // 既存のブックマークをチェック
+    const existingBookmarkIndex = bookmarks.findIndex(
+      (bookmark) => bookmark.audioFile === selectedAudio && bookmark.entryIndex === index,
+    )
+
+    if (existingBookmarkIndex !== -1) {
+      // 既に存在する場合は削除（トグル機能）
+      console.log("Removing existing bookmark at index:", existingBookmarkIndex)
+      const updatedBookmarks = removeBookmarkService(bookmarks, existingBookmarkIndex)
+      setBookmarks(updatedBookmarks)
+    } else {
+      // 存在しない場合は新規追加
+      console.log("Adding new bookmark for entry at index:", index)
+      const updatedBookmarks = addBookmarkService(bookmarks, selectedAudio, index, entry)
+      setBookmarks(updatedBookmarks)
+    }
   }
 
   const handleRemoveBookmark = (bookmarkIndex: number) => {
@@ -540,6 +557,8 @@ function App() {
             selectedEntryIndex={selectedEntryIndex}
             onSelectEntry={setSelectedEntryIndex}
             onBookmarkEntry={handleBookmarkEntry}
+            bookmarks={bookmarks}
+            currentAudioFile={selectedAudio}
           />
           <AudioControls
             currentTime={currentTime}

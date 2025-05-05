@@ -22,8 +22,19 @@ export const saveBookmarks = (bookmarks: Bookmark[]): void => {
   }
 }
 
-// Add a bookmark
+// Add a bookmark - 修正: 既存のブックマークをチェックして切り替え機能を実装
 export const addBookmark = (bookmarks: Bookmark[], audioFile: string, entryIndex: number, entry: any): Bookmark[] => {
+  // 既存のブックマークを検索
+  const existingIndex = bookmarks.findIndex(
+    (bookmark) => bookmark.audioFile === audioFile && bookmark.entryIndex === entryIndex,
+  )
+
+  // 既に存在する場合は削除（トグル機能）
+  if (existingIndex !== -1) {
+    return removeBookmark(bookmarks, existingIndex)
+  }
+
+  // 存在しない場合は新規追加
   const newBookmark: Bookmark = {
     audioFile,
     entryIndex,

@@ -23,6 +23,8 @@
   height: calc(100vh - 60px);
 }
 
+
+
 /* ===== Header ===== */
 .transcriber-header {
   padding: 6px 20px;
@@ -486,7 +488,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   background-color: #ffffff;
 }
 .transcript-header {
@@ -543,10 +545,7 @@
   background-color: rgba(74, 131, 255, 0.3);
   border-left: 3px solid #1a56e8;
 }
-.transcript-entry.editing {
-  background-color: #f0f7ff;
-  padding: 5px 10px;
-}
+.transcript-entry.editing { overflow: visible; z-index: 50; background:#f0f7ff; padding:8px }
 .transcript-time {
   width: 60px;
   font-weight: bold;
@@ -653,8 +652,88 @@
   color: #333;
 }
 
-.transcript-edit-time    { width: 80px; }
-.transcript-edit-speaker { width: 120px; }
+.transcript-edit-row          { display:grid; grid-template-columns:60px 120px 1fr; gap:8px }
+.edit-time, .edit-speaker     { height:28px; font-size:14px; padding:0 6px }
+.edit-text                    { min-height:60px; resize:vertical }
+.save-btn:disabled { opacity:.4; cursor:not-allowed }
+.transcript-edit-grid    { display:grid; grid-template-columns:70px 140px 1fr; grid-auto-rows:auto; gap:8px; overflow:visible }
+.edit-buttons            { grid-column: 1 / span 3; display:flex; gap:8px }
+
+/* ===== TranscriptViewer – speaker dropdown ===== */
+.edit-speaker-display {
+  padding: 4px 8px;
+  background: #070707;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* ドロップダウン本体 */
+.speaker-options {
+  position: absolute;
+  top: calc(100% + 4px); /* ボタン直下に 4px 余白 */
+  left: 0;
+  background: #0b0b0b; /* 白背景で視認性アップ */
+  color: #121212;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2147483647; /* 最上位レイヤーへ */
+}
+
+.speaker-option-item {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* 項目のホバー／アクティブ */
+.speaker-option-item:hover,
+.speaker-option-item.active {
+  background: rgba(74, 131, 255, 0.1);
+}
+
+
+/* 項目のホバー／アクティブ */
+.speaker-option-item:hover,
+.speaker-option-item.active {
+  background: rgba(74, 131, 255, 0.1);
+}
+
+/* 1. 編集行のスタイル - ドロップダウンが見えるようにする */
+.transcript-entry.editing {
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 9999 !important; /* 非常に高い値 */
+}
+
+/* 2. ドロップダウンコンテナ */
+.edit-speaker-container {
+  position: relative !important;
+  z-index: 10000 !important; /* 編集行より高い値 */
+}
+
+/* 3. ドロップダウン本体 - 最も高いz-indexと強制表示 */
+.speaker-options {
+  position: fixed !important; /* absoluteではなくfixedを試す */
+  z-index: 2147483647 !important; /* 最大値 */
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  /* 位置は動的に計算する必要があるかもしれません */
+}
+
+/* 4. ドロップダウンの親要素すべてに対して */
+.transcript-viewer,
+.transcript-entry,
+.edit-speaker-container,
+.speaker-options {
+  transform: none !important; /* transformによる重ね順の問題を防ぐ */
+}
+
 
 /* ===== Speaker Settings ===== */
 .speaker-settings-container {

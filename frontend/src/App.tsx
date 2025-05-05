@@ -81,6 +81,7 @@ function App() {
       isInitialSpeakerSave.current = false
       return
     }
+    console.log("Speaker mapping changed, triggering save:", speakerMapping)
     saveTranscriptChanges()
   }, [speakerMapping])
 
@@ -90,6 +91,7 @@ function App() {
       isInitialTranscriptSave.current = false
       return
     }
+    console.log("Transcript changed, triggering save")
     saveTranscriptChanges()
   }, [transcript])
 
@@ -152,12 +154,29 @@ function App() {
       .then((data) => {
         console.log("Loaded transcript data:", data)
         setTranscript(data)
+
         // Find the last entry to determine duration
         if (data.length > 0) {
           setDuration(data[data.length - 1].end)
         }
-        // Reset speaker mapping when loading a new transcript
-        setSpeakerMapping({})
+
+        // ローカルストレージから話者マッピング情報を読み込む
+        try {
+          const savedSpeakerMapping = localStorage.getItem(`speakerMapping_${transcriptFile}`)
+          if (savedSpeakerMapping) {
+            const parsedMapping = JSON.parse(savedSpeakerMapping)
+            console.log("Loaded speaker mapping from localStorage:", parsedMapping)
+            setSpeakerMapping(parsedMapping)
+          } else {
+            // 保存されたマッピングがない場合は空のオブジェクトを設定
+            console.log("No saved speaker mapping found, using empty mapping")
+            setSpeakerMapping({})
+          }
+        } catch (error) {
+          console.warn("Failed to load speaker mapping from localStorage:", error)
+          setSpeakerMapping({})
+        }
+
         setSaveStatus("idle")
         setSaveError(null)
         isInitialTranscriptSave.current = true
@@ -277,7 +296,7 @@ function App() {
     }
   }
 
-  // Save transcript changes to file
+  // Save transcript changes to file - 修正版
   const saveTranscriptChanges = async () => {
     // 保存処理が既に進行中の場合は重複実行を防止
     if (!selectedAudio || saveInProgressRef.current) {
@@ -301,28 +320,25 @@ function App() {
       // ディープコピーを作成して参照の問題を回避
       const transcriptToSave = JSON.parse(JSON.stringify(transcript))
 
-      // Apply speaker mappings to transcript before saving
-      const updatedTranscript = transcriptToSave.map((entry: TranscriptEntry) => {
-        // speakerMappingに登録されている場合は、表示用のspeaker名を使用
-        const updatedEntry = { ...entry }
-        if (entry.speaker && speakerMapping[entry.speaker]) {
-          updatedEntry.speaker = speakerMapping[entry.speaker]
-        }
-        // textはそのまま保持（すでに編集済みの場合はその値が使われる）
-        return updatedEntry
-      })
+      // 重要: 保存前にトランスクリプトの状態をログ出力
+      console.log("Current transcript before save:", transcriptToSave)
+      console.log("Current speaker mapping:", speakerMapping)
 
-      console.log("Sending transcript data to server:", updatedTranscript.length, "entries")
+      // サーバーAPIが期待する形式に合わせてデータを整形
+      // APIは filename と data フィールドを期待している
+      const requestData = {
+        filename: transcriptFile,
+        data: transcriptToSave, // トランスクリプトデータのみを送信
+      }
+
+      console.log("Sending data to server:", requestData)
 
       const response = await fetch("/api/save-transcript", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          filename: transcriptFile,
-          data: updatedTranscript,
-        }),
+        body: JSON.stringify(requestData),
       })
 
       let responseData
@@ -337,6 +353,16 @@ function App() {
       }
 
       console.log("Transcript saved successfully:", responseData)
+
+      // 話者マッピング情報をローカルストレージに保存
+      // サーバーAPIが話者マッピングをサポートしていない場合の代替手段
+      try {
+        localStorage.setItem(`speakerMapping_${transcriptFile}`, JSON.stringify(speakerMapping))
+        console.log("Speaker mapping saved to localStorage")
+      } catch (error) {
+        console.warn("Failed to save speaker mapping to localStorage:", error)
+      }
+
       setSaveStatus("success")
 
       // Reset success status after 3 seconds
@@ -377,32 +403,28 @@ function App() {
     })
   }
 
-  // Handle transcript edit
-  // const handleTranscriptEdit = (index: number, newText: string) => {
-  //   console.log(`Editing transcript at index ${index}:`, newText)
+  // Handle transcript edit - 修正版
+  const handleTranscriptEdit = (index: number, patch: Partial<TranscriptEntry>) => {
+    console.log(`Editing transcript at index ${index}:`, patch)
 
-  //   // トランスクリプトの状態を更新
-  //   setTranscript((prev) => {
-  //     const updated = [...prev]
-  //     updated[index] = { ...updated[index], text: newText }
-  //     return updated
-  //   })
-
-  //   // requestAnimationFrameを使用して状態更新後に保存処理を実行
-  //   requestAnimationFrame(() => {
-  //     console.log("Saving after transcript edit at index:", index)
-  //     saveTranscriptChanges()
-  //   })
-  // }
-  const handleTranscriptEdit = (index:number, patch:Partial<TranscriptEntry>)=>{
-    setTranscript(prev=>{
-        const updated = [...prev]
-        updated[index] = { ...updated[index], ...patch }
-        // updated.sort((a,b)=>a.start-b.start)
-        return updated
-      })
-      requestAnimationFrame(saveTranscriptChanges) // 既存ロジックを再利用
+    // 話者が変更された場合、詳細なログを出力
+    if (patch.speaker) {
+      console.log(`Speaker changed at index ${index} from:`, transcript[index].speaker, "to:", patch.speaker)
     }
+
+    // トランスクリプトの状態を更新
+    setTranscript((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], ...patch }
+      return updated
+    })
+
+    // 状態更新後に保存処理を実行するために少し遅延させる
+    setTimeout(() => {
+      console.log("Saving after transcript edit at index:", index)
+      saveTranscriptChanges()
+    }, 100)
+  }
 
   // ブックマーク関連の処理
   const handleBookmarkEntry = (index: number) => {

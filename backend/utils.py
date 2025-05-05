@@ -71,14 +71,20 @@ def write_to_txt(spk_sent, file):
 
 def save_transcripts_json(args, output_data, file_name):
     serializable = []
-    for item in output_data:
+    prev_end = 0.
+    for i, item in enumerate(output_data):
         seg, speaker, text = item
+        start = float(seg.start)
+        end = float(seg.end)
+        if start > prev_end:
+            serializable[i-1]["end"] = start
         serializable.append({
-            "start":   float(seg.start),
-            "end":     float(seg.end),
+            "start":   start,
+            "end":     end,
             "speaker": speaker,
             "text":    text
         })
+        prev_end = end
     # Save speech recognition results in JSON format in two locations (frontend・backup)
     os.makedirs("frontend/public/transcripts", exist_ok=True)
     output_file_path = os.path.join("frontend/public/transcripts", f"{file_name}.json")

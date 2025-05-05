@@ -653,6 +653,9 @@
   color: #333;
 }
 
+.transcript-edit-time    { width: 80px; }
+.transcript-edit-speaker { width: 120px; }
+
 /* ===== Speaker Settings ===== */
 .speaker-settings-container {
   width: 200px;

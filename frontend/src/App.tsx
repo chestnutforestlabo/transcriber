@@ -378,22 +378,31 @@ function App() {
   }
 
   // Handle transcript edit
-  const handleTranscriptEdit = (index: number, newText: string) => {
-    console.log(`Editing transcript at index ${index}:`, newText)
+  // const handleTranscriptEdit = (index: number, newText: string) => {
+  //   console.log(`Editing transcript at index ${index}:`, newText)
 
-    // トランスクリプトの状態を更新
-    setTranscript((prev) => {
-      const updated = [...prev]
-      updated[index] = { ...updated[index], text: newText }
-      return updated
-    })
+  //   // トランスクリプトの状態を更新
+  //   setTranscript((prev) => {
+  //     const updated = [...prev]
+  //     updated[index] = { ...updated[index], text: newText }
+  //     return updated
+  //   })
 
-    // requestAnimationFrameを使用して状態更新後に保存処理を実行
-    requestAnimationFrame(() => {
-      console.log("Saving after transcript edit at index:", index)
-      saveTranscriptChanges()
-    })
-  }
+  //   // requestAnimationFrameを使用して状態更新後に保存処理を実行
+  //   requestAnimationFrame(() => {
+  //     console.log("Saving after transcript edit at index:", index)
+  //     saveTranscriptChanges()
+  //   })
+  // }
+  const handleTranscriptEdit = (index:number, patch:Partial<TranscriptEntry>)=>{
+    setTranscript(prev=>{
+        const updated = [...prev]
+        updated[index] = { ...updated[index], ...patch }
+        // updated.sort((a,b)=>a.start-b.start)
+        return updated
+      })
+      requestAnimationFrame(saveTranscriptChanges) // 既存ロジックを再利用
+    }
 
   // ブックマーク関連の処理
   const handleBookmarkEntry = (index: number) => {

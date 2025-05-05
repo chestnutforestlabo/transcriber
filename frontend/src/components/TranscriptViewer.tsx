@@ -17,7 +17,8 @@ interface TranscriptViewerProps {
   currentTime: number
   onJumpToTime: (time: number) => void
   speakerMapping: Record<string, string>
-  onTranscriptEdit: (index: number, newText: string) => void
+  // onTranscriptEdit: (index: number, newText: string) => void
+  onTranscriptEdit: (index: number, patch: Partial<TranscriptEntry>) => void
   selectedEntryIndex: number | null
   onSelectEntry: (index: number | null) => void
   onBookmarkEntry: (index: number) => void
@@ -39,6 +40,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
+  const [editSpeaker, setEditSpeaker] = useState("")
+  const [editStartClock, setEditStartClock]  = useState("")
+  const [editEndClock,   setEditEndClock]    = useState("") 
   const [autoScroll, setAutoScroll] = useState(true)
   const lastActiveIndexRef = useRef<number>(-1)
 
@@ -103,13 +107,26 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const handleEditClick = (index: number, text: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingIndex(index)
-    setEditText(text)
+    setEditStartClock(secToClock(entry.start))
+    setEditEndClock(secToClock(entry.end))
+    setEditSpeaker(entry.speaker ?? Object.keys(speakerMapping)[0])
+    setEditText(entry.text)
   }
 
   // Handle edit save
-  const handleEditSave = (index: number, e: React.MouseEvent) => {
+  // const handleEditSave = (index: number, e: React.MouseEvent) => {
+  //   e.stopPropagation()
+  //   onTranscriptEdit(index, editText)
+  //   setEditingIndex(null)
+  // }
+  const handleEditSave = (idx:number,e:React.MouseEvent) => {
     e.stopPropagation()
-    onTranscriptEdit(index, editText)
+    onTranscriptEdit(idx,{
+      text:    editText,
+      speaker: editSpeaker || null,
+      start:   clockToSec(editStartClock),
+      end:     clockToSec(editEndClock),
+    })
     setEditingIndex(null)
   }
 
@@ -144,6 +161,16 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     }, 2000)
   }
 
+  const secToClock = (sec:number) =>
+    `${Math.floor(sec/60)}:${(sec%60).toFixed(2).padStart(5,'0')}`
+  // 例) 40     -> "0:40.00"
+  //     125.83 -> "2:05.83"
+  
+  const clockToSec = (clock:string) => {
+    const [m,s] = clock.split(":")
+    return parseInt(m,10)*60 + parseFloat(s)
+  }
+
   return (
     <div className="transcript-viewer" ref={containerRef}>
       {transcript.map((entry, index) => {
@@ -170,6 +197,32 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
 
             {isEditing ? (
               <div className="transcript-edit-container" onClick={(e) => e.stopPropagation()} ref={editContainerRef}>
+                {/* 開始時刻 */}
+                <input
+                  type="text"
+                  className="transcript-edit-time"
+                  value={editStartClock}
+                  onChange={e => setEditStartClock(e.target.value)}
+                />
+                {/* 終了時刻 */}
+                <input
+                  type="text"
+                  className="transcript-edit-time"
+                  value={editEndClock}
+                  onChange={e => setEditEndClock(e.target.value)}
+                />
+                {/* 話者選択 */}
+                <select
+                  className="transcript-edit-speaker"
+                  value={editSpeaker}
+                  onChange={e => setEditSpeaker(e.target.value)}
+                >
+                  {/* speakerMapping で定義されている話者を列挙 */}
+                  {Object.entries(speakerMapping).map(([id, label]) => (
+                    <option key={id} value={id}>{label}</option>
+                  ))}
+                </select>
+                {/* 本文 */}
                 <textarea
                   className="transcript-edit-textarea"
                   value={editText}

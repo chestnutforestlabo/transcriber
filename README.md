@@ -31,10 +31,10 @@ Please log in to Hugging Face using the CLI… — simply paste your token.
 
 ```bash
 #  Activate backend Docker container
-bash backend_setup_1.sh
+bash ./scripts/backend_setup_1.sh
 
 # Install Python deps + Log in to Hugging Face CLI (paste your token)
-bash backend_setup_2.sh
+bash ./scripts/backend_setup_2.sh
 ```
 
 ## 2. Add your audios
@@ -61,7 +61,7 @@ index.json is auto‑updated for the front‑end.
 
 ```bash
 # Transcribe your audios
-bash backend_transcriber.sh
+bash ./scripts/backend_transcriber.sh
 ```
 
 ## 4. Start the front‑end
@@ -71,7 +71,7 @@ clicking either the text or the waveform.
 
 ```bash
 # Activate frontend Docker container and Activate local server
-bash frontend_activate.sh
+bash ./scripts/frontend_activate.sh
 ```
 
 <!-- ## How to activate local server?

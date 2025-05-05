@@ -10,6 +10,7 @@ import AudioControls from "./components/AudioControls"
 import BookmarkList from "./components/BookmarkList"
 import TagList from "./components/TagList"
 import ImageModal from "./components/ImageModal"
+import SearchBar from "./components/SearchBar" // Import the new SearchBar component
 import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
 import {
   loadAudioTags,
@@ -553,6 +554,23 @@ function App() {
     }
   }
 
+  // Handle search result selection
+  const handleSearchResultSelect = (audioFile: string, entryIndex: number, time: number) => {
+    // Same implementation as handleJumpToBookmark
+    console.log("Jumping to search result:", audioFile, entryIndex, time)
+
+    if (audioFile !== selectedAudio) {
+      setSelectedAudio(audioFile)
+      setTimeout(() => {
+        setSelectedEntryIndex(entryIndex)
+        jumpToTime(time)
+      }, 500)
+    } else {
+      setSelectedEntryIndex(entryIndex)
+      jumpToTime(time)
+    }
+  }
+
   const handleAddTagToAudio = (audio: string, tag: string) => {
     // Use the service to add tag and get updated state
     const { updatedAudioTags, updatedAllTags } = addTagService(audioTags, allTags, audio, tag)
@@ -570,20 +588,25 @@ function App() {
     <div className="transcriber-container">
       <div className="transcriber-header">
         <div className="header-content">
-          <img src="/images/kuri.jpg" alt="Kuri" className="header-logo" onClick={() => setIsLogoModalOpen(true)} />
-          <h1>Transcriber</h1>
-          {saveStatus !== "idle" && (
-            <div className={`save-status ${saveStatus}`}>
-              {saveStatus === "saving" && "Now Saving..."}
-              {saveStatus === "success" && "Saved Successfully"}
-              {saveStatus === "error" && (
-                <>
-                  Save Failed
-                  {saveError && <div className="save-error-details">{saveError}</div>}
-                </>
-              )}
-            </div>
-          )}
+          <div className="header-left">
+            <img src="/images/kuri.jpg" alt="Kuri" className="header-logo" onClick={() => setIsLogoModalOpen(true)} />
+            <h1>Transcriber</h1>
+            {saveStatus !== "idle" && (
+              <div className={`save-status ${saveStatus}`}>
+                {saveStatus === "saving" && "Now Saving..."}
+                {saveStatus === "success" && "Saved Successfully"}
+                {saveStatus === "error" && (
+                  <>
+                    Save Failed
+                    {saveError && <div className="save-error-details">{saveError}</div>}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="header-right">
+            <SearchBar audioFiles={audioFiles} onJumpToResult={handleSearchResultSelect} />
+          </div>
         </div>
       </div>
       <div className="transcriber-content">
@@ -624,8 +647,6 @@ function App() {
               {")"}
             </div>
           </div>
-          {/* TranscriptViewerコンポーネントにonDeleteEntryプロパティを追加 */}
-          {/* <TranscriptViewer の部分を以下のように修正 */}
           <TranscriptViewer
             transcript={transcript}
             currentTime={currentTime}

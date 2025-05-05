@@ -1,7 +1,7 @@
 from typing import Any, List, Tuple
 from transformers import pipeline
 from pyannote.core import Segment
-from src.backend.models.base import BaseModel
+from models.base import BaseModel
 import time
 import whisper
 

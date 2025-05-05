@@ -1,6 +1,6 @@
-from src.backend.models import get_sd_model, get_asr_model
-from src.backend.utils import diarize_text, save_transcripts_json, save_index_json
-from src.backend.data import AudioInput
+from models import get_sd_model, get_asr_model
+from utils import diarize_text, save_transcripts_json, save_index_json
+from data import AudioInput
 
 import os
 import argparse

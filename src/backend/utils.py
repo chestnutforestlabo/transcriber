@@ -86,20 +86,20 @@ def save_transcripts_json(args, output_data, file_name):
         })
         prev_end = end
     # Save speech recognition results in JSON format in two locations (frontend・backup)
-    os.makedirs("frontend/public/transcripts", exist_ok=True)
-    output_file_path = os.path.join("frontend/public/transcripts", f"{file_name}.json")
+    os.makedirs("src/frontend/public/transcripts", exist_ok=True)
+    output_file_path = os.path.join("src/frontend/public/transcripts", f"{file_name}.json")
     with open(output_file_path, "w", encoding="utf-8") as json_file:
         json.dump(serializable, json_file, ensure_ascii=False, indent=2)
-    os.makedirs("backend/output", exist_ok=True)
-    backup_file_path = os.path.join("backend/output", f"{file_name}.json")
+    os.makedirs("src/backend/output", exist_ok=True)
+    backup_file_path = os.path.join("src/backend/output", f"{file_name}.json")
     with open(backup_file_path, "w", encoding="utf-8") as json_file:
         json.dump(serializable, json_file, ensure_ascii=False, indent=2)
     # Copy audio
-    shutil.copy2(os.path.join(args.audio_dir, f"{file_name}.wav"), "frontend/public/audios")
+    shutil.copy2(os.path.join(args.audio_dir, f"{file_name}.wav"), "src/frontend/public/audios")
 
 def save_index_json(file_names):
-    os.makedirs("frontend/public/audios", exist_ok=True)
-    index_path = "frontend/public/audios/index.json"
+    os.makedirs("src/frontend/public/audios", exist_ok=True)
+    index_path = "src/frontend/public/audios/index.json"
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             try:

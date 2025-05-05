@@ -6,7 +6,7 @@ from librosa.core import resample as lr_resample
 class AudioInput(Dataset):
     def __init__(self, audio_dir: str, sampling_rate: int = 16000):
         self.audio_dir = audio_dir
-        self._num_speakers = audio_dir.split("=")[-1]
+        self._num_speakers = audio_dir.split("_")[-1]
         self.sampling_rate = sampling_rate
         self.audio_list = [
             fname for fname in os.listdir(audio_dir)

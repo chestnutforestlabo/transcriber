@@ -26,7 +26,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Search all transcripts when search term changes
   useEffect(() => {
     if (!searchTerm.trim()) {
       setResults([])
@@ -38,7 +37,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
       try {
         const searchResults: SearchResult[] = []
 
-        // Search through all audio files
         for (const audioFile of audioFiles) {
           try {
             const transcriptFile = audioFile.replace(".wav", ".json")
@@ -51,11 +49,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
 
             const transcript: TranscriptEntry[] = await response.json()
 
-            // Search through each entry in the transcript
             transcript.forEach((entry, index) => {
               const lowerSearchTerm = searchTerm.toLowerCase()
 
-              // Search in text
               if (entry.text && entry.text.toLowerCase().includes(lowerSearchTerm)) {
                 searchResults.push({
                   audioFile,
@@ -66,7 +62,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
                 })
               }
 
-              // Search in speaker name
               if (entry.speaker && entry.speaker.toLowerCase().includes(lowerSearchTerm)) {
                 searchResults.push({
                   audioFile,
@@ -82,14 +77,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
           }
         }
 
-        // Limit results to 25 for performance
         setResults(searchResults.slice(0, 25))
       } finally {
         setIsSearching(false)
       }
     }
 
-    // Debounce search to avoid too many requests
     const debounceTimer = setTimeout(() => {
       performSearch()
     }, 300)
@@ -97,7 +90,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
     return () => clearTimeout(debounceTimer)
   }, [searchTerm, audioFiles])
 
-  // Handle click outside to close results
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -109,14 +101,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Highlight matching text
   const highlightMatch = (text: string, term: string) => {
     if (!term.trim()) return text
 
@@ -126,12 +116,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
     return parts.map((part, i) => (regex.test(part) ? <mark key={i}>{part}</mark> : part))
   }
 
-  // 検索ボックスをクリックしたときに自動的にフォーカスされるように修正
   const handleSearchBoxClick = () => {
     inputRef.current?.focus()
   }
 
-  // 検索入力ラッパーのonClickイベントを追加
   return (
     <div className="search-container" ref={searchRef}>
       <div className="search-input-wrapper" onClick={handleSearchBoxClick}>
@@ -149,16 +137,15 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
           <button
             className="search-clear-btn"
             onClick={(e) => {
-              e.stopPropagation() // クリックイベントの伝播を停止
+              e.stopPropagation()
               setSearchTerm("")
-              inputRef.current?.focus() // クリア後もフォーカスを維持
+              inputRef.current?.focus()
             }}
           >
             <X size={16} />
           </button>
         )}
       </div>
-
       {isResultsVisible && searchTerm && (
         <div className="search-results">
           {isSearching ? (

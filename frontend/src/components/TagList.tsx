@@ -1,4 +1,3 @@
-// タグリストコンポーネント
 "use client"
 
 import { useState } from "react"
@@ -44,7 +43,6 @@ const TagList: React.FC<TagListProps> = ({ allTags, selectedTag, onSelectTag, on
           <Plus size={16} />
         </button>
       </div>
-
       {isAddingTag && (
         <div className="add-tag-form">
           <input
@@ -70,7 +68,6 @@ const TagList: React.FC<TagListProps> = ({ allTags, selectedTag, onSelectTag, on
           </button>
         </div>
       )}
-
       <div className="tag-items">
         <div className={`tag-item ${selectedTag === null ? "selected" : ""}`} onClick={() => onSelectTag(null)}>
           Reset Selection

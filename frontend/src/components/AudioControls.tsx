@@ -1,4 +1,3 @@
-// 音声波形表示と再生コントロールのコンポーネント
 "use client"
 
 import { useEffect, useRef, useState } from "react"
@@ -50,35 +49,28 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   const isInitializedRef = useRef<boolean>(false)
   const lastPlayingStateRef = useRef<boolean>(isPlaying)
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Initialize Wavesurfer only once or when audio source changes
   useEffect(() => {
-    // オーディオソースが変更された場合のみ再初期化
     if (audioSrcRef.current !== audioSrc) {
       audioSrcRef.current = audioSrc
       isInitializedRef.current = false
     }
 
-    // 既に初期化済みの場合は何もしない
     if (isInitializedRef.current || !waveformRef.current) return
 
     const initWavesurfer = async () => {
       try {
-        // Dynamically import Wavesurfer to avoid SSR issues
         const WaveSurfer = (await import("wavesurfer.js")).default
 
-        // Destroy previous instance if it exists
         if (wavesurferRef.current) {
           wavesurferRef.current.destroy()
         }
 
-        // Create new Wavesurfer instance
         wavesurferRef.current = WaveSurfer.create({
           container: waveformRef.current,
           waveColor: "#4a83ff",
@@ -91,7 +83,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           responsive: true,
         })
 
-        // Set up event listeners
         wavesurferRef.current.on("ready", () => {
           console.log("Wavesurfer is ready")
           setIsWavesurferReady(true)
@@ -108,18 +99,14 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           onSeek(seekTime)
         })
 
-        // 波形クリック時のイベントハンドラを追加
         wavesurferRef.current.on("click", (e: MouseEvent) => {
           if (!wavesurferRef.current) return
 
-          // クリック位置から時間を計算
           const clickTime = wavesurferRef.current.getCurrentTime()
           console.log("Waveform clicked at time:", clickTime)
 
-          // 対応するトランスクリプトを見つけるためのコールバックを呼び出す
           onWaveformClick(clickTime)
 
-          // 再生中の場合は、クリックした位置から再生を継続
           if (isPlaying) {
             wavesurferRef.current.play(clickTime)
           }
@@ -129,13 +116,11 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           console.error("Wavesurfer error:", error)
         })
 
-        // Load audio file
         if (audioSrc) {
           console.log("Loading audio:", `/audios/${audioSrc}`)
           wavesurferRef.current.load(`/audios/${audioSrc}`)
         }
 
-        // 初期化完了フラグを設定
         isInitializedRef.current = true
       } catch (error) {
         console.error("Error initializing Wavesurfer:", error)
@@ -144,27 +129,22 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
     initWavesurfer()
 
-    // Cleanup
     return () => {
-      // コンポーネントのアンマウント時のみ破棄
       if (wavesurferRef.current && !isInitializedRef.current) {
         wavesurferRef.current.destroy()
       }
     }
   }, [audioSrc, onWaveformClick, onWaveformReady, onSeek, onTimeUpdate, isPlaying])
 
-  // Update playback state
   useEffect(() => {
     if (!wavesurferRef.current || !isWavesurferReady) return
 
     try {
-      // 再生状態が変わった場合のみ処理
       if (isPlaying !== lastPlayingStateRef.current) {
         lastPlayingStateRef.current = isPlaying
 
         if (isPlaying) {
           console.log("Playing audio with Wavesurfer from:", lastPlaybackPosition)
-          // 最後の再生位置から再生を開始
           wavesurferRef.current.play(lastPlaybackPosition)
         } else {
           console.log("Pausing audio with Wavesurfer")
@@ -176,7 +156,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [isPlaying, isWavesurferReady, lastPlaybackPosition])
 
-  // Update playback rate
   useEffect(() => {
     if (!wavesurferRef.current || !isWavesurferReady) return
 
@@ -187,7 +166,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [playbackRate, isWavesurferReady])
 
-  // Update current time - 再生中でない場合のみシーク
   useEffect(() => {
     if (!wavesurferRef.current || !isWavesurferReady || wavesurferRef.current.isPlaying()) return
 
@@ -199,7 +177,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [currentTime, duration, isWavesurferReady])
 
-  // Handle skip forward/backward
   const handleSkipBackward = () => {
     if (!wavesurferRef.current || !isWavesurferReady) {
       onSkipBackward()
@@ -233,13 +210,10 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }
 
-  // トランスクリプトからのジャンプ要求を処理する関数
-  // App.tsxからcurrentTimeが変更された場合、再生中でも強制的にシークする
   useEffect(() => {
     if (!wavesurferRef.current || !isWavesurferReady) return
 
     try {
-      // 現在のWavesurferの時間と指定された時間が大きく異なる場合のみシーク
       const wavesurferTime = wavesurferRef.current.getCurrentTime()
       if (Math.abs(wavesurferTime - currentTime) > 0.5) {
         console.log("Forced seek to:", currentTime)
@@ -251,7 +225,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [currentTime, duration, isWavesurferReady])
 
-  // Close playback rate dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (playbackRateContainerRef.current && !playbackRateContainerRef.current.contains(event.target as Node)) {

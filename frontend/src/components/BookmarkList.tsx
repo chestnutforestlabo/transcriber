@@ -24,14 +24,12 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
     (bookmark) => bookmark.audioFile === currentAudioFile
   )
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Format date as YYYY-MM-DD HH:MM
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp)
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString(undefined, {
@@ -40,21 +38,17 @@ const BookmarkList: React.FC<BookmarkListProps> = ({
     })}`
   }
 
-  // Toggle expanded state for a bookmark
   const toggleExpand = (index: number) => {
     setExpandedBookmark(expandedBookmark === index ? null : index)
   }
 
-  // 現在の音声ファイルのブックマークを先頭に表示するために並び替え
   const sortedBookmarks = [...bookmarks].sort((a, b) => {
-    // 現在の音声ファイルのブックマークを優先
     if (a.audioFile === currentAudioFile && b.audioFile !== currentAudioFile) {
       return -1
     }
     if (a.audioFile !== currentAudioFile && b.audioFile === currentAudioFile) {
       return 1
     }
-    // それ以外は元の順序を維持（タイムスタンプ順）
     return a.timestamp - b.timestamp
   })
 

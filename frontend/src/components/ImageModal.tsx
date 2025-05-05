@@ -17,14 +17,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ src, alt, isOpen, onClose }) =>
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true)
-      // ボディのスクロールを無効化
       document.body.style.overflow = "hidden"
     } else {
-      // アニメーション完了後に非表示にする
       const timer = setTimeout(() => {
         setIsVisible(false)
       }, 300)
-      // ボディのスクロールを有効化
       document.body.style.overflow = ""
       return () => clearTimeout(timer)
     }

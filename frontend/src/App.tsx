@@ -1,4 +1,3 @@
-// コンポーネント統合
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -10,7 +9,7 @@ import AudioControls from "./components/AudioControls"
 import BookmarkList from "./components/BookmarkList"
 import TagList from "./components/TagList"
 import ImageModal from "./components/ImageModal"
-import SearchBar from "./components/SearchBar" // Import the new SearchBar component
+import SearchBar from "./components/SearchBar"
 import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
 import {
   loadAudioTags,
@@ -50,9 +49,7 @@ function App() {
   const isInitialSpeakerSave = useRef(true)
   const isInitialTranscriptSave = useRef(true)
 
-  // Load data from localStorage on component mount
   useEffect(() => {
-    // Load tags data
     const loadedAudioTags = loadAudioTags()
     const loadedAllTags = loadAllTags()
     const loadedBookmarks = loadBookmarks()
@@ -71,12 +68,10 @@ function App() {
     }
   }, [])
 
-  // Save isCollapsed state to localStorage when changed
   useEffect(() => {
     localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed))
   }, [isCollapsed])
 
-  // Trigger save after speakerMapping changes (skip initial load)
   useEffect(() => {
     if (isInitialSpeakerSave.current) {
       isInitialSpeakerSave.current = false
@@ -86,7 +81,6 @@ function App() {
     saveTranscriptChanges()
   }, [speakerMapping])
 
-  // Trigger save after transcript changes (skip initial load)
   useEffect(() => {
     if (isInitialTranscriptSave.current) {
       isInitialTranscriptSave.current = false
@@ -96,7 +90,6 @@ function App() {
     saveTranscriptChanges()
   }, [transcript])
 
-  // Load audio file list
   useEffect(() => {
     fetch("/audios/index.json")
       .then((response) => response.json())
@@ -110,7 +103,6 @@ function App() {
       .catch((error) => console.error("Error loading audio files:", error))
   }, [])
 
-  // タグ関連の処理
   const handleAddTag = (tag: string) => {
     if (!allTags.includes(tag)) {
       const updatedTags = [...allTags, tag]
@@ -120,12 +112,10 @@ function App() {
   }
 
   const handleRemoveTag = (tag: string) => {
-    // タグを削除し、関連する音声ファイルからもタグを削除
     const updatedTags = allTags.filter((t) => t !== tag)
     setAllTags(updatedTags)
     localStorage.setItem("allTags", JSON.stringify(updatedTags))
 
-    // すべての音声ファイルからこのタグを削除
     const updatedAudioTags = { ...audioTags }
     Object.keys(updatedAudioTags).forEach((audio) => {
       updatedAudioTags[audio] = updatedAudioTags[audio].filter((t) => t !== tag)
@@ -133,7 +123,6 @@ function App() {
     setAudioTags(updatedAudioTags)
     localStorage.setItem("audioTags", JSON.stringify(updatedAudioTags))
 
-    // 選択中のタグが削除された場合、選択を解除
     if (selectedTag === tag) {
       setSelectedTag(null)
     }
@@ -143,7 +132,6 @@ function App() {
     setIsCollapsed(!isCollapsed)
   }
 
-  // Load transcript when audio file changes
   useEffect(() => {
     if (!selectedAudio) return
 
@@ -156,12 +144,10 @@ function App() {
         console.log("Loaded transcript data:", data)
         setTranscript(data)
 
-        // Find the last entry to determine duration
         if (data.length > 0) {
           setDuration(data[data.length - 1].end)
         }
 
-        // ローカルストレージから話者マッピング情報を読み込む
         try {
           const savedSpeakerMapping = localStorage.getItem(`speakerMapping_${transcriptFile}`)
           if (savedSpeakerMapping) {
@@ -169,7 +155,6 @@ function App() {
             console.log("Loaded speaker mapping from localStorage:", parsedMapping)
             setSpeakerMapping(parsedMapping)
           } else {
-            // 保存されたマッピングがない場合は空のオブジェクトを設定
             console.log("No saved speaker mapping found, using empty mapping")
             setSpeakerMapping({})
           }
@@ -186,53 +171,44 @@ function App() {
       .catch((error) => console.error("Error loading transcript:", error))
   }, [selectedAudio])
 
-  // Handle audio selection
   const handleSelectAudio = (audio: string) => {
     console.log("Selected audio:", audio)
-    setIsPlaying(false) // Stop playback when changing  => {
+    setIsPlaying(false)
     console.log("Selected audio:", audio)
-    setIsPlaying(false) // Stop playback when changing audio
+    setIsPlaying(false)
     setCurrentTime(0)
     setLastPlaybackPosition(0)
     setSelectedAudio(audio)
   }
 
-  // Handle time update from wavesurfer
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time)
-    // 再生中は最後の再生位置を更新
     if (isPlaying) {
       setLastPlaybackPosition(time)
     }
   }
 
-  // Handle waveform ready event
   const handleWaveformReady = (audioDuration: number) => {
     console.log("Waveform ready, duration:", audioDuration)
     setDuration(audioDuration)
   }
 
-  // Jump to specific time in the audio
   const jumpToTime = (time: number) => {
     console.log("Jumping to time:", time)
     setCurrentTime(time)
     setLastPlaybackPosition(time)
   }
 
-  // Toggle play/pause
   const togglePlayPause = () => {
     console.log("Toggle play/pause, current state:", isPlaying)
     if (isPlaying) {
-      // 停止時は現在の再生位置を保存
       setLastPlaybackPosition(currentTime)
     } else {
-      // 再生開始時は最後に停止した位置から再生
       setCurrentTime(lastPlaybackPosition)
     }
     setIsPlaying(!isPlaying)
   }
 
-  // Skip forward/backward
   const skipTime = (seconds: number) => {
     console.log("Skipping time by seconds:", seconds)
     const newTime = Math.max(0, Math.min(currentTime + seconds, duration))
@@ -240,50 +216,41 @@ function App() {
     setLastPlaybackPosition(newTime)
   }
 
-  // Change playback rate
   const changePlaybackRate = (rate: number) => {
     console.log("Changing playback rate to:", rate)
     setPlaybackRate(rate)
   }
 
-  // 波形クリック時に対応するトランスクリプトを見つけてスクロール
   const handleWaveformClick = (time: number) => {
     console.log("Waveform clicked, finding transcript at time:", time)
 
-    // 対応するトランスクリプトエントリを見つける
     const entryIndex = transcript.findIndex((entry) => time >= entry.start && time < entry.end)
 
     if (entryIndex !== -1) {
       console.log("Found transcript entry at index:", entryIndex)
 
-      // 選択状態を更新
       setSelectedEntryIndex(entryIndex)
 
-      // トランスクリプトビューアー内の該当要素を取得
       const transcriptViewer = document.querySelector(".transcript-viewer")
       if (transcriptViewer) {
         const entryElement = transcriptViewer.children[entryIndex] as HTMLElement
         if (entryElement) {
-          // スクロールして表示
           entryElement.scrollIntoView({
             behavior: "smooth",
             block: "center",
           })
 
-          // 時間を更新
           setCurrentTime(time)
           setLastPlaybackPosition(time)
         }
       }
     } else {
-      // 対応するエントリがない場合は選択状態をクリア
       setSelectedEntryIndex(null)
       setCurrentTime(time)
       setLastPlaybackPosition(time)
     }
   }
 
-  // Check server status
   const checkServerStatus = async () => {
     try {
       const response = await fetch("/api/debug")
@@ -299,9 +266,7 @@ function App() {
     }
   }
 
-  // Save transcript changes to file - 修正版
   const saveTranscriptChanges = async () => {
-    // 保存処理が既に進行中の場合は重複実行を防止
     if (!selectedAudio || saveInProgressRef.current) {
       console.log("Save already in progress or no audio selected, skipping")
       return
@@ -310,28 +275,22 @@ function App() {
     const transcriptFile = selectedAudio.replace(".wav", ".json")
     console.log("Saving transcript changes to:", transcriptFile)
 
-    // 保存中フラグを設定
     saveInProgressRef.current = true
     setIsSaving(true)
     setSaveStatus("saving")
     setSaveError(null)
 
     try {
-      // Check server status first
       await checkServerStatus()
 
-      // ディープコピーを作成して参照の問題を回避
       const transcriptToSave = JSON.parse(JSON.stringify(transcript))
 
-      // 重要: 保存前にトランスクリプトの状態をログ出力
       console.log("Current transcript before save:", transcriptToSave)
       console.log("Current speaker mapping:", speakerMapping)
 
-      // サーバーAPIが期待する形式に合わせてデータを整形
-      // APIは filename と data フィールドを期待している
       const requestData = {
         filename: transcriptFile,
-        data: transcriptToSave, // トランスクリプトデータのみを送信
+        data: transcriptToSave,
       }
 
       console.log("Sending data to server:", requestData)
@@ -357,8 +316,6 @@ function App() {
 
       console.log("Transcript saved successfully:", responseData)
 
-      // 話者マッピング情報をローカルストレージに保存
-      // サーバーAPIが話者マッピングをサポートしていない場合の代替手段
       try {
         localStorage.setItem(`speakerMapping_${transcriptFile}`, JSON.stringify(speakerMapping))
         console.log("Speaker mapping saved to localStorage")
@@ -368,7 +325,6 @@ function App() {
 
       setSaveStatus("success")
 
-      // Reset success status after 3 seconds
       setTimeout(() => {
         setSaveStatus("idle")
         setSaveError(null)
@@ -378,19 +334,16 @@ function App() {
       setSaveStatus("error")
       setSaveError((error as Error).message)
 
-      // Reset error status after 5 seconds
       setTimeout(() => {
         setSaveStatus("idle")
         setSaveError(null)
       }, 5000)
     } finally {
       setIsSaving(false)
-      // 保存中フラグをリセット
       saveInProgressRef.current = false
     }
   }
 
-  // Handle speaker name change
   const handleSpeakerNameChange = (originalName: string, newName: string) => {
     console.log(`Changing speaker name from ${originalName} to ${newName}`)
     setSpeakerMapping((prev) => ({
@@ -398,88 +351,68 @@ function App() {
       [originalName]: newName,
     }))
 
-    // Save changes after updating speaker mapping
-    // requestAnimationFrameを使用して状態更新後に保存処理を実行
     requestAnimationFrame(() => {
       console.log("Saving after speaker name change")
       saveTranscriptChanges()
     })
   }
 
-  // Handle transcript edit - 修正版
   const handleTranscriptEdit = (index: number, patch: Partial<TranscriptEntry>) => {
     console.log(`Editing transcript at index ${index}:`, patch)
 
-    // 話者が変更された場合、詳細なログを出力
     if (patch.speaker) {
       console.log(`Speaker changed at index ${index} from:`, transcript[index].speaker, "to:", patch.speaker)
     }
 
-    // トランスクリプトの状態を更新
     setTranscript((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], ...patch }
       return updated
     })
 
-    // 状態更新後に保存処理を実行するために少し遅延させる
     setTimeout(() => {
       console.log("Saving after transcript edit at index:", index)
       saveTranscriptChanges()
     }, 100)
   }
 
-  // App.tsxに削除処理のハンドラーを追加
-
-  // handleTranscriptEdit の後に以下の関数を追加
   const handleDeleteEntry = (index: number) => {
     console.log(`Deleting entry at index ${index}`)
 
-    // トランスクリプトの状態を更新
     setTranscript((prev) => {
       const updated = [...prev]
-      // 指定されたインデックスのエントリーを削除
       updated.splice(index, 1)
       return updated
     })
 
-    // 選択状態をクリア
     if (selectedEntryIndex === index) {
       setSelectedEntryIndex(null)
     } else if (selectedEntryIndex !== null && selectedEntryIndex > index) {
-      // 削除されたエントリーより後ろのエントリーが選択されていた場合、インデックスを調整
       setSelectedEntryIndex(selectedEntryIndex - 1)
     }
 
-    // 変更を保存
     setTimeout(() => {
       console.log("Saving after deleting entry")
       saveTranscriptChanges()
     }, 100)
   }
 
-  // 新しいトランスクリプトエントリーを追加
   const handleAddEntryBetween = (index: number) => {
     console.log(`Adding new entry after index ${index}`)
 
-    // 新しいエントリーの開始時間と終了時間を計算
     let startTime = 0
     let endTime = 0
 
     if (index < transcript.length) {
-      // 既存のエントリーの終了時間を新しいエントリーの開始時間として使用
       startTime = transcript[index].end
 
       if (index + 1 < transcript.length) {
-        // 次のエントリーの開始時間を新しいエントリーの終了時間として使用
         endTime = transcript[index + 1].start
       } else {
-        // 最後のエントリーの場合、終了時間を少し延長
         endTime = startTime + 2.0
       }
     }
 
-    // 新しい空のエントリーを作成
     const newEntry: TranscriptEntry = {
       start: startTime,
       end: endTime,
@@ -487,42 +420,34 @@ function App() {
       text: "",
     }
 
-    // トランスクリプトの状態を更新
     setTranscript((prev) => {
       const updated = [...prev]
-      // index+1 の位置に新しいエントリーを挿入
       updated.splice(index + 1, 0, newEntry)
       return updated
     })
 
-    // 新しいエントリーを選択状態にする
     setSelectedEntryIndex(index + 1)
 
-    // 変更を保存
     setTimeout(() => {
       console.log("Saving after adding new entry")
       saveTranscriptChanges()
     }, 100)
   }
 
-  // ブックマーク関連の処理
   const handleBookmarkEntry = (index: number) => {
     if (index < 0 || index >= transcript.length) return
 
     const entry = transcript[index]
 
-    // 既存のブックマークをチェック
     const existingBookmarkIndex = bookmarks.findIndex(
       (bookmark) => bookmark.audioFile === selectedAudio && bookmark.entryIndex === index,
     )
 
     if (existingBookmarkIndex !== -1) {
-      // 既に存在する場合は削除（トグル機能）
       console.log("Removing existing bookmark at index:", existingBookmarkIndex)
       const updatedBookmarks = removeBookmarkService(bookmarks, existingBookmarkIndex)
       setBookmarks(updatedBookmarks)
     } else {
-      // 存在しない場合は新規追加
       console.log("Adding new bookmark for entry at index:", index)
       const updatedBookmarks = addBookmarkService(bookmarks, selectedAudio, index, entry)
       setBookmarks(updatedBookmarks)
@@ -538,25 +463,19 @@ function App() {
   const handleJumpToBookmark = (audioFile: string, entryIndex: number, time: number) => {
     console.log("Jumping to bookmark:", audioFile, entryIndex, time)
 
-    // 異なる音声ファイルの場合は、まずそのファイルを選択
     if (audioFile !== selectedAudio) {
       setSelectedAudio(audioFile)
-      // 音声ファイルが変更されるとトランスクリプトも再読み込みされるため、
-      // useEffectの後に実行されるようにタイマーを設定
       setTimeout(() => {
         setSelectedEntryIndex(entryIndex)
         jumpToTime(time)
       }, 500)
     } else {
-      // 同じ音声ファイルの場合は直接ジャンプ
       setSelectedEntryIndex(entryIndex)
       jumpToTime(time)
     }
   }
 
-  // Handle search result selection
   const handleSearchResultSelect = (audioFile: string, entryIndex: number, time: number) => {
-    // Same implementation as handleJumpToBookmark
     console.log("Jumping to search result:", audioFile, entryIndex, time)
 
     if (audioFile !== selectedAudio) {
@@ -572,14 +491,12 @@ function App() {
   }
 
   const handleAddTagToAudio = (audio: string, tag: string) => {
-    // Use the service to add tag and get updated state
     const { updatedAudioTags, updatedAllTags } = addTagService(audioTags, allTags, audio, tag)
     setAudioTags(updatedAudioTags)
     setAllTags(updatedAllTags)
   }
 
   const handleRemoveTagFromAudio = (audio: string, tag: string) => {
-    // Use the service to remove tag and get updated state
     const updatedAudioTags = removeTagService(audioTags, audio, tag)
     setAudioTags(updatedAudioTags)
   }
@@ -693,8 +610,6 @@ function App() {
           </div>
         </div>
       </div>
-
-      {/* ロゴ画像のモーダル */}
       <ImageModal
         src="/images/kuri.jpg"
         alt="Kuri"

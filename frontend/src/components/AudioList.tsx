@@ -33,11 +33,9 @@ const AudioList: React.FC<AudioListProps> = ({
   const [newTagInput, setNewTagInput] = useState("")
   const [tagMenuPosition, setTagMenuPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 })
 
-  // タグでフィルタリングされた音声ファイルを取得
   const getFilteredAudioFiles = () => {
     if (!selectedTag) return audioFiles
 
-    // 選択されたタグを持つ音声ファイルを先頭に
     const withTag = audioFiles.filter((audio) => audioTags[audio]?.includes(selectedTag))
     const withoutTag = audioFiles.filter((audio) => !audioTags[audio]?.includes(selectedTag))
 
@@ -46,7 +44,6 @@ const AudioList: React.FC<AudioListProps> = ({
 
   const filteredAudioFiles = getFilteredAudioFiles()
 
-  // 音声ファイルがタグでフィルタリングされているかどうかを判定
   const isAudioHighlighted = (audio: string) => {
     return selectedTag && audioTags[audio]?.includes(selectedTag)
   }
@@ -68,49 +65,39 @@ const AudioList: React.FC<AudioListProps> = ({
     }
   }
 
-  // Add event listener to close tag menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (showTagMenu && !event.target) return
 
-      // Find the tag menu element
       const tagMenuElement = document.querySelector(".tag-menu")
       const clickedElement = event.target as Node
 
-      // Check if the click was outside the tag menu
       if (tagMenuElement && !tagMenuElement.contains(clickedElement)) {
         setShowTagMenu(null)
       }
     }
 
-    // Add event listener
     document.addEventListener("mousedown", handleClickOutside)
 
-    // Clean up
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [showTagMenu])
 
-  // Modify the click handler for the tag button
   const handleTagButtonClick = (e: React.MouseEvent, audio: string) => {
     e.stopPropagation()
 
-    // If already showing this menu, just close it
     if (showTagMenu === audio) {
       setShowTagMenu(null)
       return
     }
 
-    // Get the button element that was clicked
     const buttonElement = e.currentTarget as HTMLElement
     const rect = buttonElement.getBoundingClientRect()
 
-    // Calculate position for the menu
     const menuLeft = rect.left
-    const menuTop = rect.bottom + 5 // 5px below the button
+    const menuTop = rect.bottom + 5
 
-    // Set the tag menu position in state
     setTagMenuPosition({ left: menuLeft, top: menuTop })
 
     setShowTagMenu(audio)
@@ -129,7 +116,6 @@ const AudioList: React.FC<AudioListProps> = ({
           <Menu size={20} />
         </button>
       </div>
-
       {audioFiles.length === 0 ? (
         !isCollapsed && <div className="no-audio-files">No audio files found</div>
       ) : (

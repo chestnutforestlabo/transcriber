@@ -1,19 +1,15 @@
-// TranscriptViewer.tsx - 削除機能を追加
 "use client"
 
 import React, { useRef, useEffect, useState } from "react"
 import { Edit, Copy, Bookmark, Save, X, Plus, Trash2 } from "lucide-react"
-import { createPortal } from "react-dom" // Portalをインポート
+import { createPortal } from "react-dom"
 
-/* =============================================================
- * 型定義
- * ===========================================================*/
 export interface TranscriptEntry {
-  time?: string // フォーマット済み文字列（任意）
-  start: number // 開始時刻 [sec]
-  end: number // 終了時刻 [sec]
-  speaker: string // 話者 ID
-  text: string // 本文
+  time?: string
+  start: number
+  end: number
+  speaker: string
+  text: string
 }
 
 interface TranscriptViewerProps {
@@ -26,14 +22,11 @@ interface TranscriptViewerProps {
   onSelectEntry: (index: number | null) => void
   onAddEntryBetween: (index: number) => void
   onBookmarkEntry: (index: number) => void
-  onDeleteEntry: (index: number) => void // 削除ハンドラーを追加
-  bookmarks: Bookmark[] // 追加: ブックマークリスト
-  currentAudioFile: string // 追加: 現在の音声ファイル
+  onDeleteEntry: (index: number) => void
+  bookmarks: Bookmark[]
+  currentAudioFile: string
 }
 
-/* =============================================================
- * Helper
- * ===========================================================*/
 const secToClock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`
 
 const clockToSec = (clock: string) => {
@@ -41,9 +34,6 @@ const clockToSec = (clock: string) => {
   return +m * 60 + +s
 }
 
-/* =============================================================
- * Component
- * ===========================================================*/
 const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   transcript,
   currentTime,
@@ -54,19 +44,17 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   onSelectEntry,
   onAddEntryBetween,
   onBookmarkEntry,
-  onDeleteEntry, // 削除ハンドラーを追加
+  onDeleteEntry,
   bookmarks,
   currentAudioFile,
 }) => {
-  // speakerMappingの内容をログ出力
   console.log("TranscriptViewer received speakerMapping:", speakerMapping)
 
-  /* -------------------- refs & state -------------------- */
   const containerRef = useRef<HTMLDivElement>(null)
   const activeEntryRef = useRef<HTMLDivElement>(null)
   const editContainerRef = useRef<HTMLDivElement>(null)
-  const speakerButtonRef = useRef<HTMLButtonElement>(null) // 話者ボタンの参照を追加
-  const dropdownRef = useRef<HTMLDivElement>(null) // ドロップダウン要素のref
+  const speakerButtonRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [hoveredBoundaryIndex, setHoveredBoundaryIndex] = useState<number | null>(null)
@@ -80,16 +68,13 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [autoScroll, setAutoScroll] = useState(true)
   const lastActiveIndexRef = useRef<number>(-1)
 
-  /* speaker dropdown popover */
   const [speakerDropdownOpen, setSpeakerDropdownOpen] = useState(false)
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 }) // 幅も追加
-  const [isDropdownItemClicked, setIsDropdownItemClicked] = useState(false) // ドロップダウンアイテムがクリックされたかのフラグ
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
+  const [isDropdownItemClicked, setIsDropdownItemClicked] = useState(false)
 
-  /* 削除確認ダイアログ */
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
 
-  /* -------------------- active entry auto‑scroll -------------------- */
   const activeEntryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime < entry.end)
 
   useEffect(() => {
@@ -101,15 +86,12 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     }
   }, [activeEntryIndex, autoScroll])
 
-  /* -------------------- click‑outside to exit edit / close dropdown -------------------- */
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      // ドロップダウンの外側をクリックした場合のみ処理
       if (speakerDropdownOpen) {
         const dropdownElement = document.getElementById("speaker-dropdown-portal")
         const speakerButtonElement = speakerButtonRef.current
 
-        // ドロップダウンとボタン以外の場所をクリックした場合にのみドロップダウンを閉じる
         if (
           (!speakerButtonElement || !speakerButtonElement.contains(e.target as Node)) &&
           (!dropdownElement || !dropdownElement.contains(e.target as Node))
@@ -119,12 +101,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         }
       }
 
-      // 編集コンテナの外側をクリックした場合のみ処理
-      // ドロップダウンアイテムがクリックされた場合は編集モードを終了しない
       if (editContainerRef.current && !editContainerRef.current.contains(e.target as Node) && !isDropdownItemClicked) {
         const dropdownElement = document.getElementById("speaker-dropdown-portal")
 
-        // ドロップダウン内のクリックでなければ編集モードを終了
         if (!dropdownElement || !dropdownElement.contains(e.target as Node)) {
           console.log("Click outside edit container detected")
           setTimeout(() => {
@@ -133,7 +112,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         }
       }
 
-      // フラグをリセット
       setIsDropdownItemClicked(false)
     }
 
@@ -141,7 +119,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [speakerDropdownOpen, isDropdownItemClicked])
 
-  /* -------------------- update dropdown position when button is clicked -------------------- */
   useEffect(() => {
     if (speakerButtonRef.current) {
       const updatePosition = () => {
@@ -150,7 +127,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           setDropdownPosition({
             top: rect.bottom + window.scrollY,
             left: rect.left + window.scrollX,
-            width: rect.width, // ボタンの幅を取得
+            width: rect.width,
           })
           console.log("Button position:", {
             top: rect.bottom + window.scrollY,
@@ -160,16 +137,13 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         }
       }
 
-      // 初期位置を設定
       updatePosition()
 
-      // ドロップダウンが開かれたときに位置を更新
       if (speakerDropdownOpen) {
         updatePosition()
         console.log("Dropdown opened, position updated")
       }
 
-      // スクロールやリサイズ時にも位置を更新
       window.addEventListener("scroll", updatePosition)
       window.addEventListener("resize", updatePosition)
 
@@ -180,7 +154,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     }
   }, [speakerDropdownOpen, speakerButtonRef.current])
 
-  /* -------------------- interactions -------------------- */
   const enterEditMode = (idx: number, entry: TranscriptEntry) => {
     setEditingIndex(idx)
     setEditStartClock(secToClock(entry.start))
@@ -206,14 +179,12 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
 
     console.log("Saving edit with speaker:", editSpeaker, "text:", editText)
 
-    // 変更内容をまとめて適用
     onTranscriptEdit(idx, {
       start: newStart,
       speaker: editSpeaker,
       text: editText,
     })
 
-    // 前のエントリの終了時間も更新
     if (idx > 0) onTranscriptEdit(idx - 1, { end: newStart })
 
     setEditingIndex(null)
@@ -241,14 +212,12 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setTimeout(() => setAutoScroll(true), 2000)
   }
 
-  // 削除ボタンのクリックハンドラー
   const handleDeleteClick = (index: number, e: React.MouseEvent) => {
     e.stopPropagation()
     setDeleteIndex(index)
     setShowDeleteConfirm(true)
   }
 
-  // 削除確認ダイアログのYESボタンハンドラー
   const handleConfirmDelete = () => {
     if (deleteIndex !== null) {
       onDeleteEntry(deleteIndex)
@@ -257,33 +226,25 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setDeleteIndex(null)
   }
 
-  // 削除確認ダイアログのNOボタンハンドラー
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false)
     setDeleteIndex(null)
   }
 
-  // エントリがブックマークされているかチェックする関数
   const isBookmarked = (index: number) => {
     return bookmarks.some((bookmark) => bookmark.audioFile === currentAudioFile && bookmark.entryIndex === index)
   }
 
-  // renderSpeakerDropdownPortal関数を修正して、話者選択後も編集モードが維持されるようにします
   const renderSpeakerDropdownPortal = () => {
-    // クライアントサイドでのみ実行
     if (typeof document === "undefined") return null
 
-    // ドロップダウンが閉じている場合は何もレンダリングしない
     if (!speakerDropdownOpen) return null
 
-    // トランスクリプトから一意の話者IDを抽出
     const uniqueSpeakerIds = [...new Set(transcript.map((entry) => entry.speaker).filter(Boolean))] as string[]
 
     console.log("Unique speaker IDs:", uniqueSpeakerIds)
     console.log("Speaker mapping:", speakerMapping)
 
-    // 話者リストを作成
-    // speakerMappingに登録されている話者名を表示名として使用
     const availableSpeakers = uniqueSpeakerIds.map((id) => {
       const displayName = speakerMapping[id] || id
       return [id, displayName]
@@ -299,26 +260,25 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           position: "absolute",
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`,
-          zIndex: 2147483647, // 最大値
-          background: "#222222", // 黒背景に変更
-          border: "1px solid #444444", // ボーダーも暗めに
+          zIndex: 200,
+          background: "#222222",
+          border: "1px solid #444444",
           borderRadius: "4px",
           boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
           maxHeight: "200px",
           overflowY: "auto",
-          minWidth: `${Math.max(dropdownPosition.width, 120)}px`, // ボタンの幅か120pxの大きい方
+          minWidth: `${Math.max(dropdownPosition.width, 120)}px`,
           width: "auto",
           padding: "4px 0",
-          display: "block", // 明示的に表示
-          visibility: "visible", // 明示的に可視化
-          opacity: 1, // 完全に不透明
+          display: "block",
+          visibility: "visible",
+          opacity: 1,
         }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
         }}
       >
-        {/* 話者リスト */}
         {availableSpeakers.length > 0 ? (
           availableSpeakers.map(([id, label]) => (
             <div
@@ -326,15 +286,14 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
               style={{
                 padding: "8px 12px",
                 cursor: "pointer",
-                backgroundColor: editSpeaker === id ? "rgba(74, 131, 255, 0.2)" : "transparent", // 選択項目のハイライトを調整
-                color: "#ffffff", // 文字色を白に変更
+                backgroundColor: editSpeaker === id ? "rgba(74, 131, 255, 0.2)" : "transparent",
+                color: "#ffffff",
                 fontSize: "14px",
                 textAlign: "left",
                 margin: "2px 0",
-                borderBottom: "1px solid #333333", // 区切り線も暗めに
+                borderBottom: "1px solid #333333",
               }}
               onClick={(e) => {
-                // ドロップダウンアイテムがクリックされたフラグを設定
                 e.preventDefault()
                 e.stopPropagation()
                 setIsDropdownItemClicked(true)
@@ -343,11 +302,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 setEditSpeaker(id)
                 setSpeakerDropdownOpen(false)
 
-                // 編集モードは継続
                 console.log("Editing mode maintained after speaker selection")
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(74, 131, 255, 0.1)" // ホバー時の背景色
+                e.currentTarget.style.backgroundColor = "rgba(74, 131, 255, 0.1)"
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = editSpeaker === id ? "rgba(74, 131, 255, 0.2)" : "transparent"
@@ -357,7 +315,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
             </div>
           ))
         ) : (
-          // 話者がない場合のフォールバック
           <div style={{ padding: "8px 12px", color: "#aaaaaa", fontStyle: "italic" }}>話者が定義されていません</div>
         )}
       </div>,
@@ -365,7 +322,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     )
   }
 
-  // 削除確認ダイアログをレンダリング
   const renderDeleteConfirmDialog = () => {
     if (!showDeleteConfirm) return null
 
@@ -430,30 +386,22 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     )
   }
 
-  /* -------------------- render -------------------- */
   return (
     <div className="transcript-viewer" ref={containerRef}>
-      {/* ポータルを使用したドロップダウンをレンダリング */}
       {renderSpeakerDropdownPortal()}
-
-      {/* 削除確認ダイアログをレンダリング */}
       {renderDeleteConfirmDialog()}
-
       {transcript.map((entry, index) => {
         const isActive = currentTime >= entry.start && currentTime < entry.end
         const isHighlighted = selectedEntryIndex === index || (isActive && selectedEntryIndex === null)
         const isEditing = editingIndex === index
         const displaySpeaker = entry.speaker ? speakerMapping[entry.speaker] || entry.speaker : "null"
-        const entryIsBookmarked = isBookmarked(index) // エントリがブックマークされているか確認
-
-        /* make editing row overflow visible so dropdown isn't clipped */
+        const entryIsBookmarked = isBookmarked(index)
         const rowStyle: React.CSSProperties | undefined = isEditing
           ? { overflow: "visible", position: "relative", zIndex: 20 }
           : undefined
 
         return (
           <React.Fragment key={`entry-group-${index}`}>
-            {/* エントリー間に追加ボタンを表示 */}
             {index > 0 && (
               <div
                 className={`transcript-entry-boundary ${hoveredBoundaryIndex === index ? "active" : ""}`}
@@ -471,8 +419,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 </div>
               </div>
             )}
-
-            {/* 通常のエントリー */}
             <div
               key={`entry-${index}`}
               ref={isEditing ? editContainerRef : isActive ? activeEntryRef : null}
@@ -483,7 +429,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
               onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}
               onDoubleClick={(e) => handleDoubleClick(index, entry, e)}
             >
-              {/* ---- 列 1: 時刻 ---- */}
               {isEditing ? (
                 <input
                   type="text"
@@ -494,18 +439,16 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
               ) : (
                 <div className="transcript-time">{secToClock(entry.start)}</div>
               )}
-
-              {/* ---- 列 2: 話者 ---- */}
               {isEditing ? (
                 <div className="edit-speaker-container">
                   <button
-                    ref={speakerButtonRef} // refを追加
+                    ref={speakerButtonRef}
                     className="edit-speaker-display"
                     style={{
                       padding: "4px 8px",
-                      background: "#222222", // 黒背景に変更
-                      color: "#ffffff", // 文字色を白に変更
-                      border: "1px solid #444444", // ボーダーも暗めに
+                      background: "#222222",
+                      color: "#ffffff",
+                      border: "1px solid #444444",
                       borderRadius: "4px",
                       cursor: "pointer",
                       fontSize: "14px",
@@ -525,15 +468,11 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
               ) : (
                 <div className="transcript-speaker">{displaySpeaker}</div>
               )}
-
-              {/* ---- 列 3: 本文 ---- */}
               {isEditing ? (
                 <textarea className="edit-text" value={editText} onChange={(e) => setEditText(e.target.value)} />
               ) : (
                 <div className="transcript-text">{entry.text}</div>
               )}
-
-              {/* ---- アクション (2×2グリッドに変更) ---- */}
               {!isEditing && hoveredIndex === index && (
                 <div className="transcript-actions grid-layout">
                   <button
@@ -562,8 +501,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                   </button>
                 </div>
               )}
-
-              {/* ---- 編集時ボタン (下段) ---- */}
               {isEditing && (
                 <div className="edit-buttons">
                   <button

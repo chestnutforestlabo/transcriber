@@ -1,4 +1,3 @@
-// 話者設定
 "use client"
 
 import { useState } from "react"
@@ -13,7 +12,6 @@ interface SpeakerSettingsProps {
 const SpeakerSettings: React.FC<SpeakerSettingsProps> = ({ transcript, onSpeakerNameChange }) => {
   const [speakerNames, setSpeakerNames] = useState<Record<string, string>>({})
 
-  // Get unique speaker names from transcript
   const uniqueSpeakers = [...new Set(transcript.map((entry) => entry.speaker).filter(Boolean))] as string[]
 
   const handleNameChange = (speaker: string, newName: string) => {

@@ -7,12 +7,14 @@ services:
       args:
         - BASE_IMAGE=nvidia/cuda:11.0.3-devel-ubuntu20.04
         - PYTHON_VERSION=3.9
-        - UID=${HOST_UID-1004}
-        - GID=${HOST_GID-1004}
+        - UID=${HOST_UID}
+        - GID=${HOST_GID}
+        - USER_NAME=${USER_NAME}
+        - PROJECT_NAME=${PROJECT_NAME_ENV}
       context: ../../
       dockerfile: environments/Dockerfile_backend
     tty: true
     volumes:
-        - ../../:/home/challenger/ascender
+        - ../../:/home/${USER}/${PROJECT_NAME_ENV}
     ports:
         - 8005:8005

@@ -4,8 +4,8 @@ services:
       context: ../../
       dockerfile: environments/Dockerfile_frontend
       args:
-        - UID=${HOST_UID-1004}
-        - USER_NAME=${USER:-sakaya}
+        - UID=${HOST_UID}
+        - USER_NAME=${USER_NAME}
     working_dir: /transcriber
     volumes:
       - ../../:/transcriber

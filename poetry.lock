@@ -2466,13 +2466,13 @@ PyYAML = ">=5.1.0"
 
 [[package]]
 name = "openai-whisper"
-version = "20231117"
+version = "20240930"
 description = "Robust Speech Recognition via Large-Scale Weak Supervision"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "openai-whisper-20231117.tar.gz", hash = "sha256:7af424181436f1800cc0b7d75cf40ede34e9ddf1ba4983a910832fcf4aade4a4"},
+    {file = "openai-whisper-20240930.tar.gz", hash = "sha256:b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2"},
 ]
 
 [package.dependencies]
@@ -2482,7 +2482,7 @@ numpy = "*"
 tiktoken = "*"
 torch = "*"
 tqdm = "*"
-triton = ">=2.0.0,<3"
+triton = {version = ">=2.0.0", markers = "platform_machine == \"x86_64\" and sys_platform == \"linux\" or sys_platform == \"linux2\""}
 
 [package.extras]
 dev = ["black", "flake8", "isort", "pytest", "scipy"]
@@ -4259,6 +4259,7 @@ description = "A language and compiler for custom Deep Learning operations"
 optional = false
 python-versions = "*"
 groups = ["main"]
+markers = "(platform_machine == \"x86_64\" or sys_platform == \"linux2\") and (platform_system == \"Linux\" or sys_platform == \"linux\" or sys_platform == \"linux2\")"
 files = [
     {file = "triton-2.1.0-0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:66439923a30d5d48399b08a9eae10370f6c261a5ec864a64983bae63152d39d7"},
     {file = "triton-2.1.0-0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:919b06453f0033ea52c13eaf7833de0e57db3178d23d4e04f9fc71c4f2c32bf8"},
@@ -4489,4 +4490,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "bb8856e458b78312b05597fa88842b48bb10f718a5f97e6f5973ef1f7d41d62d"
+content-hash = "1758ca0003c049d7796c08bdc786cd9a1086198499c321341c9632a0782cdb65"

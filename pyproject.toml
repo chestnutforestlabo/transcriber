@@ -28,7 +28,7 @@ classifiers = [
 python = ">=3.9,<4.0"
 pyannote-audio = "^3.1.1"
 soundfile = "^0.12.1"
-openai-whisper = "^20231117"
+openai-whisper = "20240930"
 huggingface = "^0.0.1"
 ffmpeg = "^1.4"
 nltk = "^3.8.1"

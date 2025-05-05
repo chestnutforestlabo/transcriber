@@ -12,7 +12,7 @@ services:
         - UID=${HOST_UID-1004}
         - GID=${HOST_GID-1004}
       context: ../../
-      dockerfile: environments/Dockerfile
+      dockerfile: environments/Dockerfile_backend
     tty: true
     volumes:
         - ../../:/home/challenger/ascender

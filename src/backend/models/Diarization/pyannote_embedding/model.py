@@ -1,6 +1,6 @@
 from pyannote.audio import Pipeline
 import time
-from backend.models.base import BaseModel
+from src.backend.models.base import BaseModel
 
 class SpeechDiarization(BaseModel):
     def setup_model(self):

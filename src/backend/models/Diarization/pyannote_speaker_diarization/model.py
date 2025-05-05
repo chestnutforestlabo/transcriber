@@ -1,6 +1,6 @@
 from pyannote.audio import Pipeline
 from pyannote.core import Annotation, Segment
-from backend.models.base import BaseModel
+from src.backend.models.base import BaseModel
 import time
 from typing import List, Tuple, Union
 

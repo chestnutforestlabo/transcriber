@@ -428,6 +428,53 @@ function App() {
     }, 100)
   }
 
+  // 新しいトランスクリプトエントリーを追加
+  const handleAddEntryBetween = (index: number) => {
+    console.log(`Adding new entry after index ${index}`)
+
+    // 新しいエントリーの開始時間と終了時間を計算
+    let startTime = 0
+    let endTime = 0
+
+    if (index < transcript.length) {
+      // 既存のエントリーの終了時間を新しいエントリーの開始時間として使用
+      startTime = transcript[index].end
+
+      if (index + 1 < transcript.length) {
+        // 次のエントリーの開始時間を新しいエントリーの終了時間として使用
+        endTime = transcript[index + 1].start
+      } else {
+        // 最後のエントリーの場合、終了時間を少し延長
+        endTime = startTime + 2.0
+      }
+    }
+
+    // 新しい空のエントリーを作成
+    const newEntry: TranscriptEntry = {
+      start: startTime,
+      end: endTime,
+      speaker: transcript[index]?.speaker || "",
+      text: "",
+    }
+
+    // トランスクリプトの状態を更新
+    setTranscript((prev) => {
+      const updated = [...prev]
+      // index+1 の位置に新しいエントリーを挿入
+      updated.splice(index + 1, 0, newEntry)
+      return updated
+    })
+
+    // 新しいエントリーを選択状態にする
+    setSelectedEntryIndex(index + 1)
+
+    // 変更を保存
+    setTimeout(() => {
+      console.log("Saving after adding new entry")
+      saveTranscriptChanges()
+    }, 100)
+  }
+
   // ブックマーク関連の処理
   const handleBookmarkEntry = (index: number) => {
     if (index < 0 || index >= transcript.length) return
@@ -559,6 +606,7 @@ function App() {
             onBookmarkEntry={handleBookmarkEntry}
             bookmarks={bookmarks}
             currentAudioFile={selectedAudio}
+            onAddEntryBetween={handleAddEntryBetween}
           />
           <AudioControls
             currentTime={currentTime}

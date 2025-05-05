@@ -1,9 +1,8 @@
-// TranscriptViewer.tsx - 話者プルダウンと選択肢のスタイルを黒背景・白文字に変更
+// TranscriptViewer.tsx - 0.3秒の遅延を削除
 "use client"
 
-import type React from "react"
-import { useRef, useEffect, useState } from "react"
-import { Edit, Copy, Bookmark, Save, X } from "lucide-react"
+import React, { useRef, useEffect, useState } from "react"
+import { Edit, Copy, Bookmark, Save, X, Plus } from "lucide-react"
 import { createPortal } from "react-dom" // Portalをインポート
 
 /* =============================================================
@@ -25,6 +24,7 @@ interface TranscriptViewerProps {
   onTranscriptEdit: (index: number, patch: Partial<TranscriptEntry>) => void
   selectedEntryIndex: number | null
   onSelectEntry: (index: number | null) => void
+  onAddEntryBetween: (index: number) => void
   onBookmarkEntry: (index: number) => void
   bookmarks: Bookmark[] // 追加: ブックマークリスト
   currentAudioFile: string // 追加: 現在の音声ファイル
@@ -51,6 +51,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   onTranscriptEdit,
   selectedEntryIndex,
   onSelectEntry,
+  onAddEntryBetween,
   onBookmarkEntry,
   bookmarks, // 追加
   currentAudioFile, // 追加
@@ -66,6 +67,8 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null) // ドロップダウン要素のref
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [hoveredBoundaryIndex, setHoveredBoundaryIndex] = useState<number | null>(null)
+
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
   const [editText, setEditText] = useState("")
@@ -353,106 +356,128 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
           : undefined
 
         return (
-          <div
-            key={index}
-            ref={isEditing ? editContainerRef : isActive ? activeEntryRef : null}
-            className={`transcript-entry${isHighlighted ? " active" : ""}${isEditing ? " editing" : ""}`}
-            style={rowStyle}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}
-            onDoubleClick={(e) => handleDoubleClick(index, entry, e)}
-          >
-            {/* ---- 列 1: 時刻 ---- */}
-            {isEditing ? (
-              <input
-                type="text"
-                className="edit-time"
-                value={editStartClock}
-                onChange={(e) => setEditStartClock(e.target.value)}
-              />
-            ) : (
-              <div className="transcript-time">{secToClock(entry.start)}</div>
-            )}
-
-            {/* ---- 列 2: 話者 ---- */}
-            {isEditing ? (
-              <div className="edit-speaker-container">
-                <button
-                  ref={speakerButtonRef} // refを追加
-                  className="edit-speaker-display"
-                  style={{
-                    padding: "4px 8px",
-                    background: "#222222", // 黒背景に変更
-                    color: "#ffffff", // 文字色を白に変更
-                    border: "1px solid #444444", // ボーダーも暗めに
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    textAlign: "left",
-                    minWidth: "120px",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setSpeakerDropdownOpen(!speakerDropdownOpen)
-                    console.log("Speaker dropdown toggled:", !speakerDropdownOpen, "Current speaker:", editSpeaker)
-                  }}
-                >
-                  {speakerMapping[editSpeaker] || editSpeaker || "Select"}
-                </button>
-              </div>
-            ) : (
-              <div className="transcript-speaker">{displaySpeaker}</div>
-            )}
-
-            {/* ---- 列 3: 本文 ---- */}
-            {isEditing ? (
-              <textarea className="edit-text" value={editText} onChange={(e) => setEditText(e.target.value)} />
-            ) : (
-              <div className="transcript-text">{entry.text}</div>
-            )}
-
-            {/* ---- アクション ---- */}
-            {!isEditing && hoveredIndex === index && (
-              <div className="transcript-actions">
-                <button
-                  className="transcript-action-btn"
-                  onClick={(e) => handleEditClick(index, entry, e)}
-                  title="Edit"
-                >
-                  <Edit size={16} />
-                </button>
-                <button className="transcript-action-btn" onClick={(e) => handleCopy(entry.text, e)} title="Copy">
-                  <Copy size={16} />
-                </button>
-                <button
-                  className={`transcript-action-btn bookmark ${entryIsBookmarked ? "active" : ""}`}
-                  onClick={() => onBookmarkEntry(index)}
-                  title={entryIsBookmarked ? "Remove bookmark" : "Add bookmark"}
-                >
-                  <Bookmark size={16} />
-                </button>
+          <React.Fragment key={`entry-group-${index}`}>
+            {/* エントリー間に追加ボタンを表示 */}
+            {index > 0 && (
+              <div
+                className={`transcript-entry-boundary ${hoveredBoundaryIndex === index ? "active" : ""}`}
+                onMouseEnter={() => setHoveredBoundaryIndex(index)}
+                onMouseLeave={() => setHoveredBoundaryIndex(null)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onAddEntryBetween(index)
+                }}
+              >
+                <div className="add-entry-btn-container">
+                  <Plus size={16} className="add-entry-icon" />
+                  <span className="add-entry-text">新しいエントリーを追加</span>
+                </div>
               </div>
             )}
 
-            {/* ---- 編集時ボタン (下段) ---- */}
-            {isEditing && (
-              <div className="edit-buttons">
-                <button
-                  className="save-btn"
-                  onClick={(e) => handleEditSave(index, e)}
-                  disabled={!editText.trim() || !editSpeaker || !editStartClock}
-                  title="Save"
-                >
-                  <Save size={16} />
-                </button>
-                <button className="cancel-btn" onClick={handleEditCancel} title="Cancel">
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
+            {/* 通常のエントリー */}
+            <div
+              key={`entry-${index}`}
+              ref={isEditing ? editContainerRef : isActive ? activeEntryRef : null}
+              className={`transcript-entry${isHighlighted ? " active" : ""}${isEditing ? " editing" : ""}`}
+              style={rowStyle}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={(e) => !isEditing && handleEntryClick(entry, index, e)}
+              onDoubleClick={(e) => handleDoubleClick(index, entry, e)}
+            >
+              {/* ---- 列 1: 時刻 ---- */}
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="edit-time"
+                  value={editStartClock}
+                  onChange={(e) => setEditStartClock(e.target.value)}
+                />
+              ) : (
+                <div className="transcript-time">{secToClock(entry.start)}</div>
+              )}
+
+              {/* ---- 列 2: 話者 ---- */}
+              {isEditing ? (
+                <div className="edit-speaker-container">
+                  <button
+                    ref={speakerButtonRef} // refを追加
+                    className="edit-speaker-display"
+                    style={{
+                      padding: "4px 8px",
+                      background: "#222222", // 黒背景に変更
+                      color: "#ffffff", // 文字色を白に変更
+                      border: "1px solid #444444", // ボーダーも暗めに
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      textAlign: "left",
+                      minWidth: "120px",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setSpeakerDropdownOpen(!speakerDropdownOpen)
+                      console.log("Speaker dropdown toggled:", !speakerDropdownOpen, "Current speaker:", editSpeaker)
+                    }}
+                  >
+                    {speakerMapping[editSpeaker] || editSpeaker || "Select"}
+                  </button>
+                </div>
+              ) : (
+                <div className="transcript-speaker">{displaySpeaker}</div>
+              )}
+
+              {/* ---- 列 3: 本文 ---- */}
+              {isEditing ? (
+                <textarea className="edit-text" value={editText} onChange={(e) => setEditText(e.target.value)} />
+              ) : (
+                <div className="transcript-text">{entry.text}</div>
+              )}
+
+              {/* ---- アクション ---- */}
+              {!isEditing && hoveredIndex === index && (
+                <div className="transcript-actions">
+                  <button
+                    className="transcript-action-btn"
+                    onClick={(e) => handleEditClick(index, entry, e)}
+                    title="Edit"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button className="transcript-action-btn" onClick={(e) => handleCopy(entry.text, e)} title="Copy">
+                    <Copy size={16} />
+                  </button>
+                  <button
+                    className={`transcript-action-btn bookmark ${entryIsBookmarked ? "active" : ""}`}
+                    onClick={() => onBookmarkEntry(index)}
+                    title={entryIsBookmarked ? "Remove bookmark" : "Add bookmark"}
+                  >
+                    <Bookmark size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* ---- 編集時ボタン (下段) ---- */}
+              {isEditing && (
+                <div className="edit-buttons">
+                  <button
+                    className="save-btn"
+                    onClick={(e) => handleEditSave(index, e)}
+                    disabled={!editText.trim() || !editSpeaker || !editStartClock}
+                    title="Save"
+                  >
+                    <Save size={16} />
+                  </button>
+                  <button className="cancel-btn" onClick={handleEditCancel} title="Cancel">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </React.Fragment>
         )
       })}
     </div>

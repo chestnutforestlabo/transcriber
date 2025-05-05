@@ -665,6 +665,71 @@
   color: #333;
 }
 
+/* トランスクリプトエントリー間の境界線 - 通常時は1本のみ（下部に表示） */
+.transcript-entry-boundary {
+  height: 5px; /* 高さを小さくして境界線だけ見えるように */
+  margin: 0;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: none; /* 上の境界線は非表示 */
+  border-bottom: 1px dashed #ccc; /* 下の境界線のみ表示 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 0.3秒以上ホバーしたときのスタイル - 高さを増やして2本の境界線 */
+.transcript-entry-boundary.active {
+  height: 20px; /* アクティブ時は高さを増やす */
+  background-color: rgba(74, 131, 255, 0.15); /* 背景色を変更 */
+  border-top: 1px solid #4a83ff; /* 上の境界線を表示 */
+  border-bottom: 1px solid #4a83ff; /* 下の境界線を実線に */
+}
+
+/* 新しいエントリー追加ボタンコンテナ */
+.add-entry-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  background-color: rgba(74, 131, 255, 0.1);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  /* 初期状態は非表示 */
+  opacity: 0;
+  visibility: hidden;
+  position: absolute; /* 絶対位置指定 */
+  pointer-events: none; /* 初期状態ではクリックイベントを通過させる */
+}
+
+/* 0.3秒以上ホバーしたときのみボタンを表示 */
+.transcript-entry-boundary.active .add-entry-btn-container {
+  background-color: rgba(74, 131, 255, 0.3);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* クリックイベントを有効化 */
+}
+
+/* 追加アイコン */
+.add-entry-icon {
+  color: #4a83ff;
+  margin-right: 5px;
+}
+
+/* 追加テキスト */
+.add-entry-text {
+  font-size: 12px;
+  color: #4a83ff;
+  white-space: nowrap;
+}
+
+/* 古い追加ボタンスタイルは削除 */
+.add-entry-btn {
+  display: none;
+}
+
 
 /* ===== TranscriptViewer – speaker dropdown ===== */
 .edit-speaker-display {
@@ -688,7 +753,7 @@
   max-height: 200px;
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  z-index: 2147483647; /* 最上位レイヤーへ */
+  z-index: 21000000; /* 最上位レイヤーへ */
 }
 
 .speaker-option-item {
@@ -725,7 +790,7 @@
 /* 3. ドロップダウン本体 - 最も高いz-indexと強制表示 */
 .speaker-options {
   position: fixed !important; /* absoluteではなくfixedを試す */
-  z-index: 2147483647 !important; /* 最大値 */
+  z-index: 21000000 !important; /* 最大値 */
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;

@@ -1,8 +1,8 @@
-// TranscriptViewer.tsx - 0.3秒の遅延を削除
+// TranscriptViewer.tsx - 削除機能を追加
 "use client"
 
 import React, { useRef, useEffect, useState } from "react"
-import { Edit, Copy, Bookmark, Save, X, Plus } from "lucide-react"
+import { Edit, Copy, Bookmark, Save, X, Plus, Trash2 } from "lucide-react"
 import { createPortal } from "react-dom" // Portalをインポート
 
 /* =============================================================
@@ -26,6 +26,7 @@ interface TranscriptViewerProps {
   onSelectEntry: (index: number | null) => void
   onAddEntryBetween: (index: number) => void
   onBookmarkEntry: (index: number) => void
+  onDeleteEntry: (index: number) => void // 削除ハンドラーを追加
   bookmarks: Bookmark[] // 追加: ブックマークリスト
   currentAudioFile: string // 追加: 現在の音声ファイル
 }
@@ -53,8 +54,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   onSelectEntry,
   onAddEntryBetween,
   onBookmarkEntry,
-  bookmarks, // 追加
-  currentAudioFile, // 追加
+  onDeleteEntry, // 削除ハンドラーを追加
+  bookmarks,
+  currentAudioFile,
 }) => {
   // speakerMappingの内容をログ出力
   console.log("TranscriptViewer received speakerMapping:", speakerMapping)
@@ -82,6 +84,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const [speakerDropdownOpen, setSpeakerDropdownOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 }) // 幅も追加
   const [isDropdownItemClicked, setIsDropdownItemClicked] = useState(false) // ドロップダウンアイテムがクリックされたかのフラグ
+
+  /* 削除確認ダイアログ */
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
 
   /* -------------------- active entry auto‑scroll -------------------- */
   const activeEntryIndex = transcript.findIndex((entry) => currentTime >= entry.start && currentTime < entry.end)
@@ -235,6 +241,28 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setTimeout(() => setAutoScroll(true), 2000)
   }
 
+  // 削除ボタンのクリックハンドラー
+  const handleDeleteClick = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeleteIndex(index)
+    setShowDeleteConfirm(true)
+  }
+
+  // 削除確認ダイアログのYESボタンハンドラー
+  const handleConfirmDelete = () => {
+    if (deleteIndex !== null) {
+      onDeleteEntry(deleteIndex)
+    }
+    setShowDeleteConfirm(false)
+    setDeleteIndex(null)
+  }
+
+  // 削除確認ダイアログのNOボタンハンドラー
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false)
+    setDeleteIndex(null)
+  }
+
   // エントリがブックマークされているかチェックする関数
   const isBookmarked = (index: number) => {
     return bookmarks.some((bookmark) => bookmark.audioFile === currentAudioFile && bookmark.entryIndex === index)
@@ -337,11 +365,79 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     )
   }
 
+  // 削除確認ダイアログをレンダリング
+  const renderDeleteConfirmDialog = () => {
+    if (!showDeleteConfirm) return null
+
+    return createPortal(
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 2147483647,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#222222",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            width: "400px",
+            maxWidth: "90%",
+          }}
+        >
+          <h3 style={{ color: "#ffffff", marginTop: 0 }}>Confirm Deletion</h3>
+          <p style={{ color: "#dddddd" }}>Do you really want to delete this transcript?</p>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+            <button
+              onClick={handleCancelDelete}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "transparent",
+                color: "#ffffff",
+                border: "1px solid #444444",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              NO
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#e53935",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              YES
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+  }
+
   /* -------------------- render -------------------- */
   return (
     <div className="transcript-viewer" ref={containerRef}>
       {/* ポータルを使用したドロップダウンをレンダリング */}
       {renderSpeakerDropdownPortal()}
+
+      {/* 削除確認ダイアログをレンダリング */}
+      {renderDeleteConfirmDialog()}
 
       {transcript.map((entry, index) => {
         const isActive = currentTime >= entry.start && currentTime < entry.end
@@ -437,9 +533,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 <div className="transcript-text">{entry.text}</div>
               )}
 
-              {/* ---- アクション ---- */}
+              {/* ---- アクション (2×2グリッドに変更) ---- */}
               {!isEditing && hoveredIndex === index && (
-                <div className="transcript-actions">
+                <div className="transcript-actions grid-layout">
                   <button
                     className="transcript-action-btn"
                     onClick={(e) => handleEditClick(index, entry, e)}
@@ -456,6 +552,13 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                     title={entryIsBookmarked ? "Remove bookmark" : "Add bookmark"}
                   >
                     <Bookmark size={16} />
+                  </button>
+                  <button
+                    className="transcript-action-btn delete"
+                    onClick={(e) => handleDeleteClick(index, e)}
+                    title="Delete"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </div>
               )}

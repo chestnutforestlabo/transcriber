@@ -665,6 +665,16 @@
   color: #333;
 }
 
+/* 削除ボタンのスタイル */
+.transcript-action-btn.delete {
+  background-color: rgba(229, 57, 53, 0.1);
+  color: #e53935;
+}
+
+.transcript-action-btn.delete:hover {
+  background-color: rgba(229, 57, 53, 0.2);
+}
+
 /* トランスクリプトエントリー間の境界線 - 通常時は1本のみ（下部に表示） */
 .transcript-entry-boundary {
   height: 5px; /* 高さを小さくして境界線だけ見えるように */
@@ -680,7 +690,7 @@
   transition: all 0.2s ease;
 }
 
-/* 0.3秒以上ホバーしたときのスタイル - 高さを増やして2本の境界線 */
+/* ホバー時のスタイル - 高さを増やして2本の境界線 */
 .transcript-entry-boundary.active {
   height: 20px; /* アクティブ時は高さを増やす */
   background-color: rgba(74, 131, 255, 0.15); /* 背景色を変更 */
@@ -704,9 +714,15 @@
   pointer-events: none; /* 初期状態ではクリックイベントを通過させる */
 }
 
-/* 0.3秒以上ホバーしたときのみボタンを表示 */
+/* ホバー時のみボタンを表示 */
 .transcript-entry-boundary.active .add-entry-btn-container {
   background-color: rgba(74, 131, 255, 0.3);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* クリックイベントを有効化 */
+}
+
+/* 追加131,255,0.3);
   opacity: 1;
   visibility: visible;
   pointer-events: auto; /* クリックイベントを有効化 */
@@ -728,6 +744,20 @@
 /* 古い追加ボタンスタイルは削除 */
 .add-entry-btn {
   display: none;
+}
+
+/* 2×2グリッドレイアウトのスタイル */
+.transcript-actions.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  width: auto;
+  min-width: 70px;
+}
+
+.transcript-actions.grid-layout .transcript-action-btn {
+  margin: 0;
 }
 
 

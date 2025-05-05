@@ -428,6 +428,35 @@ function App() {
     }, 100)
   }
 
+  // App.tsxに削除処理のハンドラーを追加
+
+  // handleTranscriptEdit の後に以下の関数を追加
+  const handleDeleteEntry = (index: number) => {
+    console.log(`Deleting entry at index ${index}`)
+
+    // トランスクリプトの状態を更新
+    setTranscript((prev) => {
+      const updated = [...prev]
+      // 指定されたインデックスのエントリーを削除
+      updated.splice(index, 1)
+      return updated
+    })
+
+    // 選択状態をクリア
+    if (selectedEntryIndex === index) {
+      setSelectedEntryIndex(null)
+    } else if (selectedEntryIndex !== null && selectedEntryIndex > index) {
+      // 削除されたエントリーより後ろのエントリーが選択されていた場合、インデックスを調整
+      setSelectedEntryIndex(selectedEntryIndex - 1)
+    }
+
+    // 変更を保存
+    setTimeout(() => {
+      console.log("Saving after deleting entry")
+      saveTranscriptChanges()
+    }, 100)
+  }
+
   // 新しいトランスクリプトエントリーを追加
   const handleAddEntryBetween = (index: number) => {
     console.log(`Adding new entry after index ${index}`)
@@ -595,6 +624,8 @@ function App() {
               {")"}
             </div>
           </div>
+          {/* TranscriptViewerコンポーネントにonDeleteEntryプロパティを追加 */}
+          {/* <TranscriptViewer の部分を以下のように修正 */}
           <TranscriptViewer
             transcript={transcript}
             currentTime={currentTime}
@@ -607,6 +638,7 @@ function App() {
             bookmarks={bookmarks}
             currentAudioFile={selectedAudio}
             onAddEntryBetween={handleAddEntryBetween}
+            onDeleteEntry={handleDeleteEntry}
           />
           <AudioControls
             currentTime={currentTime}

@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ../../
-      dockerfile: environments/Dockerfile_frontend
+      dockerfile: environments/frontend/Dockerfile
       args:
         - UID=${HOST_UID}
         - USER_NAME=${USER_NAME}

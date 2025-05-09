@@ -6,10 +6,14 @@ the result in a React front‑end with waveform‑synchronised captions.
 
 ```bash
 Project structure
-├─ backend/ # Inference scripts & model wrappers
-├─ frontend/ # Vite + React web app
-├─ audios/num_speakers=N/ # Input audio files (N = max number of speakers)
-└─ scripts/ # Shell scripts
+├─ audios/num_speakers_N/ # Input audio files (N = max number of speakers)
+├─ environments
+│   ├─ backend/ # 
+│   └─ frontend/ # 
+├─ scripts/ # Shell scripts
+└─ src
+    ├─ backend/ # Inference scripts & model wrappers
+    └─ frontend/ # Vite + React web app
 ```
 
 ---

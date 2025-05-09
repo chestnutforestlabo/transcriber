@@ -30,16 +30,40 @@ Project structure
 ---
 
 ## 1. Backend setup
-During backend_setup_2.sh you will see
-Please log in to Hugging Face using the CLI… — simply paste your token.
+You can set up the backend in two ways:
+
+### 🔹 a. Using provided scripts (recommended)
 
 ```bash
-#  Activate backend Docker container
+# Start Docker container
 bash ./scripts/backend_setup_1.sh
 
-# Install Python deps + Log in to Hugging Face CLI (paste your token)
+# Install Python deps + Log in to Hugging Face CLI using token from .env
 bash ./scripts/backend_setup_2.sh
 ```
+📝 Before running the above scripts, create a .env file at environments/backend/.env:
+
+```bash
+HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+This will:
+
+log into Hugging Face automatically using huggingface-cli login --token
+cache downloaded models in the models/ directory
+
+### 🔹 b. Manual Docker command setup
+
+Alternatively, you can run each command manually. In that case, your .env (e.g., environments/backend/.env) should include:
+
+```bash
+HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX # Enter your huggingface access token
+UID=1000 # check your UID by "echo ${UID}"
+GID=1000 # check your GID by "echo ${GID}"
+USER=your-username # check your USER by "echo ${USER}"
+```
+
+You can then manually enter the container and execute setup steps.
 
 ## 2. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
@@ -58,15 +82,21 @@ audios/
 
 
 ## 3. Run transcription
-Results are saved to output/<file>.json and
-frontend/public/transcripts/<file>.json.
-The original audio is also copied to frontend/public/audios/, and
-index.json is auto‑updated for the front‑end.
+Run the transcription script:
 
 ```bash
 # Transcribe your audios
 bash ./scripts/backend_transcriber.sh
 ```
+Transcription results will be saved to:
+
+output/<file>.json
+frontend/public/transcripts/<file>.json
+The original audio is also copied to frontend/public/audios/, and index.json is auto‑updated for front‑end use.
+
+📎 Note:
+On first use of a Hugging Face model (e.g., openai/whisper-large-v3), you may be required to agree to its license via the model's Hugging Face page.
+Please open the model page in your browser and click "Agree and access" before running transcription.
 
 ## 4. Start the front‑end
 Open http://localhost:5173 in your browser.

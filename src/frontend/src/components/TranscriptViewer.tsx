@@ -48,8 +48,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   bookmarks,
   currentAudioFile,
 }) => {
-  console.log("TranscriptViewer received speakerMapping:", speakerMapping)
-
+  
   const containerRef = useRef<HTMLDivElement>(null)
   const activeEntryRef = useRef<HTMLDivElement>(null)
   const editContainerRef = useRef<HTMLDivElement>(null)
@@ -218,13 +217,27 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     setShowDeleteConfirm(true)
   }
 
+  // const handleConfirmDelete = () => {
+  //   if (deleteIndex !== null) {
+  //     onDeleteEntry(deleteIndex)
+  //   }
+  //   setShowDeleteConfirm(false)
+  //   setDeleteIndex(null)
+  // }
   const handleConfirmDelete = () => {
     if (deleteIndex !== null) {
-      onDeleteEntry(deleteIndex)
+      const prev = transcript[deleteIndex - 1];
+      const next = transcript[deleteIndex + 1];
+  
+      if (prev && next && prev.end !== next.start) {
+        onTranscriptEdit(deleteIndex - 1, { end: next.start });
+      }
+  
+      onDeleteEntry(deleteIndex);
     }
-    setShowDeleteConfirm(false)
-    setDeleteIndex(null)
-  }
+    setShowDeleteConfirm(false);
+    setDeleteIndex(null);
+  };
 
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false)

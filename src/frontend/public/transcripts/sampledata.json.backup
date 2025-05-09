@@ -7,6 +7,12 @@
   },
   {
     "start": 40,
+    "end": 40,
+    "speaker": "SPEAKER_00",
+    "text": "a"
+  },
+  {
+    "start": 40,
     "end": 42,
     "speaker": "SPEAKER_01",
     "text": "もう一回最初から"
@@ -22,12 +28,6 @@
     "end": 98,
     "speaker": "SPEAKER_01",
     "text": "なるほど"
-  },
-  {
-    "start": 98,
-    "end": 98,
-    "speaker": "SPEAKER_01",
-    "text": ""
   },
   {
     "start": 98,

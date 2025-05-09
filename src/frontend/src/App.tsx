@@ -266,34 +266,24 @@ function App() {
     }
   }
 
-  const saveTranscriptChanges = async () => {
+  const saveTranscriptChanges = async (transcriptToSave: TranscriptEntry[] = transcript) => {
     if (!selectedAudio || saveInProgressRef.current) {
       console.log("Save already in progress or no audio selected, skipping")
       return
     }
-
     const transcriptFile = selectedAudio.replace(".wav", ".json")
     console.log("Saving transcript changes to:", transcriptFile)
-
     saveInProgressRef.current = true
     setIsSaving(true)
     setSaveStatus("saving")
     setSaveError(null)
-
     try {
       await checkServerStatus()
-
-      const transcriptToSave = JSON.parse(JSON.stringify(transcript))
-
-      console.log("Current transcript before save:", transcriptToSave)
-      console.log("Current speaker mapping:", speakerMapping)
 
       const requestData = {
         filename: transcriptFile,
         data: transcriptToSave,
       }
-
-      console.log("Sending data to server:", requestData)
 
       const response = await fetch("/api/save-transcript", {
         method: "POST",
@@ -303,12 +293,7 @@ function App() {
         body: JSON.stringify(requestData),
       })
 
-      let responseData
-      try {
-        responseData = await response.json()
-      } catch (error) {
-        throw new Error(`Failed to parse response: ${await response.text()}`)
-      }
+      const responseData = await response.json()
 
       if (!response.ok) {
         throw new Error(`Failed to save transcript: ${responseData.error || response.statusText}`)
@@ -316,24 +301,13 @@ function App() {
 
       console.log("Transcript saved successfully:", responseData)
 
-      try {
-        localStorage.setItem(`speakerMapping_${transcriptFile}`, JSON.stringify(speakerMapping))
-        console.log("Speaker mapping saved to localStorage")
-      } catch (error) {
-        console.warn("Failed to save speaker mapping to localStorage:", error)
-      }
-
+      localStorage.setItem(`speakerMapping_${transcriptFile}`, JSON.stringify(speakerMapping))
       setSaveStatus("success")
-
-      setTimeout(() => {
-        setSaveStatus("idle")
-        setSaveError(null)
-      }, 3000)
+      setTimeout(() => setSaveStatus("idle"), 3000)
     } catch (error) {
       console.error("Error saving transcript:", error)
       setSaveStatus("error")
       setSaveError((error as Error).message)
-
       setTimeout(() => {
         setSaveStatus("idle")
         setSaveError(null)
@@ -378,56 +352,63 @@ function App() {
 
   const handleDeleteEntry = (index: number) => {
     console.log(`Deleting entry at index ${index}`)
-
+  
     setTranscript((prev) => {
       const updated = [...prev]
       updated.splice(index, 1)
       return updated
     })
-
+  
     if (selectedEntryIndex === index) {
       setSelectedEntryIndex(null)
     } else if (selectedEntryIndex !== null && selectedEntryIndex > index) {
       setSelectedEntryIndex(selectedEntryIndex - 1)
     }
-
+  
     setTimeout(() => {
       console.log("Saving after deleting entry")
-      saveTranscriptChanges()
+      saveTranscriptChanges([...updatedTranscript])
     }, 100)
   }
 
   const handleAddEntryBetween = (index: number) => {
     console.log(`Adding new entry after index ${index}`)
-
+  
     let startTime = 0
     let endTime = 0
-
-    if (index < transcript.length) {
-      startTime = transcript[index].end
-
-      if (index + 1 < transcript.length) {
-        endTime = transcript[index + 1].start
-      } else {
-        endTime = startTime + 2.0
-      }
+  
+    const prev = transcript[index - 1]
+  
+    if (prev) {
+      startTime = prev.end
     }
-
+  
+    if (index < transcript.length) {
+      endTime = transcript[index].start
+    } else {
+      endTime = startTime + 2.0
+    }
+  
     const newEntry: TranscriptEntry = {
       start: startTime,
       end: endTime,
-      speaker: transcript[index]?.speaker || "",
+      speaker: prev?.speaker || "",
       text: "",
     }
-
+  
     setTranscript((prev) => {
       const updated = [...prev]
-      updated.splice(index + 1, 0, newEntry)
+      updated.splice(index, 0, newEntry)
+      
+      setTimeout(() => {
+        console.log("Saving after adding new entry")
+        saveTranscriptChanges(updated)
+      }, 100)
+    
       return updated
     })
-
-    setSelectedEntryIndex(index + 1)
-
+  
+    setSelectedEntryIndex(index)
     setTimeout(() => {
       console.log("Saving after adding new entry")
       saveTranscriptChanges()

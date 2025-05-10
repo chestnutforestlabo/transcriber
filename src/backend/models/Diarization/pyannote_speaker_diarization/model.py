@@ -3,16 +3,18 @@ from pyannote.core import Annotation, Segment
 from models.base import BaseModel
 import time
 from typing import List, Tuple, Union
+import os
 
 class SpeechDiarization(BaseModel):
     def setup_model(self) -> Pipeline:
         """
         Load the Pyannote speaker-diarization pipeline.
         """
-        return Pipeline.from_pretrained(
-            "pyannote/speaker-diarization-3.1",
-            use_auth_token=self.config.get("huggingface_token")
-        )
+        # return Pipeline.from_pretrained(
+        #     "pyannote/speaker-diarization-3.1",
+        #     use_auth_token=self.config.get("huggingface_token")
+        # )
+        return Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=os.environ["HF_TOKEN"])
 
     def inference(self, audio_source: str) -> Annotation:
         """

@@ -222,34 +222,25 @@ function App() {
   }
 
   const handleWaveformClick = (time: number) => {
-    console.log("Waveform clicked, finding transcript at time:", time)
+    console.log("Waveform clicked, time:", time);
 
-    const entryIndex = transcript.findIndex((entry) => time >= entry.start && time < entry.end)
+    setCurrentTime(time);
+    setLastPlaybackPosition(time);
 
-    if (entryIndex !== -1) {
-      console.log("Found transcript entry at index:", entryIndex)
+    const entries = document.querySelectorAll<HTMLElement>(".transcript-entry");
+    for (const entryEl of entries) {
+      const startAttr = entryEl.dataset.start;
+      const endAttr = entryEl.dataset.end;
+      if (!startAttr || !endAttr) continue;
 
-      setSelectedEntryIndex(entryIndex)
-
-      const transcriptViewer = document.querySelector(".transcript-viewer")
-      if (transcriptViewer) {
-        const entryElement = transcriptViewer.children[entryIndex] as HTMLElement
-        if (entryElement) {
-          entryElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          })
-
-          setCurrentTime(time)
-          setLastPlaybackPosition(time)
-        }
+      const start = parseFloat(startAttr);
+      const end   = parseFloat(endAttr);
+      if (time >= start && time < end) {
+        entryEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
       }
-    } else {
-      setSelectedEntryIndex(null)
-      setCurrentTime(time)
-      setLastPlaybackPosition(time)
     }
-  }
+  };
 
   const checkServerStatus = async () => {
     try {

@@ -1,18 +1,22 @@
 #!/bin/bash
 
-# Loop through all .m4a files in the current directory
+# Loop through all .m4a, .mp3, .flac files in audios/*/
 for dir in audios/*/; do
     for file in "$dir"*.m4a; do
         [[ -e "$file" ]] || continue
         outfile="${file%.m4a}.wav"
         ffmpeg -i "$file" "$outfile" -y
+    done
+
     for file in "$dir"*.mp3; do
         [[ -e "$file" ]] || continue
-        outfile="${file%.m4a}.wav"
+        outfile="${file%.mp3}.wav"
         ffmpeg -i "$file" "$outfile" -y
+    done
+
     for file in "$dir"*.flac; do
         [[ -e "$file" ]] || continue
-        outfile="${file%.m4a}.wav"
+        outfile="${file%.flac}.wav"
         ffmpeg -i "$file" "$outfile" -y
     done
 done
@@ -25,4 +29,9 @@ gpu_id=0
 set -a
 source environments/backend/.env
 set +a
-uv run python3 src/backend/transcribe.py --audio_dir $audio_dir --language $language --asr_model_name $asr_model_name --gpu_id $gpu_id
+
+uv run python3 src/backend/transcribe.py \
+    --audio_dir "$audio_dir" \
+    --language "$language" \
+    --asr_model_name "$asr_model_name" \
+    --gpu_id "$gpu_id"

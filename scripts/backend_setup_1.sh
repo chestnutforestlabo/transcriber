@@ -7,5 +7,6 @@ export HOST_GID=$(id -g)
 export USER_NAME=${USER}
 
 cd environments/backend
+docker compose build
 docker compose up -d
 docker compose exec backend bash

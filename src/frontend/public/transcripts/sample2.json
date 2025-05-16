@@ -73,6 +73,12 @@
   },
   {
     "start": 80,
+    "end": 80,
+    "speaker": "SPEAKER_01",
+    "text": ""
+  },
+  {
+    "start": 80,
     "end": 85,
     "speaker": "SPEAKER_01",
     "text": "発表とかじゃなくてディスカッションとかして交流が目的なの?"

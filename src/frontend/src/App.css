@@ -124,7 +124,8 @@
 .audio-list-container {
   width: 250px;
   border-right: 2px solid #a6a6a6a7;
-  background-color: #62e1d230;
+  /* background-color: #62e1d230; */
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -480,8 +481,9 @@
 }
 .transcript-header {
   padding: 13px;
-  border-bottom: 1px solid #a6a6a6a7;
-  background-color: #62e1d230;
+  /* border-bottom: 1px solid #a6a6a6a7; */
+  /* background-color: #62e1d230; */
+  background-color: #ffffff;
   font-weight: bold;
 }
 .transcript-header h3 {
@@ -509,7 +511,7 @@
   grid-template-columns: 60px 120px 1fr;
   padding: 15px 15px;
   position: relative;
-  background-color: #fafafa;
+  background-color: #ffffff;
   /* min-height: 70px; */
   height: auto;
 }
@@ -809,7 +811,8 @@
 .speaker-settings-container {
   width: 200px;
   border-left: 2px solid #a6a6a6a7;
-  background-color: #62e1d230;
+  /* background-color: #62e1d230; */
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -819,7 +822,7 @@
 .speaker-settings {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #a6a6a6a7;
+  /* border-bottom: 1px solid #a6a6a6a7; */
   overflow: hidden;
 }
 .speaker-settings h3 {

@@ -228,18 +228,21 @@ function App() {
     setLastPlaybackPosition(time);
 
     const entries = document.querySelectorAll<HTMLElement>(".transcript-entry");
-    for (const entryEl of entries) {
+    for (let i = 0; i < entries.length; i++) {
+      const entryEl = entries[i];
       const startAttr = entryEl.dataset.start;
       const endAttr = entryEl.dataset.end;
       if (!startAttr || !endAttr) continue;
 
       const start = parseFloat(startAttr);
-      const end   = parseFloat(endAttr);
+      const end = parseFloat(endAttr);
       if (time >= start && time < end) {
+        setSelectedEntryIndex(i);
         entryEl.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
     }
+    setSelectedEntryIndex(null);
   };
 
   const checkServerStatus = async () => {

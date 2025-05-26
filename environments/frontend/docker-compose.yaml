@@ -8,7 +8,7 @@ services:
         - USER_NAME=${USER_NAME}
     working_dir: /transcriber
     volumes:
-      - ../../:/transcriber
+      - ../../:/transcriber:cached
       - frontend_node_modules:/transcriber/src/frontend/node_modules
     ports:
       - "5173:5173"

@@ -7,6 +7,8 @@ the result in a React front‑end with waveform‑synchronised captions.
 ```bash
 Project structure
 ├─ audios/num_speakers_N/ # Input audio files (N = max number of speakers)
+├─ models # this is where the models will be saved as
+├─ outputs # this is where the transcriptions will be saved at
 ├─ environments
 │   ├─ .env
 │   ├─ envs.env #you need to make this by yourelf
@@ -81,7 +83,7 @@ HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 You can choose between two options:
 
-### 🔹 a. Using Docker Compose (Recommended)
+### 🔹 a. Using Docker Compose from CLI
 
 ```bash
 cd environments
@@ -90,7 +92,7 @@ docker compose up backend -d
 docker compose exec backend bash
 ```
 
-### Inside the container
+Inside the container:
 
 ```bash
 uv sync
@@ -155,14 +157,22 @@ Open http://localhost:5173 in your browser.
 You should see the waveform, speaker‑coloured captions, and you can seek by
 clicking either the text or the waveform.
 
+### 🔹 a. Using Docker Compose from CLI
+
 ```bash
 cd environments
 docker compose up --build frontend
 ```
 
-or 
+### 🔹 b. Using Setup Scripts 
 
 ```bash
 # Activate frontend Docker container and Activate local server
 bash ./scripts/frontend_activate.sh
 ```
+
+# Contributors
+Project Lead/Engineer: @chestnutforestlabo
+Project Engineer: @Shinceliry
+
+> **🪂 This project is based on [cvpaperchallenge/Ascender](https://github.com/cvpaperchallenge/Ascender).**

@@ -8,8 +8,11 @@ the result in a React front‑end with waveform‑synchronised captions.
 Project structure
 ├─ audios/num_speakers_N/ # Input audio files (N = max number of speakers)
 ├─ environments
-│   ├─ backend/ # 
-│   └─ frontend/ # 
+│   ├─ .env
+│   ├─ envs.env #you need to make this by yourelf
+│   ├─ DockerfileBackend
+│   ├─ DockerfileFrontend
+│   └─ docker-compose.yaml
 ├─ scripts/ # Shell scripts
 └─ src
     ├─ backend/ # Inference scripts & model wrappers
@@ -29,41 +32,90 @@ Project structure
 
 ---
 
-## 1. Backend setup
-You can set up the backend in two ways:
 
-### 🔹 a. Using provided scripts (recommended)
+### ✅ Environment Variable Setup
+
+🔧 Save Host UID and GID
+
+Create a script to detect and persist your user and group IDs:
 
 ```bash
-# Start Docker container
-bash ./scripts/backend_setup_1.sh
-
-# Install Python deps + Log in to Hugging Face CLI using token from .env
-bash ./scripts/backend_setup_2.sh
+id -u  # e.g., 1000
+id -g  # e.g., 1000
 ```
-📝 Before running the above scripts, create a .env file at environments/backend/.env:
+
+Edit your shell config file:
+
+```bash
+vim ~/.bash_profile  # Or ~/.bashrc, depending on your shell
+```
+
+Add the following lines:
+
+```bash
+export HOST_UID=1000  # Replace with output from id -u
+export HOST_GID=1000  # Replace with output from id -g
+```
+
+Apply changes:
+
+```bash
+source ~/.bash_profile
+```
+
+🔐 Hugging Face Token
+
+Before proceeding, create an environment file:
+
+```bash
+vim environments/envs.env
+```
+
+Add your Hugging Face token inside the file:
 
 ```bash
 HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-This will:
+## 🚀 1. Backend Setup
 
-log into Hugging Face automatically using huggingface-cli login --token
-cache downloaded models in the models/ directory
+You can choose between two options:
 
-### 🔹 b. Manual Docker command setup
-
-Alternatively, you can run each command manually. In that case, your .env (e.g., environments/backend/.env) should include:
+### 🔹 a. Using Docker Compose (Recommended)
 
 ```bash
-HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX # Enter your huggingface access token
-UID=1000 # check your UID by "echo ${UID}"
-GID=1000 # check your GID by "echo ${GID}"
-USER=your-username # check your USER by "echo ${USER}"
+cd environments
+docker compose build backend
+docker compose up backend -d
+docker compose exec backend bash
 ```
 
-You can then manually enter the container and execute setup steps.
+### Inside the container
+
+```bash
+uv sync
+uv run huggingface-cli login --token $HF_TOKEN
+```
+
+This setup will:
+	•	Log into Hugging Face using your token
+	•	Cache downloaded models in the models/ directory
+
+
+### 🔹 b. Using Setup Scripts
+
+Run the following scripts sequentially:
+
+```bash
+# Start Docker container
+bash ./scripts/backend_setup_1.sh
+
+# Inside container: install dependencies and login to Hugging Face
+bash ./scripts/backend_setup_2.sh
+```
+
+✅ You’re all set! The backend is now configured and ready to use with Hugging Face integration.
+
 
 ## 2. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
@@ -86,7 +138,7 @@ Run the transcription script:
 
 ```bash
 # Transcribe your audios
-bash ./scripts/backend_transcriber.sh
+bash ./scripts/backend_transcribe.sh
 ```
 Transcription results will be saved to:
 
@@ -104,41 +156,13 @@ You should see the waveform, speaker‑coloured captions, and you can seek by
 clicking either the text or the waveform.
 
 ```bash
+cd environments
+docker compose up --build frontend
+```
+
+or 
+
+```bash
 # Activate frontend Docker container and Activate local server
 bash ./scripts/frontend_activate.sh
 ```
-
-<!-- ## How to activate local server?
-
-Install nvm:
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-source ~/.bashrc
-```
-
-Install Node.js (ver.LTS):
-
-```bash
-nvm install --lts
-nvm use --lts
-```
-
-Install Javascript Package Manager:
-
-```bash
-npm install -g pnpm
-```
-
-Check Node.js, pnpm version:
-
-```bash
-node -v
-pnpm -v
-```
-
-Activate local server:
-
-```bash
-bash start_local.sh
-``` -->

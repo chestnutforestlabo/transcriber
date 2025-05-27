@@ -4,11 +4,12 @@ from pyannote.core import Segment
 from models.base import BaseModel
 import time
 import whisper
-
+import os
 class AutomaticSpeechRecognition(BaseModel):
     def setup_model(self):
-        return whisper.load_model("large-v3")
-
+        # specify where to save the model
+        return whisper.load_model("large-v3", download_root=os.environ.get("HF_HOME", "./models"))
+    
     def inference(self, audio: Any) -> Any:
         print("Start ASR")
         start = time.time()

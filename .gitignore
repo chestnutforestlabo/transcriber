@@ -1,3 +1,5 @@
+envs.env
+
 setup.sh
 *.txt
 *.wav

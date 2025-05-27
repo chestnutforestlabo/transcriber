@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
-
-# docker image prune -a -f
-
-export HOST_UID=$(id -u)
-export HOST_GID=$(id -g)
-export USER_NAME=${USER}
-
-cd environments/backend
-docker compose build
-docker compose up -d
+cd environments
+docker compose build backend
+docker compose up backend -d
 docker compose exec backend bash

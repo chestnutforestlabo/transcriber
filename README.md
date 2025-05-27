@@ -79,47 +79,7 @@ Add your Hugging Face token inside the file:
 HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-## 🚀 1. Backend Setup
-
-You can choose between two options:
-
-### 🔹 a. Using Docker Compose from CLI
-
-```bash
-cd environments
-docker compose build backend
-docker compose up backend -d
-docker compose exec backend bash
-```
-
-Inside the container:
-
-```bash
-uv sync
-uv run huggingface-cli login --token $HF_TOKEN
-```
-
-This setup will:
-	•	Log into Hugging Face using your token
-	•	Cache downloaded models in the models/ directory
-
-
-### 🔹 b. Using Setup Scripts
-
-Run the following scripts sequentially:
-
-```bash
-# Start Docker container
-bash ./scripts/backend_setup_1.sh
-
-# Inside container: install dependencies and login to Hugging Face
-bash ./scripts/backend_setup_2.sh
-```
-
-✅ You’re all set! The backend is now configured and ready to use with Hugging Face integration.
-
-
-## 2. Add your audios
+## 1. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
 maximum number of different speakers in the recording, e.g.
 audios/num_speakers=2/ for a two‑speaker conversation.
@@ -134,13 +94,12 @@ audios/
 └─ num_speakers=3/
 ```
 
-
-## 3. Run transcription
+## 2. Run transcription
 Run the transcription script:
 
 ```bash
 # Transcribe your audios
-bash ./scripts/backend_transcribe.sh
+bash ./scripts/transcribe.sh
 ```
 Transcription results will be saved to:
 
@@ -152,19 +111,10 @@ The original audio is also copied to frontend/public/audios/, and index.json is 
 On first use of a Hugging Face model (e.g., openai/whisper-large-v3), you may be required to agree to its license via the model's Hugging Face page.
 Please open the model page in your browser and click "Agree and access" before running transcription.
 
-## 4. Start the front‑end
+## 3. Start the front‑end
 Open http://localhost:5173 in your browser.
 You should see the waveform, speaker‑coloured captions, and you can seek by
 clicking either the text or the waveform.
-
-### 🔹 a. Using Docker Compose from CLI
-
-```bash
-cd environments
-docker compose up --build frontend
-```
-
-### 🔹 b. Using Setup Scripts 
 
 ```bash
 # Activate frontend Docker container and Activate local server

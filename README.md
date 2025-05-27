@@ -1,6 +1,6 @@
 # Transcribers 📝🎙️
 
-A toolkit that **automatically transcribes multi‑speaker meetings** with  
+A toolkit that **automatically transcribes multi‑speaker meetings/interviews** with  
 **Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  
 the result in a React front‑end with waveform‑synchronised captions.
 
@@ -122,7 +122,7 @@ bash ./scripts/frontend_activate.sh
 ```
 
 # Contributors
-Project Lead/Engineer: @chestnutforestlabo
-Project Engineer: @Shinceliry
+Project Lead/Engineer: [@chestnutforestlabo](https://github.com/chestnutforestlabo)
+Project Engineer: [@Shinceliry](https://github.com/Shinceliry)
 
-> **🪂 This project is based on [cvpaperchallenge/Ascender](https://github.com/cvpaperchallenge/Ascender).**
+**🪂 This project is based on [cvpaperchallenge/Ascender](https://github.com/cvpaperchallenge/Ascender).**

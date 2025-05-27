@@ -122,7 +122,7 @@ bash ./scripts/frontend_activate.sh
 ```
 
 # Contributors
-Project Lead/Engineer: [@chestnutforestlabo](https://github.com/chestnutforestlabo)
-Project Engineer: [@Shinceliry](https://github.com/Shinceliry)
+- **Project Lead/Engineer**: [@chestnutforestlabo](https://github.com/chestnutforestlabo)
+- **Project Engineer**: [@Shinceliry](https://github.com/Shinceliry)
 
 **🪂 This project is based on [cvpaperchallenge/Ascender](https://github.com/cvpaperchallenge/Ascender).**

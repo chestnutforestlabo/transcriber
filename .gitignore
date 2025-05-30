@@ -6,6 +6,10 @@ models/**
 # outputs
 outputs/**
 !outputs/.gitkeep
+src/public/audios/**
+!src/public/audios/.gitkeep
+src/public/transcripts/**
+!src/public/transcripts/.gitkeep
 
 envs.env
 setup.sh

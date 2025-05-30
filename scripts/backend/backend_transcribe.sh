@@ -26,10 +26,6 @@ language="ja"
 asr_model_name="whisper-large-v3"
 gpu_id=0
 
-set -a
-source environments/backend/.env
-set +a
-
 uv run python3 src/backend/transcribe.py \
     --audio_dir "$audio_dir" \
     --language "$language" \

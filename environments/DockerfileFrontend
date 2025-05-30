@@ -1,7 +1,11 @@
 FROM node:22
 
-ARG UID=$(id -u)
-ARG USER_NAME=${USER}
+ARG PROJECT_NAME=ascender
+ARG USER_NAME=challenger
+ARG GROUP_NAME=challengers
+ARG UID=1000
+ARG GID=1000
+ARG USER_NAME=challenger
 
 RUN useradd -m -u ${UID} -s /bin/bash ${USER_NAME}
 

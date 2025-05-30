@@ -9,11 +9,15 @@ ARG GID=1000
 ARG PYTHON_VERSION=3.12
 ARG APPLICATION_DIRECTORY=/home/${USER_NAME}/${PROJECT_NAME}
 ARG RUN_UV_SYNC_AT_BUILD_TIME="false"
+ARG HF_HOME=/home/${USER_NAME}/${PROJECT_NAME}/models
+# ARG TRANSFORMERS_CACHE=/home/${USER_NAME}/${PROJECT_NAME}/models
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     LC_ALL="C.UTF-8" \
     LANG="C.UTF-8" \
     PYTHONPATH=${APPLICATION_DIRECTORY}
+
+ENV HF_HOME=${HF_HOME}
 
 RUN apt update -y && apt install --no-install-recommends -y software-properties-common gpg-agent \
     # Add deadsnakes PPA to install older Python versions

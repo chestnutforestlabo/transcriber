@@ -27,7 +27,7 @@ Project structure
 
 | Requirement           | Recommended | Notes                                   |
 |-----------------------|-------------|-----------------------------------------|
-| Python                | 3.9+        | We use Poetry for dependency handling   |
+| Python                | 3.9+        | We use UV for dependency handling   |
 | CUDA‑enabled GPU      | optional    | CPU works but will be slow              |
 | Docker / Docker Compose| 23.x / v2  | For launching the front‑end container   |
 | Hugging Face token    | required    | *Read* scope is enough                  |

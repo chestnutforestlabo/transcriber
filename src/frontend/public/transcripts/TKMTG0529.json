@@ -1,0 +1,836 @@
+[
+  {
+    "start": 0.0,
+    "end": 18.0,
+    "speaker": "SPEAKER_00",
+    "text": "スタッフの声もう一回お願いしますスタッフの声音声音声音声なんでこれこんなに汚く巻きがされるのこれ汚いです汚くない?"
+  },
+  {
+    "start": 18.0,
+    "end": 118.0,
+    "speaker": "SPEAKER_00",
+    "text": "だって3人でしょアシャンはい3人でしょアシャン3人もっと理想的には3点で巻く巻くんじゃないのかなと思うんだけど巻くんですけどそもそも赤とか青とか緑の一点一点は何を示してるのかあれ何だろう何だろう何だろう何だろう何だろう何だろう何だろう何だろう何だろう何だろういいのに新しい根本いうそのおやすみなさい"
+  },
+  {
+    "start": 118.0,
+    "end": 208.0,
+    "speaker": "SPEAKER_01",
+    "text": "おやすみなさいおやすみなさいおやすみなさい"
+  },
+  {
+    "start": 208.0,
+    "end": 298.0,
+    "speaker": "SPEAKER_00",
+    "text": "おやすみなさいおやすみなさいおやすみなさい"
+  },
+  {
+    "start": 298.0,
+    "end": 328.0,
+    "speaker": "SPEAKER_01",
+    "text": "おやすみなさい"
+  },
+  {
+    "start": 328.0,
+    "end": 851.0,
+    "speaker": "SPEAKER_00",
+    "text": "おやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいおやすみなさいooooohackkkkkkkkkkkkk色の範囲を3種類に変更することができます。"
+  },
+  {
+    "start": 851.0,
+    "end": 854.0,
+    "speaker": "SPEAKER_00",
+    "text": "角度、領域、位置など。"
+  },
+  {
+    "start": 854.0,
+    "end": 860.0,
+    "speaker": "SPEAKER_00",
+    "text": "ほぼこれじゃん。エリアベースでやろうと言ったらほぼこれじゃん。"
+  },
+  {
+    "start": 860.0,
+    "end": 867.0,
+    "speaker": "SPEAKER_00",
+    "text": "インビジブルマイク。"
+  },
+  {
+    "start": 867.0,
+    "end": 871.0,
+    "speaker": "SPEAKER_00",
+    "text": "ほぼこれじゃない?"
+  },
+  {
+    "start": 871.0,
+    "end": 877.0,
+    "speaker": "SPEAKER_00",
+    "text": "トナカさんが言ってるのは、ここに円を作りたいとかそういうことじゃないんですか?"
+  },
+  {
+    "start": 877.0,
+    "end": 882.0,
+    "speaker": "SPEAKER_00",
+    "text": "そうだけど、円で指定する必要はないけどさ。"
+  },
+  {
+    "start": 882.0,
+    "end": 888.0,
+    "speaker": "SPEAKER_00",
+    "text": "扇形の先だけでもいいわけじゃないか。"
+  },
+  {
+    "start": 888.0,
+    "end": 890.0,
+    "speaker": "SPEAKER_00",
+    "text": "だってこれとさ、"
+  },
+  {
+    "start": 890.0,
+    "end": 895.0,
+    "speaker": "SPEAKER_00",
+    "text": "HDBSS組み合わせたらできるじゃん。"
+  },
+  {
+    "start": 895.0,
+    "end": 897.0,
+    "speaker": "SPEAKER_00",
+    "text": "確かに。"
+  },
+  {
+    "start": 897.0,
+    "end": 901.0,
+    "speaker": "SPEAKER_00",
+    "text": "領域中心はいじれてないです。"
+  },
+  {
+    "start": 901.0,
+    "end": 908.0,
+    "speaker": "SPEAKER_00",
+    "text": "だから、例えばアンギュラーでやってますと角度よりね。"
+  },
+  {
+    "start": 908.0,
+    "end": 918.0,
+    "speaker": "SPEAKER_00",
+    "text": "これが、ここは距離の遠さを考えてないわけじゃんか。"
+  },
+  {
+    "start": 918.0,
+    "end": 920.0,
+    "speaker": "SPEAKER_00",
+    "text": "だからハイパフォーリックにして、これを、"
+  },
+  {
+    "start": 920.0,
+    "end": 925.0,
+    "speaker": "SPEAKER_00",
+    "text": "親子ノードで埋め込んでさ、やればできるやん。"
+  },
+  {
+    "start": 925.0,
+    "end": 927.0,
+    "speaker": "SPEAKER_00",
+    "text": "一回運用してもいいです。"
+  },
+  {
+    "start": 927.0,
+    "end": 931.0,
+    "speaker": "SPEAKER_00",
+    "text": "だから、これでHDBSSにすればできるじゃん。"
+  },
+  {
+    "start": 931.0,
+    "end": 935.0,
+    "speaker": "SPEAKER_00",
+    "text": "HDBSSが何をやってるかって、あれは遠いところと近いところをさ、"
+  },
+  {
+    "start": 935.0,
+    "end": 937.0,
+    "speaker": "SPEAKER_00",
+    "text": "埋め込めるわけでしょ?"
+  },
+  {
+    "start": 937.0,
+    "end": 938.0,
+    "speaker": "SPEAKER_00",
+    "text": "そうですね。"
+  },
+  {
+    "start": 938.0,
+    "end": 940.0,
+    "speaker": "SPEAKER_00",
+    "text": "そしたら、だってここは近いもの、ここは遠いものってさ、"
+  },
+  {
+    "start": 940.0,
+    "end": 944.0,
+    "speaker": "SPEAKER_00",
+    "text": "こっち側だけやればできるんじゃないの?"
+  },
+  {
+    "start": 944.0,
+    "end": 948.0,
+    "speaker": "SPEAKER_00",
+    "text": "埋め込むなとどういう意味?"
+  },
+  {
+    "start": 948.0,
+    "end": 953.0,
+    "speaker": "SPEAKER_00",
+    "text": "埋め込んだ後に、その時空間上でのこれを見るってことですか?"
+  },
+  {
+    "start": 953.0,
+    "end": 958.0,
+    "speaker": "SPEAKER_00",
+    "text": "いやいやいや、えっとだから、え?"
+  },
+  {
+    "start": 958.0,
+    "end": 962.0,
+    "speaker": "SPEAKER_00",
+    "text": "どうやって埋め込むのかな?"
+  },
+  {
+    "start": 962.0,
+    "end": 965.0,
+    "speaker": "SPEAKER_00",
+    "text": "これがそもそも埋め込まれるわけでしょ?"
+  },
+  {
+    "start": 965.0,
+    "end": 970.0,
+    "speaker": "SPEAKER_00",
+    "text": "で、それを、だから近いものと遠いものを分けって言うも込むのさ、"
+  },
+  {
+    "start": 970.0,
+    "end": 972.0,
+    "speaker": "SPEAKER_00",
+    "text": "遠いものだけ出れるじゃん。"
+  },
+  {
+    "start": 972.0,
+    "end": 975.0,
+    "speaker": "SPEAKER_00",
+    "text": "確かに。"
+  },
+  {
+    "start": 975.0,
+    "end": 976.0,
+    "speaker": "SPEAKER_00",
+    "text": "確かに。"
+  },
+  {
+    "start": 976.0,
+    "end": 984.0,
+    "speaker": "SPEAKER_00",
+    "text": "Jrue月中心自体はその辺りを自由 sleп J食われてのたなんで Möglichkeiten foreheadLin中底下にいるし、回転帯ności起きたし、"
+  },
+  {
+    "start": 984.0,
+    "end": 986.0,
+    "speaker": "SPEAKER_00",
+    "text": "できるんだ そうね。"
+  },
+  {
+    "start": 986.0,
+    "end": 987.0,
+    "speaker": "SPEAKER_00",
+    "text": "。"
+  },
+  {
+    "start": 987.0,
+    "end": 989.0,
+    "speaker": "SPEAKER_00",
+    "text": "そう、おそくでいい。"
+  },
+  {
+    "start": 989.0,
+    "end": 992.0,
+    "speaker": "SPEAKER_00",
+    "text": "。"
+  },
+  {
+    "start": 992.0,
+    "end": 993.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 993.0,
+    "end": 994.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 994.0,
+    "end": 995.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 995.0,
+    "end": 996.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 996.0,
+    "end": 997.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 997.0,
+    "end": 998.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 998.0,
+    "end": 999.0,
+    "speaker": "SPEAKER_01",
+    "text": "。"
+  },
+  {
+    "start": 999.0,
+    "end": 1001.0,
+    "speaker": "SPEAKER_00",
+    "text": "何が平成其?"
+  },
+  {
+    "start": 1001.0,
+    "end": 1002.0,
+    "speaker": "SPEAKER_00",
+    "text": "うん。"
+  },
+  {
+    "start": 1002.0,
+    "end": 1003.0,
+    "speaker": "SPEAKER_00",
+    "text": "。"
+  },
+  {
+    "start": 1003.0,
+    "end": 1004.0,
+    "speaker": "SPEAKER_00",
+    "text": "。"
+  },
+  {
+    "start": 1004.0,
+    "end": 1005.0,
+    "speaker": "SPEAKER_00",
+    "text": "。"
+  },
+  {
+    "start": 1005.0,
+    "end": 1008.0,
+    "speaker": "SPEAKER_00",
+    "text": "見上げたら、中心を自由にいじることができる。"
+  },
+  {
+    "start": 1008.0,
+    "end": 1014.0,
+    "speaker": "SPEAKER_00",
+    "text": "うん。"
+  },
+  {
+    "start": 1014.0,
+    "end": 1023.0,
+    "speaker": "SPEAKER_00",
+    "text": "極空間上に、近いのと遠いのを分けることができる。"
+  },
+  {
+    "start": 1023.0,
+    "end": 1025.0,
+    "speaker": "SPEAKER_00",
+    "text": "ほんとがちょっとよく分かってる。"
+  },
+  {
+    "start": 1025.0,
+    "end": 1027.0,
+    "speaker": "SPEAKER_00",
+    "text": "だから、極空間のところまで一つ目が聞いてると、"
+  },
+  {
+    "start": 1027.0,
+    "end": 1031.0,
+    "speaker": "SPEAKER_00",
+    "text": "HDBSSがやってるのは、遠いものと近いものが分けられますよってことでしょ?"
+  },
+  {
+    "start": 1031.0,
+    "end": 1032.0,
+    "speaker": "SPEAKER_00",
+    "text": "はい。"
+  },
+  {
+    "start": 1032.0,
+    "end": 1034.0,
+    "speaker": "SPEAKER_00",
+    "text": "これが今、このビールが走るわけやんか、"
+  },
+  {
+    "start": 1034.0,
+    "end": 1036.0,
+    "speaker": "SPEAKER_00",
+    "text": "それで遠いものと近いものに分けてさ、"
+  },
+  {
+    "start": 1036.0,
+    "end": 1037.0,
+    "speaker": "SPEAKER_00",
+    "text": "分かりました。"
+  },
+  {
+    "start": 1037.0,
+    "end": 1041.0,
+    "speaker": "SPEAKER_00",
+    "text": "分かりました。"
+  },
+  {
+    "start": 1041.0,
+    "end": 1043.0,
+    "speaker": "SPEAKER_00",
+    "text": "これにHDBSSを出すことで、"
+  },
+  {
+    "start": 1043.0,
+    "end": 1046.0,
+    "speaker": "SPEAKER_00",
+    "text": "このビームの中の、ここだけ持ってくるよね。"
+  },
+  {
+    "start": 1046.0,
+    "end": 1047.0,
+    "speaker": "SPEAKER_00",
+    "text": "うん。"
+  },
+  {
+    "start": 1047.0,
+    "end": 1050.0,
+    "speaker": "SPEAKER_00",
+    "text": "見返しました。"
+  },
+  {
+    "start": 1050.0,
+    "end": 1054.0,
+    "speaker": "SPEAKER_00",
+    "text": "もちろん、ここが中心で、ここを急系で取ることはできないけど、"
+  },
+  {
+    "start": 1054.0,
+    "end": 1056.0,
+    "speaker": "SPEAKER_00",
+    "text": "別に急で取る必要はないわけで、"
+  },
+  {
+    "start": 1056.0,
+    "end": 1060.0,
+    "speaker": "SPEAKER_00",
+    "text": "こういう扇形のさ、"
+  },
+  {
+    "start": 1060.0,
+    "end": 1062.0,
+    "speaker": "SPEAKER_00",
+    "text": "こうやって指定すればいいんだ。"
+  },
+  {
+    "start": 1062.0,
+    "end": 1064.0,
+    "speaker": "SPEAKER_00",
+    "text": "確かにできそう。"
+  },
+  {
+    "start": 1064.0,
+    "end": 1065.0,
+    "speaker": "SPEAKER_00",
+    "text": "温度計でできます。"
+  },
+  {
+    "start": 1065.0,
+    "end": 1066.0,
+    "speaker": "SPEAKER_00",
+    "text": "分かりました。"
+  },
+  {
+    "start": 1066.0,
+    "end": 1067.0,
+    "speaker": "SPEAKER_00",
+    "text": "感動しました。"
+  },
+  {
+    "start": 1067.0,
+    "end": 1068.0,
+    "speaker": "SPEAKER_00",
+    "text": "どういうこと?"
+  },
+  {
+    "start": 1068.0,
+    "end": 1091.0,
+    "speaker": "SPEAKER_01",
+    "text": "ほんとでくじ病。"
+  },
+  {
+    "start": 1091.0,
+    "end": 1092.0,
+    "speaker": "SPEAKER_01",
+    "text": "ミス。"
+  },
+  {
+    "start": 1092.0,
+    "end": 1093.0,
+    "speaker": "SPEAKER_01",
+    "text": "止まりました。"
+  },
+  {
+    "start": 1093.0,
+    "end": 1097.0,
+    "speaker": "SPEAKER_00",
+    "text": "ただの組み合わせになっちゃったんですか?"
+  },
+  {
+    "start": 1097.0,
+    "end": 1100.0,
+    "speaker": "SPEAKER_00",
+    "text": "そんな気がしてきた。"
+  },
+  {
+    "start": 1100.0,
+    "end": 1104.0,
+    "speaker": "SPEAKER_00",
+    "text": "これを知らなかったから。"
+  },
+  {
+    "start": 1104.0,
+    "end": 1111.0,
+    "speaker": "SPEAKER_00",
+    "text": "これちょっと、先週から今週にかけて2週間で見つけた論文なのと。"
+  },
+  {
+    "start": 1111.0,
+    "end": 1115.0,
+    "speaker": "SPEAKER_00",
+    "text": "今日初めて報告しました。"
+  },
+  {
+    "start": 1115.0,
+    "end": 1120.0,
+    "speaker": "SPEAKER_00",
+    "text": "多分これの関連研究を終えばあると思うけどね。"
+  },
+  {
+    "start": 1120.0,
+    "end": 1123.0,
+    "speaker": "SPEAKER_00",
+    "text": "STL2020だからまだできない。"
+  },
+  {
+    "start": 1123.0,
+    "end": 1131.0,
+    "speaker": "SPEAKER_00",
+    "text": "まだ大してできない。"
+  },
+  {
+    "start": 1131.0,
+    "end": 1136.0,
+    "speaker": "SPEAKER_00",
+    "text": "まさにそうじゃない?リージョンカスタマイザルがサウンドエクストラクションなんでしょ?"
+  },
+  {
+    "start": 1136.0,
+    "end": 1137.0,
+    "speaker": "SPEAKER_00",
+    "text": "はい。"
+  },
+  {
+    "start": 1137.0,
+    "end": 1142.0,
+    "speaker": "SPEAKER_00",
+    "text": "まさにそれじゃん。"
+  },
+  {
+    "start": 1142.0,
+    "end": 1146.0,
+    "speaker": "SPEAKER_00",
+    "text": "そしたら公的サイドになるのかな。"
+  },
+  {
+    "start": 1146.0,
+    "end": 1150.0,
+    "speaker": "SPEAKER_00",
+    "text": "じゃあ、シチュエーションがまだやられてないという点では、"
+  },
+  {
+    "start": 1150.0,
+    "end": 1152.0,
+    "speaker": "SPEAKER_00",
+    "text": "それでも結構かかってますけど、"
+  },
+  {
+    "start": 1152.0,
+    "end": 1154.0,
+    "speaker": "SPEAKER_00",
+    "text": "すごくメ mìnhわかりやすい。"
+  },
+  {
+    "start": 1154.0,
+    "end": 1155.0,
+    "speaker": "SPEAKER_00",
+    "text": "正月も外国人特定に行ってみたら、"
+  },
+  {
+    "start": 1155.0,
+    "end": 1157.0,
+    "speaker": "SPEAKER_00",
+    "text": "まだ見もなかったですね。"
+  },
+  {
+    "start": 1157.0,
+    "end": 1159.0,
+    "speaker": "SPEAKER_01",
+    "text": "子供はより普通に診て下さいって。"
+  },
+  {
+    "start": 1159.0,
+    "end": 1160.0,
+    "speaker": "SPEAKER_01",
+    "text": "はい。"
+  },
+  {
+    "start": 1160.0,
+    "end": 1161.0,
+    "speaker": "SPEAKER_01",
+    "text": "3時間に入ったのにωMを決めてるのかよ。"
+  },
+  {
+    "start": 1161.0,
+    "end": 1179.0,
+    "speaker": "SPEAKER_01",
+    "text": "う говорят,ip,いいえ、良かったです、でも。"
+  },
+  {
+    "start": 1179.0,
+    "end": 1292.36,
+    "speaker": "SPEAKER_00",
+    "text": "どうしましょう僕動的やりたいですスチュエーションが結構身近ですしやりやすいですお帰りでお待ちしておりますじゃあそれでいきますかお願いいたしますじゃあ次は何をやるんですかここに変えてみてまずデータセットがないと何もできないのでこの構成を早速やろうかなと思っていて今できましたデータセットこれそんなに難しくないと思うんですよね看板箱時間があればHDBSSは使うのでこれの論文実装しようかなと思ってメール待たずにメール来たらそっち使えばいいし来なかったら来なかったり論文実装するしかないあとインターンスピーチのアクセットあとインターンスピーチのアクセットで出たら確認する当分出ないってこと?"
+  },
+  {
+    "start": 1292.36,
+    "end": 1307.1799999999998,
+    "speaker": "SPEAKER_00",
+    "text": "出ない出たら確認する感じになります出たら教えていただきたいです自分でも随時確認するんですけど出たらちょっと実装するのはHDBSS?DBSS?"
+  },
+  {
+    "start": 1307.1799999999998,
+    "end": 1310.86,
+    "speaker": "SPEAKER_00",
+    "text": "はい実装するのはDBSS?HDBSS?"
+  },
+  {
+    "start": 1310.86,
+    "end": 1370.02,
+    "speaker": "SPEAKER_00",
+    "text": "HDBSSDBSSがHDBSSを実装する過程でできたものなのでHDBSSがHDBSSを実装する過程でできたものなのでHDBSSがHDBSSを実装する過程でできたものなのでH NewこれがH Flashで試してくれてたので以上ってことです文ものや定義証っていうことのこと動画も私手紙で寄せてありますんで接戦 parity Bad ."
+  },
+  {
+    "start": 1370.02,
+    "end": 1375.3999999999999,
+    "speaker": "SPEAKER_00",
+    "text": "皆さん決めたわよハイC巧ありがとうございました今日はここまでで。"
+  },
+  {
+    "start": 1375.3999999999999,
+    "end": 1375.76,
+    "speaker": "SPEAKER_00",
+    "text": "以外にはほぺー カラーワールドじゃないですか?"
+  },
+  {
+    "start": 1375.76,
+    "end": 1376.48,
+    "speaker": "SPEAKER_00",
+    "text": "カラーマスターの。"
+  },
+  {
+    "start": 1376.48,
+    "end": 1377.5,
+    "speaker": "SPEAKER_00",
+    "text": "というとまうんじゃないですか?"
+  },
+  {
+    "start": 1377.5,
+    "end": 1379.72,
+    "speaker": "SPEAKER_00",
+    "text": "はい俺は pareoで打つという콕バスを持ってきますように今週には同 Dear."
+  },
+  {
+    "start": 1379.72,
+    "end": 1380.28,
+    "speaker": "SPEAKER_00",
+    "text": "謝謝。"
+  },
+  {
+    "start": 1380.28,
+    "end": 1382.28,
+    "speaker": "SPEAKER_00",
+    "text": "大丈夫です。問題ないです。"
+  },
+  {
+    "start": 1382.28,
+    "end": 1384.28,
+    "speaker": "SPEAKER_00",
+    "text": "今、メール送るわ。"
+  },
+  {
+    "start": 1384.28,
+    "end": 1410.28,
+    "speaker": "SPEAKER_00",
+    "text": "お願いいたします。ありがとうございます。"
+  },
+  {
+    "start": 1410.28,
+    "end": 1412.28,
+    "speaker": "SPEAKER_00",
+    "text": "明日だっけ?あれ?"
+  },
+  {
+    "start": 1412.28,
+    "end": 1416.28,
+    "speaker": "SPEAKER_00",
+    "text": "明日、10時から出ます。"
+  },
+  {
+    "start": 1416.28,
+    "end": 1420.28,
+    "speaker": "SPEAKER_00",
+    "text": "もしかしたら、オンラインかも。"
+  },
+  {
+    "start": 1420.28,
+    "end": 1421.28,
+    "speaker": "SPEAKER_00",
+    "text": "分かります。"
+  },
+  {
+    "start": 1421.28,
+    "end": 1422.28,
+    "speaker": "SPEAKER_00",
+    "text": "天気次第。"
+  },
+  {
+    "start": 1422.28,
+    "end": 1423.28,
+    "speaker": "SPEAKER_00",
+    "text": "はい。"
+  },
+  {
+    "start": 1423.28,
+    "end": 1424.28,
+    "speaker": "SPEAKER_00",
+    "text": "だいぶ、悪い。"
+  },
+  {
+    "start": 1424.28,
+    "end": 1426.28,
+    "speaker": "SPEAKER_00",
+    "text": "誰でも来ようと思うけど。"
+  },
+  {
+    "start": 1426.28,
+    "end": 1427.28,
+    "speaker": "SPEAKER_00",
+    "text": "お願いします。"
+  },
+  {
+    "start": 1427.28,
+    "end": 1429.28,
+    "speaker": "SPEAKER_00",
+    "text": "お疲れ様。"
+  },
+  {
+    "start": 1429.28,
+    "end": 1430.28,
+    "speaker": "SPEAKER_00",
+    "text": "昨日帰れた?"
+  },
+  {
+    "start": 1430.28,
+    "end": 1431.28,
+    "speaker": "SPEAKER_00",
+    "text": "はい。"
+  },
+  {
+    "start": 1431.28,
+    "end": 1432.28,
+    "speaker": "SPEAKER_00",
+    "text": "昨日帰れただと。"
+  },
+  {
+    "start": 1432.28,
+    "end": 1433.28,
+    "speaker": "SPEAKER_01",
+    "text": "あっ、普通に帰る。"
+  },
+  {
+    "start": 1433.28,
+    "end": 1440.28,
+    "speaker": "SPEAKER_01",
+    "text": "ふふふふ。"
+  },
+  {
+    "start": 1440.28,
+    "end": 1442.28,
+    "speaker": "SPEAKER_00",
+    "text": "じゃあ、そんな感じで。"
+  },
+  {
+    "start": 1442.28,
+    "end": 1470.28,
+    "speaker": "SPEAKER_00",
+    "text": "はい。ありがとうございました。"
+  },
+  {
+    "start": 1470.28,
+    "end": 1476.28,
+    "speaker": "SPEAKER_00",
+    "text": "心痛いの?"
+  },
+  {
+    "start": 1476.28,
+    "end": 1480.28,
+    "speaker": "SPEAKER_00",
+    "text": "では、ぬくよなと裏切れるスタッフさんの教え方を教えて womanA 9トラップ…これは、取材中のよさそうな性格で、"
+  },
+  {
+    "start": 1480.28,
+    "end": 1480.58,
+    "speaker": "SPEAKER_00",
+    "text": "こっちは、"
+  },
+  {
+    "start": 1480.58,
+    "end": 1481.8799999999999,
+    "speaker": "SPEAKER_00",
+    "text": "食事も美味しく食べたり、"
+  },
+  {
+    "start": 1481.8799999999999,
+    "end": 1483.28,
+    "speaker": "SPEAKER_00",
+    "text": "Sk Lösungも少し分からん Sid。"
+  },
+  {
+    "start": 1483.28,
+    "end": 1484.28,
+    "speaker": "SPEAKER_00",
+    "text": "サバッジとしては、"
+  },
+  {
+    "start": 1484.28,
+    "end": 1490.28,
+    "speaker": "SPEAKER_00",
+    "text": "ベースの贅沢に pag且を出させる explainTaliban の Jean-Laure Jointそのままに、"
+  }
+]

@@ -86,37 +86,37 @@ def save_transcripts_json(args, output_data, file_name):
         })
         prev_end = end
     # Save speech recognition results in JSON format in two locations (frontend・backup)
-    os.makedirs("src/frontend/public/transcripts", exist_ok=True)
-    output_file_path = os.path.join("src/frontend/public/transcripts", f"{file_name}.json")
-    with open(output_file_path, "w", encoding="utf-8") as json_file:
-        json.dump(serializable, json_file, ensure_ascii=False, indent=2)
-    os.makedirs("src/backend/output", exist_ok=True)
-    backup_file_path = os.path.join("src/backend/output", f"{file_name}.json")
-    with open(backup_file_path, "w", encoding="utf-8") as json_file:
-        json.dump(serializable, json_file, ensure_ascii=False, indent=2)
+    output_dirs = ["src/frontend/public/transcripts", "outputs"]
+    for output_dir in output_dirs:
+        os.makedirs(output_dir, exist_ok=True)
+        output_file_path = os.path.join(output_dir, f"{file_name}.json")
+        with open(output_file_path, "w", encoding="utf-8") as json_file:
+            json.dump(serializable, json_file, ensure_ascii=False, indent=2)
     # Copy audio
-    shutil.copy2(os.path.join(args.audio_dir, f"{file_name}.wav"), "src/frontend/public/audios")
+    audio_paths = ["src/frontend/public/audios", "outputs"]
+    for audio_path in audio_paths:
+        shutil.copy2(os.path.join(args.audio_dir, f"{file_name}.wav"), audio_path)
 
 def save_index_json(file_names):
     os.makedirs("src/frontend/public/audios", exist_ok=True)
-    index_path = "src/frontend/public/audios/index.json"
-    if os.path.exists(index_path):
-        with open(index_path, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
-    else:
-        data = []
-    
-    if isinstance(file_names, list):
-        for item in file_names:
-            if item not in data:
-                data.append(item)
-    else:
-        if file_names not in data:
-            data.append(file_names)
-    
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+    index_paths = ["src/frontend/public/audios/index.json", "outputs/index.json"]
+    for index_path in index_paths:
+        if os.path.exists(index_path):
+            with open(index_path, "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                except json.JSONDecodeError:
+                    data = []
+        else:
+            data = []
+        if isinstance(file_names, list):
+            for item in file_names:
+                if item not in data:
+                    data.append(item)
+        else:
+            if file_names not in data:
+                data.append(file_names)
+        
+        with open(index_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+            f.write("\n")

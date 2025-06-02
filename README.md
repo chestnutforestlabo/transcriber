@@ -4,6 +4,8 @@ A toolkit that **automatically transcribes multi‑speaker meetings/interviews**
 **Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  
 the result in a React front‑end with waveform‑synchronised captions.
 
+![Screenshot of Transcriber UI](images/scrrenshot.png)
+
 ```bash
 Project structure
 ├─ audios/num_speakers_N/ # Input audio files (N = max number of speakers)

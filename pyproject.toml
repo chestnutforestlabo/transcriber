@@ -1,58 +1,31 @@
-[tool.poetry]
+[project]
 name = "ascender"
-version = "0.1.0"
-description = "Project template for XCCV group of cvpaper.challenge."
-license = "MIT"
-authors = ["cvpaper.challenge XCCV group"]
-maintainers = ["yoshihiro fukuhara <gatheluck@gmail.com>"]
+version = "0.3.0"
+description = "Add your description here"
 readme = "README.md"
-keywords = [
-    "ascender",
-    "Python",
-    "projects",
-    "project templates",
-    "project directory",
+requires-python = ">=3.9"
+dependencies = [
+    "faster-whisper==1.1.1",
+    "ffmpeg==1.4",
+    "huggingface==0.0.1",
+    "huggingface-hub[cli]==0.30.2",
+    "librosa>=0.11.0",
+    "nltk==3.8.1",
+    "numpy<2.0.0",
+    "onnxruntime==1.19.2",
+    "openai-whisper==20240930",
+    "pip>=25.1.1",
+    "pyannote-audio==3.1.1",
+    "soundfile==0.12.1",
+    "transformers==4.51.3",
 ]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Environment :: Console",
-    "Environment :: GPU :: NVIDIA CUDA",
-    "License :: OSI Approved :: MIT License",
-    "Natural Language :: English",
-    "Natural Language :: Japanese",
-    "Programming Language :: Python",
-    "Topic :: Software Development",
-]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-pyannote-audio = "^3.1.1"
-soundfile = "^0.12.1"
-openai-whisper = "^20231117"
-huggingface-cli = "^0.1"
-huggingface = "^0.0.1"
-ffmpeg = "^1.4"
-nltk = "^3.8.1"
-
-[tool.poetry.group.dev.dependencies]
-black = "^23.1.0"
-isort = "^5.10.1"
-mdformat-gfm = "^0.3.5"
-mdformat-frontmatter = "^2.0.1"
-mdformat_footnote = "^0.1.1"
-flake8 = "^5.0.0"
-mypy = "^1.0.1"
-pytest-cov = "^4.0.0"
-
-[tool.black]
-line-length = 88
-
-[tool.isort]
-profile = "black"
-line_length = 88
+[tool.uv]
+package = false
+python-preference = "only-system"
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 # following setting is same as pysen
 # https://github.com/pfnet/pysen/blob/main/setup.cfg#L12
 check_untyped_defs = true
@@ -76,6 +49,63 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "D", "PT"]
+ignore = [
+    # To avoid conflicting with the Ruff formatter, some linter rules should be ignored.
+    # See also https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "W191", # Checks for indentation that uses tabs.
+    "E111", # Checks for indentation with a non-multiple of 4 spaces.
+    "E114", # Checks for indentation of comments with a non-multiple of 4 spaces.
+    "E117", # Checks for over-indented code.
+    "D206", # Checks for docstrings that are indented with tabs.
+    "D300", # Checks for docstrings that use `'''triple single quotes'''` instead of `"""triple double quotes"""`.
+    "Q000", # Checks for inline strings that use single quotes or double quotes, depending on the value of the `lint.flake8-quotes.inline-quotes` option.
+    "Q001", # Checks for multiline strings that use single quotes or double quotes, depending on the value of the `lint.flake8-quotes.multiline-quotes` setting.
+    "Q002", # Checks for docstrings that use single quotes or double quotes, depending on the value of the `lint.flake8-quotes.docstring-quotes` setting.
+    "Q003", # Checks for strings that include escaped quotes, and suggests changing the quote style to avoid the need to escape them.
+    "COM812", # Checks for the absence of trailing commas.
+    "COM819", # Checks for the presence of prohibited trailing commas.
+    "ISC001", # Checks for implicitly concatenated strings on a single line.
+    "ISC002", # Checks for implicitly concatenated strings that span multiple lines.
+    # Add other other rules to ignore. See also https://docs.astral.sh/ruff/rules/.
+    "E501", # Checks for lines that exceed the specified maximum character length.
+    "B006", # Checks for uses of mutable objects as function argument defaults.
+    "D100", # Checks for undocumented public module definitions.
+    "D104", # Checks for undocumented public package definitions.
+    "D205", # Checks for docstring summary lines that are not separated from the docstring description by one blank line.
+    "PT003", # Checks for `pytest.fixture` calls with scope="function".
+    "PT011" # Checks for `pytest.raises` calls without a match parameter.
+]
+fixable = ["E", "F", "I", "D"]
+unfixable = ["F401", "F841"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.poe.tasks]
+ruff-format = "ruff format src tests"
+ruff-format-check = "ruff format --check src tests"
+ruff-lint = "ruff check src tests --fix"
+ruff-lint-check = "ruff check src tests"
+mdformat = "mdformat *.md"
+mdformat-check = "mdformat --check *.md"
+mypy = "mypy src"
+test = "pytest tests --cov=src --cov-report term-missing --durations 5"
+format = ["ruff-lint", "ruff-format", "mdformat"]
+lint = ["ruff-lint-check", "ruff-format-check", "mdformat-check", "mypy"]
+test-all = ["lint", "test"]
+
+[dependency-groups]
+dev = [
+    "mdformat-footnote>=0.1.1",
+    "mdformat-frontmatter>=2.0.8",
+    "mdformat-gfm>=0.3.6",
+    "mypy>=1.14.1",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.11.2",
+]

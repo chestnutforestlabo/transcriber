@@ -1,4 +1,4 @@
-# Transcribers 📝🎙️
+# Transcriber 📝🎙️
 
 A toolkit that **automatically transcribes multi‑speaker meetings/interviews** with  
 **Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  

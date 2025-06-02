@@ -21,7 +21,6 @@ for dir in audios/*/; do
     done
 done
 
-audio_dir="audios/"
 language="ja"
 asr_model_name="whisper-large-v3"
 gpu_id=0

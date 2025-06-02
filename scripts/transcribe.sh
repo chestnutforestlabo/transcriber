@@ -11,7 +11,6 @@ docker compose up backend -d
 
 # Run commands inside the container
 docker compose exec backend bash -c "
-    uv sync
-    uv run huggingface-cli login --token "$HF_TOKEN"
-    bash scripts/backend/backend.sh
+    bash scripts/backend_setup.sh
+    bash scripts/backend.sh
 "

@@ -146,3 +146,4 @@ dmypy.json
 #ignore all JSON files in audios and transcripts directories
 src/frontend/public/audios/*.json
 src/frontend/public/transcripts/*.json
+src/frontend/public/transcripts/*.backup

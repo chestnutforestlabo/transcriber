@@ -21,13 +21,15 @@ for dir in audios/*/; do
     done
 done
 
-audio_dir="audios/num_speakers_2"
 language="ja"
 asr_model_name="whisper-large-v3"
 gpu_id=0
 
-uv run python3 src/backend/transcribe.py \
-    --audio_dir "$audio_dir" \
-    --language "$language" \
-    --asr_model_name "$asr_model_name" \
-    --gpu_id "$gpu_id"
+for dir in audios/*/; do
+    echo "Processing directory: $dir"
+    uv run python3 src/backend/transcribe.py \
+        --audio_dir "$dir" \
+        --language "$language" \
+        --asr_model_name "$asr_model_name" \
+        --gpu_id "$gpu_id"
+done

@@ -1,8 +1,10 @@
-# Transcribers 📝🎙️
+# Transcriber 📝🎙️
 
 A toolkit that **automatically transcribes multi‑speaker meetings/interviews** with  
 **Whisper v3** (ASR) + **Pyannote** (speaker diarization) and lets you review  
 the result in a React front‑end with waveform‑synchronised captions.
+
+![Screenshot of Transcriber UI](images/screenshot.png)
 
 ```bash
 Project structure
@@ -79,6 +81,8 @@ Add your Hugging Face token inside the file:
 HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
+Then, navigate to the Hugging Face webpage of [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) and [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) to get access to these models.
+
 ## 1. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
 maximum number of different speakers in the recording, e.g.
@@ -118,7 +122,7 @@ clicking either the text or the waveform.
 
 ```bash
 # Activate frontend Docker container and Activate local server
-bash ./scripts/frontend_activate.sh
+bash ./scripts/frontend.sh
 ```
 
 # Contributors

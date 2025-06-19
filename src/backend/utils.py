@@ -92,6 +92,11 @@ def save_transcripts_json(args, output_data, file_name):
         output_file_path = os.path.join(output_dir, f"{file_name}.json")
         with open(output_file_path, "w", encoding="utf-8") as json_file:
             json.dump(serializable, json_file, ensure_ascii=False, indent=2)
+        if output_dir == "outputs":
+            txt_file_path = os.path.join(output_dir, f"{file_name}.txt")
+            with open(txt_file_path, "w", encoding="utf-8") as txt_file:
+                for item in serializable:
+                    txt_file.write(f"speaker{item['speaker']}:{item['text']}\n")
     # Copy audio
     audio_paths = ["src/frontend/public/audios", "outputs"]
     for audio_path in audio_paths:

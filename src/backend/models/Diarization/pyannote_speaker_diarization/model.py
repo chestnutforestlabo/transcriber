@@ -33,6 +33,7 @@ class SpeechDiarization(BaseModel):
             {"uri": audio_source, "audio": audio_source},
             num_speakers=self.args.num_speakers
         )
+        print(ann)
         print(f"==============Diarization done in {time.time() - start_time:.2f} seconds.==============")
         return ann
     

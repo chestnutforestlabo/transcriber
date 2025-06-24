@@ -30,11 +30,9 @@ def transcribe(args):
         # ASR: pass raw waveform array
         # asr_output  = asr_model.run(waveform)
         asr_output = asr_model.run(audio_path)
-        print(asr_output)
         
         # Diarization: pass file path string
         diar_output = sd_model.run(audio_path)
-        print(diar_output)
 
         merged = diarize_text(args, asr_output, diar_output)
         all_results.append((basename, merged))

@@ -5,14 +5,19 @@ from data import AudioInput
 import os
 import argparse
 from tqdm import tqdm
+import torch
 
 
 def transcribe(args):
     dataset = AudioInput(args.audio_dir)
     args.num_speakers = dataset.num_speakers
 
-    sd_model  = get_sd_model(args)
     asr_model = get_asr_model(args)
+    sd_model  = get_sd_model(args)
+    
+    sd_model.setup_model_if_needed()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    sd_model.model.to(device)
 
     all_results = []
     for item in tqdm(dataset, desc="Processing audio"):
@@ -56,7 +61,5 @@ if __name__ == '__main__':
     parser.add_argument("--language", type=str, default="en", help="language of the audio files")
     parser.add_argument("--diarization_time", action="store_true", help="use pyannote/embedding for diarization")
     parser.add_argument("--asr_model_name", type=str, default="whisper-large-v3", help="ASR model ID for HuggingFace pipeline")
-    parser.add_argument("--device", type=str, default="cuda", help="device to use for inference")
-    parser.add_argument("--gpu_id", type=int, default=0, help="GPU device index (0,1,…) or use -1 for CPU")
     args = parser.parse_args()
     main(args)

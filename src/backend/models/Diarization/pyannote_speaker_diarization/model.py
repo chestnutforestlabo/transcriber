@@ -27,13 +27,13 @@ class SpeechDiarization(BaseModel):
 
         audio_source: Path to the audio file.
         """
-        print("Start Diarization")
+        print("==============Start Diarization==============")
         start_time = time.time()
         ann: Annotation = self.model(
             {"uri": audio_source, "audio": audio_source},
             num_speakers=self.args.num_speakers
         )
-        print(f"Diarization done in {time.time() - start_time:.2f} seconds.")
+        print(f"==============Diarization done in {time.time() - start_time:.2f} seconds.==============")
         return ann
     
     def parse_output(self, ann: Annotation):

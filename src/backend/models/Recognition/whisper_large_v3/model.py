@@ -11,14 +11,14 @@ class AutomaticSpeechRecognition(BaseModel):
         return whisper.load_model("large-v3", download_root=os.environ.get("HF_HOME", "./models"))
     
     def inference(self, audio: Any) -> Any:
-        print("Start ASR")
+        print("==============Start ASR==============")
         start = time.time()
         result = self.model.transcribe(
             audio,
             language=self.args.language,
             verbose=False
         )
-        print(f"ASR done in {time.time() - start:.2f}s.")
+        print(f"==============ASR done in {time.time() - start:.2f}s.==============")
         return result
 
     def parse_output(self, raw_outputs: Any) -> List[Tuple[Segment, str]]:

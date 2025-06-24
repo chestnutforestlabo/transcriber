@@ -18,6 +18,7 @@ class AutomaticSpeechRecognition(BaseModel):
             language=self.args.language,
             verbose=False
         )
+        print(result)
         print(f"==============ASR done in {time.time() - start:.2f}s.==============")
         return result
 

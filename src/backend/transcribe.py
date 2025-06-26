@@ -55,7 +55,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--audio_dir",      type=str, required=True, help="path to the directory containing audio files per num_speakers")
+    parser.add_argument("--audio_dir", type=str, required=True, help="path to the directory containing audio files per num_speakers")
     parser.add_argument("--language", type=str, default="en", help="language of the audio files")
     parser.add_argument("--diarization_time", action="store_true", help="use pyannote/embedding for diarization")
     parser.add_argument("--asr_model_name", type=str, default="whisper-large-v3", help="ASR model ID for HuggingFace pipeline")

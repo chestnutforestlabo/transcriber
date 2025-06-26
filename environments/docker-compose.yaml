@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: backend_${HOST_UID}
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
@@ -20,22 +21,22 @@ services:
     ports:
         - 8005:8005
   frontend:
-   build:
-     context: ../
-     dockerfile: environments/DockerfileFrontend
-     args:
-       - UID=${HOST_UID}
-        #  - USER_NAME=${USER_NAME}
-   working_dir: /transcriber
-   volumes:
-     - ../:/transcriber:cached
-     - frontend_node_modules:/transcriber/src/frontend/node_modules
-   env_file:
-      - envs.env
-   ports:
-     - "5173:5173"
-   environment:
-     - NODE_ENV=development
+    container_name: frontend_${HOST_UID}
+    build:
+      context: ../
+      dockerfile: environments/DockerfileFrontend
+      args:
+        - UID=${HOST_UID}
+    working_dir: /transcriber
+    volumes:
+      - ../:/transcriber:cached
+      - frontend_node_modules:/transcriber/src/frontend/node_modules
+    env_file:
+        - envs.env
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
 
 volumes:
   frontend_node_modules:

@@ -25,7 +25,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def parse_output(self, raw_output: Any) -> str:
+    def parse_output(self, raw_output: Any, start_time: Any) -> str:
         """
         The model's raw output is converted and formatted into text and returned.
         return: list of tuples (Segment(start_time, end_time), text) >> Use "from pyannote.core import Segment, Annotation, Timeline"
@@ -41,6 +41,6 @@ class BaseModel(ABC):
     
     def run(self, audio: Union[str, np.ndarray]) -> str:
         self.setup_model_if_needed()
-        raw = self.inference(audio)
-        output = self.parse_output(raw)
+        raw, start_time = self.inference(audio)
+        output = self.parse_output(raw, start_time)
         return output

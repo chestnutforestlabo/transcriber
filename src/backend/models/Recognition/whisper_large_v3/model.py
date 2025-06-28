@@ -12,21 +12,21 @@ class AutomaticSpeechRecognition(BaseModel):
     
     def inference(self, audio: Any) -> Any:
         print("==============Start ASR==============")
-        start = time.time()
+        start_time = time.time()
         result = self.model.transcribe(
             audio,
             language=self.args.language,
             verbose=False
         )
-        print(result)
-        print(f"==============ASR done in {time.time() - start:.2f}s.==============")
-        return result
+        return result, start_time
 
-    def parse_output(self, raw_outputs: Any) -> List[Tuple[Segment, str]]:
+    def parse_output(self, raw_outputs: Any, start_time: float) -> List[Tuple[Segment, str]]:
         segments: List[Tuple[Segment, str]] = []
         for seg in raw_outputs.get("segments", []):
             start = seg["start"]
             end   = seg["end"]
             text  = seg["text"].strip()
             segments.append((Segment(start, end), text))
+        print(segments)
+        print(f"==============ASR done in {time.time() - start_time:.2f}s.==============")
         return segments

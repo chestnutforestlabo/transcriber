@@ -6,21 +6,17 @@ import shutil
 
 PUNC_SENT_END = ['.', '?', '!', '、', '。']
 
-# def add_speaker_info_to_text(timestamp_texts, ann):
-#     spk_text = []
-#     for seg, text in timestamp_texts:
-#         spk = ann.crop(seg).argmax()
-#         spk_text.append((seg, spk, text))
-#     return spk_text
-
 def add_speaker_info_to_text(timestamp_texts, ann):
     spk_text = []
     for seg, text in timestamp_texts:
-        cropped = ann.crop(seg, mode="loose")
+        cropped = ann.crop(seg, mode="intersection")
         durations = defaultdict(float)
         for subseg, _, label in cropped.itertracks(yield_label=True):
             durations[label] += subseg.duration
+        if durations:
             speaker = max(durations, key=durations.get)
+        else:
+            speaker = None
         spk_text.append((seg, speaker, text))
     return spk_text
 
@@ -41,7 +37,7 @@ def merge_sentence(spk_text):
             text_cache = [(seg, spk, text)]
             pre_spk = spk
 
-        elif text and len(text) > 0 and text[-1] in PUNC_SENT_END:
+        elif text and len(text) > 0 and text[-1] in PUNC_SENT_END and spk != pre_spk:
             text_cache.append((seg, spk, text))
             merged_spk_text.append(merge_cache(text_cache))
             text_cache = []
@@ -51,7 +47,20 @@ def merge_sentence(spk_text):
             pre_spk = spk
     if len(text_cache) > 0:
         merged_spk_text.append(merge_cache(text_cache))
+    merged_spk_text = merge_consecutive_speaker(merged_spk_text)
     return merged_spk_text
+
+def merge_consecutive_speaker(spk_sent):
+    merged = []
+    for seg, spk, text in spk_sent:
+        if merged and merged[-1][1] == spk:
+            prev_seg, _, prev_text = merged[-1]
+            new_seg  = Segment(prev_seg.start, seg.end)
+            new_text = prev_text + ' ' + text
+            merged[-1] = (new_seg, spk, new_text)
+        else:
+            merged.append((seg, spk, text))
+    return merged
 
 def diarize_text(args, AutomaticSpeechRecognition_output, diarization_result):
     # pyannote/speaker-diarization-3.1

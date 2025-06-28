@@ -47,6 +47,7 @@ def merge_sentence(spk_text):
             pre_spk = spk
     if len(text_cache) > 0:
         merged_spk_text.append(merge_cache(text_cache))
+    merged_spk_text = fill_null_speaker(merged_spk_text)
     merged_spk_text = merge_consecutive_speaker(merged_spk_text)
     return merged_spk_text
 
@@ -61,6 +62,16 @@ def merge_consecutive_speaker(spk_sent):
         else:
             merged.append((seg, spk, text))
     return merged
+
+def fill_null_speaker(spk_sent):
+    filled = []
+    for i, (seg, spk, text) in enumerate(spk_sent):
+        if spk is None:
+            prev_spk = filled[-1][1] if i>0 else None
+            next_spk = spk_sent[i+1][1] if i+1<len(spk_sent) else None
+            spk = prev_spk or next_spk or "unknown"
+        filled.append((seg, spk, text))
+    return filled
 
 def diarize_text(args, AutomaticSpeechRecognition_output, diarization_result):
     # pyannote/speaker-diarization-3.1

@@ -56,7 +56,7 @@ def merge_consecutive_speaker(spk_sent):
     for seg, spk, text in spk_sent:
         if merged and merged[-1][1] == spk:
             prev_seg, _, prev_text = merged[-1]
-            new_seg  = Segment(prev_seg.start, seg.end)
+            new_seg = Segment(prev_seg.start, seg.end)
             new_text = prev_text + ' ' + text
             merged[-1] = (new_seg, spk, new_text)
         else:

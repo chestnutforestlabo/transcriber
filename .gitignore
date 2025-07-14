@@ -4,7 +4,7 @@ models/**
 # Except the .gitkeep file
 !models/.gitkeep
 # outputs
-outputs/**
+outputs/*.json
 !outputs/.gitkeep
 src/public/audios/**
 !src/public/audios/.gitkeep

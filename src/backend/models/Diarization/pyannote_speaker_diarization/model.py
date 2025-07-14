@@ -33,9 +33,9 @@ class SpeechDiarization(BaseModel):
             {"uri": audio_source, "audio": audio_source},
             num_speakers=self.args.num_speakers
         )
+        return ann, start_time
+    
+    def parse_output(self, ann: Annotation, start_time: float) -> List[Tuple[Segment, str]]:
         print(ann)
         print(f"==============Diarization done in {time.time() - start_time:.2f} seconds.==============")
-        return ann
-    
-    def parse_output(self, ann: Annotation):
         return ann

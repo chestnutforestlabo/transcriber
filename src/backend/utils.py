@@ -67,8 +67,8 @@ def fill_null_speaker(spk_sent):
     filled = []
     for i, (seg, spk, text) in enumerate(spk_sent):
         if spk is None:
-            prev_spk = filled[-1][1] if i>0 else None
-            next_spk = spk_sent[i+1][1] if i+1<len(spk_sent) else None
+            prev_spk = filled[-1][1] if i > 0 else None
+            next_spk = spk_sent[i + 1][1] if i + 1 < len(spk_sent) else None
             spk = prev_spk or next_spk or "unknown"
         filled.append((seg, spk, text))
     return filled

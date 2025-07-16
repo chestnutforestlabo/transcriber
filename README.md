@@ -81,7 +81,7 @@ Add your Hugging Face token inside the file:
 HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-Then, navigate to the Hugging Face webpage of [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) and [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) to get access to these models.
+Then, navigate to the Hugging Face webpage of [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) to get access to these models.
 
 ## 1. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the

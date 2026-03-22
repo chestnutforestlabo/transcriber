@@ -21,8 +21,7 @@ dependencies = [
 ]
 
 [tool.uv]
-package = false
-python-preference = "only-system"
+build-constraint-dependencies = ["setuptools<82"]
 
 [tool.mypy]
 python_version = 3.9

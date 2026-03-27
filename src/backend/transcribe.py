@@ -14,15 +14,15 @@ from pyannote.core import Segment
 
 def _to_mono(segment: np.ndarray) -> np.ndarray:
     if segment.ndim == 1:
-        return segment
-    return np.mean(segment, axis=1)
+        return segment.astype(np.float32, copy=False)
+    return np.mean(segment, axis=1, dtype=np.float32)
 
 
 def _run_asr_on_segment(asr_model, args, segment: np.ndarray, sampling_rate: int):
     if args.asr_model_name == "openai":
         return asr_model.run(_to_mono(segment))
     if args.asr_model_name == "kotoba":
-        return asr_model.run({"array": _to_mono(segment), "sampling_rate": sampling_rate})
+        return asr_model.run(_to_mono(segment))
     if args.asr_model_name == "qwen":
         return asr_model.run((_to_mono(segment), sampling_rate))
     return asr_model.run(_to_mono(segment))
@@ -103,8 +103,13 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
-    parser.add_argument("--language", type=str, default="en", help="Language of audio files (e.g. 'en', 'ja')")
-    parser.add_argument("--diarization_model_name", type=str, choices=["legacy", "community", "precision"], default="community", help="Diarization model to use")
+    parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
+    parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 
+                                                            'Portuguese', 'Indonesian', 'Italian', 'Korean', 'Russian', 'Thai', 'Vietnamese', 
+                                                            'Japanese', 'Turkish', 'Hindi', 'Malay', 'Dutch', 'Swedish', 'Danish', 'Finnish', 
+                                                            'Polish', 'Czech', 'Filipino', 'Persian', 'Greek', 'Romanian', 'Hungarian', 'Macedonian'], 
+                        default="Japanese", help="Language of audio files for Qwen ASR")
+    parser.add_argument("--diarization_model_name", type=str, choices=["community", "precision"], default="community", help="Diarization model to use")
     parser.add_argument("--asr_model_name", type=str, choices=["kotoba", "openai", "qwen"], default="openai", help="ASR model to use")
     args = parser.parse_args()
     main(args)

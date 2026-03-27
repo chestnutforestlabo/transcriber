@@ -22,7 +22,7 @@ class AutomaticSpeechRecognition(BaseModel):
 
         result = self.model.transcribe(
             audio,
-            language=self.args.language,
+            language=self.args.openai_language,
             verbose=False
         )
         return result, start_time

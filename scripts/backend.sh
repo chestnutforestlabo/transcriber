@@ -17,8 +17,10 @@ for dir in audios/*/; do
     done
 done
 
-language="ja"
+openai_language="ja"
+qwen_language="Japanese"
 asr_model_name="openai"
+diarization_model_name="community"
 
 export PYTHONWARNINGS="ignore::UserWarning" # trochaudioの警告文を非表示
 
@@ -26,6 +28,8 @@ for dir in audios/*/; do
     echo "Processing directory: $dir"
     uv run python3 src/backend/transcribe.py \
         --audio_dir "$dir" \
-        --language "$language" \
-        --asr_model_name "$asr_model_name"
+        --openai_language "$openai_language" \
+        --qwen_language "$qwen_language" \
+        --asr_model_name "$asr_model_name" \
+        --diarization_model_name "$diarization_model_name"
 done

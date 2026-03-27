@@ -1,10 +1,6 @@
 def get_sd_model(args):
-    # Pyannote/speaker-dialization-3.1
-    if args.diarization_model_name == "legacy":
-        from models.Diarization.pyannote_speaker_diarization_legacy.model import SpeechDiarization
-        sd_model = SpeechDiarization(args)
     # Pyannote/speaker-dialization-community-1
-    elif args.diarization_model_name == "community":
+    if args.diarization_model_name == "community":
         from models.Diarization.pyannote_speaker_dialization_community.model import SpeechDiarization
         sd_model = SpeechDiarization(args)
     # Pyannote/speaker-dialization-precision-2

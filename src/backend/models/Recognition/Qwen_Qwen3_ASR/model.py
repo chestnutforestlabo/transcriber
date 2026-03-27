@@ -23,7 +23,12 @@ class AutomaticSpeechRecognition(BaseModel):
             dtype=dtype,
             device_map=device_map,
             max_inference_batch_size=8,
-            max_new_tokens=512
+            max_new_tokens=512,
+            forced_aligner="Qwen/Qwen3-ForcedAligner-0.6B",
+            forced_aligner_kwargs={
+                "dtype": dtype,
+                "device_map": device_map,
+            },
         )
 
     def inference(self, audio: Any) -> Any:
@@ -31,7 +36,7 @@ class AutomaticSpeechRecognition(BaseModel):
         start_time = time.time()
         results = self.model.transcribe(
             audio=audio,
-            language=None,
+            language=self.args.qwen_language,
             return_time_stamps=True
         )
         return {

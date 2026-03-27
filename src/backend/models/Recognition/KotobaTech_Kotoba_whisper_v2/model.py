@@ -3,67 +3,63 @@ from pyannote.core import Segment
 from models.base import BaseModel
 import time
 import torch
-import soundfile as sf
+import numpy as np
 
 
 class AutomaticSpeechRecognition(BaseModel):
     def setup_model(self):
-        from transformers import pipeline
+        from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 
         model_id = "kotoba-tech/kotoba-whisper-v2.0"
         torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
-        device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        model_kwargs = {"attn_implementation": "sdpa"} if torch.cuda.is_available() else {}
+        self.model_dtype = torch_dtype
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.processor = AutoProcessor.from_pretrained(model_id)
 
-        return pipeline(
-            "automatic-speech-recognition",
-            model=model_id,
+        model = AutoModelForSpeechSeq2Seq.from_pretrained(
+            model_id,
             torch_dtype=torch_dtype,
-            device=device,
-            model_kwargs=model_kwargs
+            low_cpu_mem_usage=True,
+            use_safetensors=True,
         )
+        return model.to(self.device)
 
     def inference(self, audio: Any) -> Any:
         print("==============Start ASR==============")
         start_time = time.time()
-        result = self.model(
-            audio,
-            return_timestamps=True,
-            generate_kwargs={
-                "language": self.args.language,
-                "task": "transcribe"
-            }
+        waveform = audio
+        if isinstance(waveform, np.ndarray):
+            waveform = waveform.astype(np.float32, copy=False)
+
+        inputs = self.processor(
+            waveform,
+            sampling_rate=16000,
+            return_tensors="pt",
         )
+
+        input_features = inputs["input_features"].to(self.device, dtype=self.model_dtype)
+        language = "ja"
+
+        generated_ids = self.model.generate(
+            input_features,
+            language=language,
+            task="transcribe",
+        )
+        text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
+
+        duration = len(waveform) / 16000.0 if hasattr(waveform, "__len__") else 0.0
         return {
-            "result": result,
-            "audio": audio
+            "text": text,
+            "duration": duration,
         }, start_time
 
     def parse_output(self, raw_outputs: Any, start_time: float) -> List[Tuple[Segment, str]]:
         segments: List[Tuple[Segment, str]] = []
 
-        result = raw_outputs.get("result") if isinstance(raw_outputs, dict) else None
-        audio = raw_outputs.get("audio") if isinstance(raw_outputs, dict) else None
-        chunks = result.get("chunks") if isinstance(result, dict) else None
-        if chunks:
-            for chunk in chunks:
-                ts = chunk.get("timestamp", (None, None))
-                if not isinstance(ts, (list, tuple)) or len(ts) != 2:
-                    continue
-                start, end = ts
-                if start is None or end is None:
-                    continue
-                text = str(chunk.get("text", "")).strip()
-                segments.append((Segment(float(start), float(end)), text))
-        elif isinstance(result, dict):
-            text = str(result.get("text", "")).strip()
+        if isinstance(raw_outputs, dict):
+            text = str(raw_outputs.get("text", "")).strip()
+            duration = float(raw_outputs.get("duration", 0.0))
             if text:
-                duration = 0.0
-                if isinstance(audio, str):
-                    try:
-                        duration = float(sf.info(audio).duration)
-                    except RuntimeError:
-                        duration = 0.0
                 segments.append((Segment(0.0, duration), text))
 
         print(segments)

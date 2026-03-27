@@ -12,12 +12,12 @@ class SpeechDiarization(BaseModel):
         """
         # return Pipeline.from_pretrained(
         #     "pyannote/speaker-diarization-3.1",
-        #     use_auth_token=self.config.get("huggingface_token")
+        #     token=self.config.get("huggingface_token")
         # )
         # also specify where to save the model
         return Pipeline.from_pretrained(
             "pyannote/speaker-diarization-3.1",
-            use_auth_token=os.environ["HF_TOKEN"],
+            token=os.environ["HF_TOKEN"],
             cache_dir=os.environ.get("HF_HOME", "./models")
         )
 

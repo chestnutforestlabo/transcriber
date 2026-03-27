@@ -18,7 +18,7 @@ for dir in audios/*/; do
 done
 
 language="ja"
-asr_model_name="whisper-large-v3"
+asr_model_name="openai"
 
 export PYTHONWARNINGS="ignore::UserWarning" # trochaudioの警告文を非表示
 

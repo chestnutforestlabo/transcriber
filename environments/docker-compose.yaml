@@ -6,10 +6,11 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
     build:
       args:
-        - BASE_IMAGE=nvidia/cuda:11.0.3-devel-ubuntu20.04
-        - PYTHON_VERSION=3.9
+        - BASE_IMAGE=nvidia/cuda:12.2.0-devel-ubuntu22.04
+        - PYTHON_VERSION=3.10
         - UID=${HOST_UID}
         - GID=${HOST_GID}
+        - USER_NAME=${USER_NAME}
         - PROJECT_NAME=${PROJECT_NAME_ENV}
       context: ../
       dockerfile: environments/DockerfileBackend
@@ -17,7 +18,8 @@ services:
       - envs.env
     tty: true
     volumes:
-        - ../:/home/challenger/${PROJECT_NAME_ENV}
+        - ../:/home/${USER_NAME}/${PROJECT_NAME_ENV}
+    working_dir: /home/${USER_NAME}/${PROJECT_NAME_ENV}
     ports:
         - 8005:8005
   frontend:

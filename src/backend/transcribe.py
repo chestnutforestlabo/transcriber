@@ -42,7 +42,7 @@ def _run_asr_on_segments(asr_model, args, segments: list[np.ndarray], sampling_r
 
 
 def transcribe(args):
-    dataset = AudioInput(args.audio_dir)
+    dataset = AudioInput(args.audio_dir, target_files=args.audio_file)
     args.num_speakers = dataset.num_speakers
 
     # ASR and Diarization models
@@ -103,6 +103,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
+    parser.add_argument("--audio_file", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
     parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
     parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 
                                                             'Portuguese', 'Indonesian', 'Italian', 'Korean', 'Russian', 'Thai', 'Vietnamese', 

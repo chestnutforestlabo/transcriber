@@ -31,5 +31,6 @@ for dir in audios/*/; do
         --openai_language "$openai_language" \
         --qwen_language "$qwen_language" \
         --asr_model_name "$asr_model_name" \
-        --diarization_model_name "$diarization_model_name"
+        --diarization_model_name "$diarization_model_name" \
+        --audio_file $1 # コマンドライン引数でファイル名を指定できるようにする
 done

@@ -5,15 +5,31 @@ import soundfile as sf
 from librosa.core import resample as lr_resample
 
 class AudioInput(Dataset):
-    def __init__(self, audio_dir: str, sampling_rate: int = 16000):
+    def __init__(
+        self,
+        audio_dir: str,
+        sampling_rate: int = 16000,
+        target_files: list[str] | None = None
+    ):
         self.audio_dir = audio_dir
         self._num_speakers = audio_dir.replace("/","").split("_")[-1]
         self.sampling_rate = sampling_rate
-        self.audio_list = [
+        available_audio_list = sorted([
             fname for fname in os.listdir(audio_dir)
             if os.path.isfile(os.path.join(audio_dir, fname))
             and fname.lower().endswith(".wav")
-        ]
+        ])
+
+        if target_files:
+            requested_files = {os.path.basename(path) for path in target_files}
+            missing_files = sorted(requested_files - set(available_audio_list))
+            if missing_files:
+                raise FileNotFoundError(
+                    f"Requested file(s) not found in {audio_dir}: {', '.join(missing_files)}"
+                )
+            self.audio_list = [fname for fname in available_audio_list if fname in requested_files]
+        else:
+            self.audio_list = available_audio_list
 
     @property
     def num_speakers(self) -> int:

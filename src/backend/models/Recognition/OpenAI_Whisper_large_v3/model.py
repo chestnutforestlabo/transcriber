@@ -5,6 +5,9 @@ from models.base import BaseModel
 import time
 import whisper
 import os
+import numpy as np
+
+
 class AutomaticSpeechRecognition(BaseModel):
     def setup_model(self):
         # specify where to save the model
@@ -13,6 +16,10 @@ class AutomaticSpeechRecognition(BaseModel):
     def inference(self, audio: Any) -> Any:
         print("==============Start ASR==============")
         start_time = time.time()
+
+        if isinstance(audio, np.ndarray):
+            audio = audio.astype(np.float32, copy=False)
+
         result = self.model.transcribe(
             audio,
             language=self.args.language,

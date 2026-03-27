@@ -9,11 +9,13 @@ class AudioInput(Dataset):
         self,
         audio_dir: str,
         sampling_rate: int = 16000,
-        target_files: list[str] | None = None
+        target_files: list[str] | None = None,
+        processed_audio_dir: str = "outputs"
     ):
         self.audio_dir = audio_dir
         self._num_speakers = audio_dir.replace("/","").split("_")[-1]
         self.sampling_rate = sampling_rate
+        self.skipped_files: list[str] = []
         available_audio_list = sorted([
             fname for fname in os.listdir(audio_dir)
             if os.path.isfile(os.path.join(audio_dir, fname))
@@ -29,7 +31,15 @@ class AudioInput(Dataset):
                 )
             self.audio_list = [fname for fname in available_audio_list if fname in requested_files]
         else:
-            self.audio_list = available_audio_list
+            processed_audio_files = set()
+            if os.path.isdir(processed_audio_dir):
+                processed_audio_files = {
+                    fname for fname in os.listdir(processed_audio_dir)
+                    if os.path.isfile(os.path.join(processed_audio_dir, fname))
+                    and fname.lower().endswith(".wav")
+                }
+            self.skipped_files = [fname for fname in available_audio_list if fname in processed_audio_files]
+            self.audio_list = [fname for fname in available_audio_list if fname not in processed_audio_files]
 
     @property
     def num_speakers(self) -> int:

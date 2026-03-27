@@ -42,8 +42,17 @@ def _run_asr_on_segments(asr_model, args, segments: list[np.ndarray], sampling_r
 
 
 def transcribe(args):
-    dataset = AudioInput(args.audio_dir, target_files=args.audio_file)
+    dataset = AudioInput(args.audio_dir, target_files=args.audio_files)
     args.num_speakers = dataset.num_speakers
+
+    if args.audio_files is None and dataset.skipped_files:
+        print(
+            f"Skipping {len(dataset.skipped_files)} already processed file(s): "
+            + ", ".join(dataset.skipped_files)
+        )
+    if len(dataset) == 0:
+        print("No audio files to process.")
+        return []
 
     # ASR and Diarization models
     asr_model = get_asr_model(args)
@@ -103,7 +112,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
-    parser.add_argument("--audio_file", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
+    parser.add_argument("--audio_files", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
     parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
     parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 
                                                             'Portuguese', 'Indonesian', 'Italian', 'Korean', 'Russian', 'Thai', 'Vietnamese', 

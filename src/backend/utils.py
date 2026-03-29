@@ -74,13 +74,8 @@ def fill_null_speaker(spk_sent):
     return filled
 
 def diarize_text(args, AutomaticSpeechRecognition_output, diarization_result):
-    # pyannote/speaker-diarization-3.1
-    if not args.diarization_time:
-        spk_text = add_speaker_info_to_text(AutomaticSpeechRecognition_output, diarization_result)
-        merged_output = merge_sentence(spk_text)
-    # pyannote/embedding
-    else:
-        pass
+    spk_text = add_speaker_info_to_text(AutomaticSpeechRecognition_output, diarization_result)
+    merged_output = merge_sentence(spk_text)
     return merged_output
 
 def write_to_txt(spk_sent, file):
@@ -96,7 +91,7 @@ def save_transcripts_json(args, output_data, file_name):
         seg, speaker, text = item
         start = float(seg.start)
         end = float(seg.end)
-        if start > prev_end:
+        if i > 0 and start > prev_end:
             serializable[i-1]["end"] = start
         serializable.append({
             "start":   start,
@@ -116,7 +111,9 @@ def save_transcripts_json(args, output_data, file_name):
             txt_file_path = os.path.join(output_dir, f"{file_name}.txt")
             with open(txt_file_path, "w", encoding="utf-8") as txt_file:
                 for item in serializable:
-                    txt_file.write(f"{item['speaker']}:{item['text']}\n")
+                    txt_file.write(
+                        f"{item['start']:.2f} {item['end']:.2f} {item['speaker']}:{item['text']}\n"
+                    )
     # Copy audio
     audio_paths = ["src/frontend/public/audios", "outputs"]
     for audio_path in audio_paths:

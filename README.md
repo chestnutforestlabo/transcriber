@@ -29,7 +29,7 @@ Project structure
 
 | Requirement           | Recommended | Notes                                   |
 |-----------------------|-------------|-----------------------------------------|
-| Python                | 3.9+        | We use UV for dependency handling   |
+| Python                | 3.10+       | We use UV for dependency handling   |
 | CUDA‑enabled GPU      | optional    | CPU works but will be slow              |
 | Docker / Docker Compose| 23.x / v2  | For launching the front‑end container   |
 | Hugging Face token    | required    | *Read* scope is enough                  |
@@ -103,9 +103,14 @@ audios/
 Run the transcription script:
 
 ```bash
+# Activate docker container
+bash scripts/docker.sh
+
 # Transcribe your audios
-bash ./scripts/transcribe.sh
+# If you want to transcribe only specific audio files, add the paths to those files as command-line arguments.
+bash scripts/transcribe.sh
 ```
+
 Transcription results will be saved to:
 
 output/<file>.json
@@ -120,7 +125,7 @@ clicking either the text or the waveform.
 
 ```bash
 # Activate frontend Docker container and Activate local server
-bash ./scripts/frontend.sh
+bash scripts/frontend.sh
 ```
 
 # Contributors

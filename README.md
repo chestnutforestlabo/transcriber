@@ -75,10 +75,11 @@ Before proceeding, create an environment file:
 vim environments/envs.env
 ```
 
-Add your Hugging Face token inside the file:
+Add your Hugging Face token or Gemini API key inside the file:
 
 ```bash
 HF_TOKEN=hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GEMINI_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 📎 Note:

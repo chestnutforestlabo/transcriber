@@ -45,7 +45,8 @@ if [[ ${#audio_files[@]} -eq 0 ]]; then
             --openai_language "$openai_language" \
             --qwen_language "$qwen_language" \
             --asr_model_name "$asr_model_name" \
-            --diarization_model_name "$diarization_model_name"
+            --diarization_model_name "$diarization_model_name" \
+            # --online_llm
     done
     exit 0
 fi
@@ -72,7 +73,8 @@ for dir in audios/*/; do
         --qwen_language "$qwen_language" \
         --asr_model_name "$asr_model_name" \
         --diarization_model_name "$diarization_model_name" \
-        --audio_files "${files_in_dir[@]}"
+        --audio_files "${files_in_dir[@]}" \
+        # --online_llm
 done
 
 if [[ $matched_any -eq 0 ]]; then

@@ -127,7 +127,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
     parser.add_argument("--audio_files", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
-    parser.add_argument("--online_llm", action="store_true", help="Whether to use online LLM for ASR & diarization")
+    parser.add_argument("--online_llm", action="store_true", help="Whether to use an online LLM for ASR + diarization instead of separate models")
     parser.add_argument("--online_llm_model", type=str, choices=["gemini"], default="gemini", help="Online LLM model to use for ASR & diarization")
     parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
     parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 

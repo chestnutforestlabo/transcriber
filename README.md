@@ -32,7 +32,7 @@ Project structure
 | Python                | 3.10+       | We use UV for dependency handling   |
 | CUDA‑enabled GPU      | optional    | CPU works but will be slow              |
 | Docker / Docker Compose| 23.x / v2  | For launching the front‑end container   |
-| Hugging Face token    | required    | *Read* scope is enough                  |
+| Hugging Face token or Gemini API key    | required    | *Read* scope is enough                  |
 
 ---
 
@@ -83,7 +83,7 @@ GEMINI_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 📎 Note:
-Then, navigate to the Hugging Face webpage of [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) and [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1) to get access to these models.
+Then, navigate to the Hugging Face webpage of [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3), [Kotoba_whisper_v2](https://huggingface.co/kotoba-tech/kotoba-whisper-v2.0), [Qwen3-ASR-1.7B](https://huggingface.co/Qwen/Qwen3-ASR-1.7B) and [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1) to get access to these models. In particular, [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1) requires agreement to the terms of service on HuggingFace.
 
 ## 1. Add your audios
 Put .wav files (16 kHz recommended) under the folder that encodes the
@@ -100,7 +100,10 @@ audios/
 └─ num_speakers=3/
 ```
 
-## 2. Run transcription
+## 2. Setteung models
+Specify the model to use in `environments/transcribe.env` before creating the Docker container.
+
+## 3. Run transcription
 Run the transcription script:
 
 ```bash
@@ -108,8 +111,14 @@ Run the transcription script:
 bash scripts/docker.sh
 
 # Transcribe your audios
-# If you want to transcribe only specific audio files, add the paths to those files as command-line arguments.
 bash scripts/transcribe.sh
+
+#  If you want to use the online LLMs for transcription, add `online=True` to the command line.
+bash scripts/transcribe.sh online=True
+
+# If you want to transcribe only specific audio files, add the paths to those files as command-line arguments.
+bash scripts/transcribe.sh /path/to/your/audio                  # Using offline models
+bash scripts/transcribe.sh online=True /path/to/your/audio      # Using online LLMs
 ```
 
 Transcription results will be saved to:
@@ -119,7 +128,7 @@ frontend/public/transcripts/<file>.json
 The original audio is also copied to frontend/public/audios/, and index.json is auto‑updated for front‑end use.
 
 
-## 3. Start the front‑end
+## 4. Start the front‑end
 Open http://localhost:5173 in your browser.
 You should see the waveform, speaker‑coloured captions, and you can seek by
 clicking either the text or the waveform.

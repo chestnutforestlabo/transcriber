@@ -1,1 +1,1 @@
-Whisper_large_v3()
+Whisper_large_v3(https://huggingface.co/openai/whisper-large-v3)

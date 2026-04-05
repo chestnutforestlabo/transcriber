@@ -21,6 +21,29 @@ for arg in "$@"; do
     fi
 done
 
+# 引数で指定されたファイル名を、必要なら wav 名に変換して保持
+normalized_audio_files=()
+for input_path in "${audio_files[@]}"; do
+    base_name="$(basename "$input_path")"
+    case "$base_name" in
+        *.m4a)
+            normalized_audio_files+=("${base_name%.m4a}.wav")
+            ;;
+        *.mp3)
+            normalized_audio_files+=("${base_name%.mp3}.wav")
+            ;;
+        *.flac)
+            normalized_audio_files+=("${base_name%.flac}.wav")
+            ;;
+        *.wav)
+            normalized_audio_files+=("$base_name")
+            ;;
+        *)
+            normalized_audio_files+=("$base_name")
+            ;;
+    esac
+done
+
 # Loop through all .m4a, .mp3, .flac files in audios/*/
 for dir in audios/*/; do
     for file in "$dir"*.m4a; do
@@ -37,7 +60,7 @@ for dir in audios/*/; do
     done
 done
 
-export PYTHONWARNINGS="ignore::UserWarning" # trochaudioの警告文を非表示
+export PYTHONWARNINGS="ignore::UserWarning" # torchaudioの警告文を非表示
 
 if [[ ${#audio_files[@]} -eq 0 ]]; then
     for dir in audios/*/; do
@@ -57,8 +80,7 @@ fi
 matched_any=0
 for dir in audios/*/; do
     files_in_dir=()
-    for input_path in "${audio_files[@]}"; do
-        base_name="$(basename "$input_path")"
+    for base_name in "${normalized_audio_files[@]}"; do
         if [[ -f "$dir/$base_name" ]]; then
             files_in_dir+=("$base_name")
         fi

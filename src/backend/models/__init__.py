@@ -22,3 +22,11 @@ def get_asr_model(args):
         from models.Recognition.KotobaTech_Kotoba_whisper_v2.model import AutomaticSpeechRecognition
         asr_model = AutomaticSpeechRecognition(args)
     return asr_model
+
+
+def get_online_llm_model(args):
+    if args.online_llm_model == "gemini":
+        from models.OnlineLLM.Gemini.model import OnlineLLMTranscription
+
+        return OnlineLLMTranscription(args)
+    raise ValueError(f"Unsupported online LLM model: {args.online_llm_model}")

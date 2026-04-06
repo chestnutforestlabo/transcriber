@@ -101,13 +101,13 @@ def save_transcripts_json(args, output_data, file_name):
         })
         prev_end = end
     # Save speech recognition results in JSON format in two locations (frontend・backup)
-    output_dirs = ["src/frontend/public/transcripts", "outputs"]
+    output_dirs = ["src/frontend/public/transcripts", f"outputs/{file_name}"]
     for output_dir in output_dirs:
         os.makedirs(output_dir, exist_ok=True)
         output_file_path = os.path.join(output_dir, f"{file_name}.json")
         with open(output_file_path, "w", encoding="utf-8") as json_file:
             json.dump(serializable, json_file, ensure_ascii=False, indent=2)
-        if output_dir == "outputs":
+        if output_dir == output_dirs[1]:
             txt_file_path = os.path.join(output_dir, f"{file_name}.txt")
             with open(txt_file_path, "w", encoding="utf-8") as txt_file:
                 for item in serializable:
@@ -115,7 +115,7 @@ def save_transcripts_json(args, output_data, file_name):
                         f"{item['start']:.2f} {item['end']:.2f} {item['speaker']}:{item['text']}\n"
                     )
     # Copy audio
-    audio_paths = ["src/frontend/public/audios", "outputs"]
+    audio_paths = ["src/frontend/public/audios", f"outputs/{file_name}"]
     for audio_path in audio_paths:
         shutil.copy2(os.path.join(args.audio_dir, f"{file_name}.wav"), audio_path)
 

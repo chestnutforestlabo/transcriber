@@ -1,4 +1,4 @@
-from models import get_sd_model, get_asr_model
+from models import get_sd_model, get_asr_model, get_online_llm_model
 from utils import diarize_text, save_transcripts_json, save_index_json
 from data import AudioInput
 
@@ -54,43 +54,57 @@ def transcribe(args):
         print("No audio files to process.")
         return []
 
-    # ASR and Diarization models
-    asr_model = get_asr_model(args)
-    sd_model  = get_sd_model(args)
-    sd_model.setup_model_if_needed()
+    use_online_llm = bool(args.online_llm)
 
-    # Move diarization model to GPU if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    sd_model.model.to(device)
+    if use_online_llm:
+        online_llm_model = get_online_llm_model(args)
+    else:
+        # ASR and Diarization models
+        asr_model = get_asr_model(args)
+        sd_model = get_sd_model(args)
+        sd_model.setup_model_if_needed()
+
+        # Move diarization model to GPU if available
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        sd_model.model.to(device)
 
     processed_files = []
+    data_iter = (
+        ({"basename": basename} for basename in dataset.audio_list)
+        if use_online_llm
+        else dataset
+    )
     # Process and save each file sequentially
-    for item in tqdm(dataset, desc="Processing audio files"):
+    for item in tqdm(data_iter, total=len(dataset), desc="Processing audio files"):
         basename = item["basename"]
         audio_path = os.path.join(args.audio_dir, basename)
-        waveform_segments = item["waveform"]
-        concatenated_waveform = np.concatenate(waveform_segments, axis=0)
+        if use_online_llm:
+            # OnlineLLM output already includes timestamp + speaker attribution.
+            merged = online_llm_model.run(audio_path)
+        else:
+            waveform_segments = item["waveform"]
+            concatenated_waveform = np.concatenate(waveform_segments, axis=0)
 
-        # Run ASR on split waveforms and merge timestamps by offset
-        asr_output = _run_asr_on_segments(
-            asr_model=asr_model,
-            args=args,
-            segments=waveform_segments,
-            sampling_rate=dataset.sampling_rate
-        )
+            # Run ASR on split waveforms and merge timestamps by offset
+            asr_output = _run_asr_on_segments(
+                asr_model=asr_model,
+                args=args,
+                segments=waveform_segments,
+                sampling_rate=dataset.sampling_rate
+            )
 
-        # Run diarization on the same preprocessed (concatenated) audio timeline
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_audio:
-            tmp_audio_path = tmp_audio.name
-        try:
-            sf.write(tmp_audio_path, concatenated_waveform, dataset.sampling_rate)
-            diar_output = sd_model.run(tmp_audio_path)
-        finally:
-            if os.path.exists(tmp_audio_path):
-                os.remove(tmp_audio_path)
+            # Run diarization on the same preprocessed (concatenated) audio timeline
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_audio:
+                tmp_audio_path = tmp_audio.name
+            try:
+                sf.write(tmp_audio_path, concatenated_waveform, dataset.sampling_rate)
+                diar_output = sd_model.run(tmp_audio_path)
+            finally:
+                if os.path.exists(tmp_audio_path):
+                    os.remove(tmp_audio_path)
 
-        # Merge ASR + speaker info
-        merged = diarize_text(args, asr_output, diar_output)
+            # Merge ASR + speaker info
+            merged = diarize_text(args, asr_output, diar_output)
 
         # Save JSON and TXT for this file
         basename_no_ext = os.path.splitext(basename)[0]
@@ -113,6 +127,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
     parser.add_argument("--audio_files", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
+    parser.add_argument("--online_llm", action="store_true", help="Whether to use an online LLM for ASR + diarization instead of separate models")
+    parser.add_argument("--online_llm_model", type=str, choices=["gemini"], default="gemini", help="Online LLM model to use for ASR & diarization")
     parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
     parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 
                                                             'Portuguese', 'Indonesian', 'Italian', 'Korean', 'Russian', 'Thai', 'Vietnamese', 

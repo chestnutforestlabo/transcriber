@@ -16,6 +16,7 @@ services:
       dockerfile: environments/DockerfileBackend
     env_file:
       - envs.env
+      - transcribe.env
     tty: true
     volumes:
         - ../:/home/${USER_NAME}/${PROJECT_NAME_ENV}
@@ -35,6 +36,7 @@ services:
       - frontend_node_modules:/transcriber/src/frontend/node_modules
     env_file:
         - envs.env
+        - transcribe.env
     ports:
       - "5173:5173"
     environment:

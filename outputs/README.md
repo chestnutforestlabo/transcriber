@@ -1,2 +1,0 @@
-ここにはbackendの出力がそのまま格納され、frontendによる改変の影響を受けない(バックアップ的な役割)
-frontend用のデータはsrc/frontend/public以下に格納

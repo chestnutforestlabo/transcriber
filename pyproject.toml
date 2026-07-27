@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "diarizen @ git+https://github.com/BUTSpeechFIT/DiariZen.git@a60b18151dbbe246e4199d8ef5cd2ece3872ea94",
+    "diarizers @ git+https://github.com/huggingface/diarizers.git@f3c8ae500f55ad2b02b719fce1495ea2794ca9fe",
     "faster-whisper==1.1.1",
     "ffmpeg==1.4",
     "huggingface==0.0.1",
@@ -23,6 +25,7 @@ dependencies = [
     "torchcodec==0.11.0",
     "torchaudio==2.8.0",
     "torchinfo>=1.8.0",
+    "toml>=0.10.2",
     "transformers==4.57.6",
     "openai-whisper>=20250625",
     "yamlargparse>=1.31.1",

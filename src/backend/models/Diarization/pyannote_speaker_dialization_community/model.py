@@ -1,12 +1,13 @@
+import os
+import time
+from typing import List, Tuple
+
+import soundfile as sf
+import torch
+from models.base import BaseModel
 from pyannote.audio import Pipeline
 from pyannote.audio.core.task import Specifications
 from pyannote.core import Annotation, Segment
-import torch
-import soundfile as sf
-from models.base import BaseModel
-import time
-from typing import List, Tuple
-import os
 
 
 class SpeechDiarization(BaseModel):
@@ -25,12 +26,12 @@ class SpeechDiarization(BaseModel):
             return Pipeline.from_pretrained(
                 "pyannote/speaker-diarization-community-1",
                 token=token,
-                cache_dir=os.environ.get("HF_HOME", "./models")
+                cache_dir=os.environ.get("HF_HOME", "./models"),
             )
 
         return Pipeline.from_pretrained(
             "pyannote/speaker-diarization-community-1",
-            cache_dir=os.environ.get("HF_HOME", "./models")
+            cache_dir=os.environ.get("HF_HOME", "./models"),
         )
 
     def inference(self, audio_source: str) -> Annotation:
@@ -48,13 +49,23 @@ class SpeechDiarization(BaseModel):
 
         ann: Annotation = self.model(
             {"uri": audio_source, "waveform": waveform, "sample_rate": sample_rate},
-            num_speakers=self.args.num_speakers
+            num_speakers=self.args.num_speakers,
         )
         return ann, start_time
 
-    def parse_output(self, ann: Annotation, start_time: float) -> List[Tuple[Segment, str]]:
+    def parse_output(
+        self, ann: Annotation, start_time: float
+    ) -> List[Tuple[Segment, str]]:
         print(ann)
-        print(f"==============Diarization done in {time.time() - start_time:.2f} seconds.==============")
+        print(
+            "==============Diarization done in "
+            f"{time.time() - start_time:.2f} seconds.=============="
+        )
+
+        if getattr(self.args, "use_exclusive_diarization", True):
+            exclusive = getattr(ann, "exclusive_speaker_diarization", None)
+            if exclusive is not None:
+                return exclusive
 
         if hasattr(ann, "speaker_diarization"):
             return ann.speaker_diarization

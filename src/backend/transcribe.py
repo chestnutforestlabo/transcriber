@@ -1,15 +1,16 @@
-from models import get_sd_model, get_asr_model, get_online_llm_model
-from utils import diarize_text, save_transcripts_json, save_index_json
-from data import AudioInput
-
-import os
 import argparse
-from tqdm import tqdm
-import torch
-import numpy as np
+import os
 import tempfile
+
+import numpy as np
 import soundfile as sf
+import torch
+from data import AudioInput
 from pyannote.core import Segment
+from tqdm import tqdm
+from utils import diarize_text, save_index_json, save_transcripts_json
+
+from models import get_asr_model, get_online_llm_model, get_sd_model
 
 
 def _to_mono(segment: np.ndarray) -> np.ndarray:
@@ -28,14 +29,46 @@ def _run_asr_on_segment(asr_model, args, segment: np.ndarray, sampling_rate: int
     return asr_model.run(_to_mono(segment))
 
 
-def _run_asr_on_segments(asr_model, args, segments: list[np.ndarray], sampling_rate: int):
+def _shift_words(words, offset: float):
+    shifted_words = []
+    for word in words or []:
+        if isinstance(word, dict):
+            shifted = dict(word)
+            if shifted.get("start") is not None:
+                shifted["start"] = float(shifted["start"]) + offset
+            if shifted.get("end") is not None:
+                shifted["end"] = float(shifted["end"]) + offset
+            shifted_words.append(shifted)
+            continue
+
+        if isinstance(word, (tuple, list)) and len(word) >= 2:
+            word_segment = word[0]
+            if isinstance(word_segment, Segment):
+                shifted_segment = Segment(
+                    word_segment.start + offset,
+                    word_segment.end + offset,
+                )
+                shifted_words.append((shifted_segment, *word[1:]))
+                continue
+
+        shifted_words.append(word)
+    return shifted_words
+
+
+def _run_asr_on_segments(
+    asr_model, args, segments: list[np.ndarray], sampling_rate: int
+):
     merged = []
     offset = 0.0
     for segment in segments:
         chunk_output = _run_asr_on_segment(asr_model, args, segment, sampling_rate)
-        for seg, text in chunk_output:
+        for item in chunk_output:
+            seg, text = item[:2]
             shifted = Segment(seg.start + offset, seg.end + offset)
-            merged.append((shifted, text))
+            if len(item) >= 3:
+                merged.append((shifted, text, _shift_words(item[2], offset)))
+            else:
+                merged.append((shifted, text))
         offset += len(segment) / float(sampling_rate)
     merged.sort(key=lambda x: (x[0].start, x[0].end))
     return merged
@@ -90,7 +123,7 @@ def transcribe(args):
                 asr_model=asr_model,
                 args=args,
                 segments=waveform_segments,
-                sampling_rate=dataset.sampling_rate
+                sampling_rate=dataset.sampling_rate,
             )
 
             # Run diarization on the same preprocessed (concatenated) audio timeline
@@ -123,19 +156,105 @@ def main(args):
     print(f"Finished processing {len(processed)} files.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--audio_dir", type=str, required=True, help="Directory containing audio files")
-    parser.add_argument("--audio_files", type=str, nargs="+", default=None, help="Optional file name(s) to process from --audio_dir (e.g. sample1.wav sample2.wav)")
-    parser.add_argument("--online_llm", action="store_true", help="Whether to use an online LLM for ASR + diarization instead of separate models")
-    parser.add_argument("--online_llm_model", type=str, choices=["gemini"], default="gemini", help="Online LLM model to use for ASR & diarization")
-    parser.add_argument("--openai_language", type=str, default="ja", help="Language of audio files for OpenAI Whisper (e.g. 'en'(English), 'ja'(Janpanese))")
-    parser.add_argument("--qwen_language", type=str, choices=['Chinese', 'English', 'Cantonese', 'Arabic', 'German', 'French', 'Spanish', 
-                                                            'Portuguese', 'Indonesian', 'Italian', 'Korean', 'Russian', 'Thai', 'Vietnamese', 
-                                                            'Japanese', 'Turkish', 'Hindi', 'Malay', 'Dutch', 'Swedish', 'Danish', 'Finnish', 
-                                                            'Polish', 'Czech', 'Filipino', 'Persian', 'Greek', 'Romanian', 'Hungarian', 'Macedonian'], 
-                        default="Japanese", help="Language of audio files for Qwen ASR")
-    parser.add_argument("--diarization_model_name", type=str, choices=["community", "precision"], default="community", help="Diarization model to use")
-    parser.add_argument("--asr_model_name", type=str, choices=["kotoba", "openai", "qwen"], default="openai", help="ASR model to use")
+    parser.add_argument(
+        "--audio_dir", type=str, required=True, help="Directory containing audio files"
+    )
+    parser.add_argument(
+        "--audio_files",
+        type=str,
+        nargs="+",
+        default=None,
+        help=(
+            "Optional file name(s) to process from --audio_dir "
+            "(e.g. sample1.wav sample2.wav)"
+        ),
+    )
+    parser.add_argument(
+        "--online_llm",
+        action="store_true",
+        help=(
+            "Whether to use an online LLM for ASR + diarization "
+            "instead of separate models"
+        ),
+    )
+    parser.add_argument(
+        "--online_llm_model",
+        type=str,
+        choices=["gemini"],
+        default="gemini",
+        help="Online LLM model to use for ASR & diarization",
+    )
+    parser.add_argument(
+        "--openai_language",
+        type=str,
+        default="ja",
+        help=(
+            "Language of audio files for OpenAI Whisper "
+            "(e.g. 'en'(English), 'ja'(Janpanese))"
+        ),
+    )
+    parser.add_argument(
+        "--qwen_language",
+        type=str,
+        choices=[
+            "Chinese",
+            "English",
+            "Cantonese",
+            "Arabic",
+            "German",
+            "French",
+            "Spanish",
+            "Portuguese",
+            "Indonesian",
+            "Italian",
+            "Korean",
+            "Russian",
+            "Thai",
+            "Vietnamese",
+            "Japanese",
+            "Turkish",
+            "Hindi",
+            "Malay",
+            "Dutch",
+            "Swedish",
+            "Danish",
+            "Finnish",
+            "Polish",
+            "Czech",
+            "Filipino",
+            "Persian",
+            "Greek",
+            "Romanian",
+            "Hungarian",
+            "Macedonian",
+        ],
+        default="Japanese",
+        help="Language of audio files for Qwen ASR",
+    )
+    parser.add_argument(
+        "--diarization_model_name",
+        type=str,
+        choices=["community", "precision", "pyannote_ja", "diarizen"],
+        default="community",
+        help="Diarization model to use",
+    )
+    parser.add_argument(
+        "--use_exclusive_diarization",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Use exclusive speaker diarization when the selected backend provides it "
+            "(enabled by default)"
+        ),
+    )
+    parser.add_argument(
+        "--asr_model_name",
+        type=str,
+        choices=["kotoba", "openai", "qwen"],
+        default="openai",
+        help="ASR model to use",
+    )
     args = parser.parse_args()
     main(args)

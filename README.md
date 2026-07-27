@@ -127,6 +127,64 @@ output/<file>.json
 frontend/public/transcripts/<file>.json
 The original audio is also copied to frontend/public/audios/, and index.json is auto‑updated for front‑end use.
 
+### Diarization backends
+
+ローカルパイプラインでは次の話者識別バックエンドを選択できます。
+
+| CLI value | Model | 用途 |
+|---|---|---|
+| `community` | `pyannote/speaker-diarization-community-1` | 既定値。exclusive diarization を使って重複話者を排他化 |
+| `pyannote_ja` | pyannote 3.1 + CALLHOME 日本語 fine-tune segmentation | 日本語会話向け |
+| `diarizen` | `BUT-FIT/diarizen-wavlm-large-s80-md-v2` | WavLM-Large EEND + VBx |
+
+例:
+
+```bash
+uv run src/backend/transcribe.py \
+  --audio_dir audios/num_speakers_3 \
+  --diarization_model_name diarizen
+```
+
+`community` などが exclusive diarization を返す場合は既定でそちらを
+使用します。従来の重複を含む diarization を使う場合は
+`--no-use_exclusive_diarization` を指定してください。
+
+OpenAI Whisper では word-level timestamp を取得し、1つの ASR セグメント内に
+有意な話者交代がある場合に単語単位で話者を割り当てます。単語 timestamp を
+返さない ASR (`kotoba` など) は従来どおり、重なり時間が最大の話者へ
+フォールバックします。短い相槌は主話者の発話として保持します。
+
+#### モデル利用条件と依存関係
+
+- `pyannote_ja` の利用前に Hugging Face で
+  `pyannote/segmentation-3.0` と `pyannote/speaker-diarization-3.1`
+  の利用条件へ同意し、`HF_TOKEN` を設定してください。
+- **DiariZen の学習済み重みは CC BY-NC 4.0 で、非商用利用に限定されます。**
+  商用用途には使用しないでください。
+- DiariZen 本家は同梱版 pyannote.audio 3.1.1 と NumPy 1.26.4、Torch
+  2.1.1 を案内していますが、これらは既存の community-1 が必要とする
+  pyannote.audio 4.0.1 と衝突します。本プロジェクトは DiariZen のモデル
+  構造を pyannote.audio 4.0.1 の VBx/PLDA パイプラインへ載せる互換
+  アダプターを使用し、既存の Torch 2.8.0 / CUDA 12.x 構成を維持します。
+  `diarizen` と `diarizers` は再現性のため Git commit を固定しています。
+
+依存関係を反映するには次を実行してください。
+
+```bash
+uv sync
+```
+
+3バックエンドを同じ音声で目視比較するには、`num_speakers_N` ディレクトリ内の
+WAVを指定します。
+
+```bash
+bash scripts/compare_diarization.sh audios/num_speakers_3/sample.wav
+```
+
+結果は
+`outputs/comparison/<basename>/{community,pyannote_ja,diarizen}.txt`
+に保存されます。
+
 
 ## 4. Start the front‑end
 Open http://localhost:5173 in your browser.

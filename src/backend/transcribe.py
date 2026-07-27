@@ -7,6 +7,12 @@ import soundfile as sf
 import torch
 from data import AudioInput
 from pyannote.core import Segment
+from stereo import (
+    DEFAULT_CROSSTALK_THRESHOLD_DB,
+    MIN_ASR_ACTIVE_DURATION_SEC,
+    VoiceActivityDetector,
+    gate_stereo_waveform,
+)
 from tqdm import tqdm
 from utils import diarize_text, save_index_json, save_transcripts_json
 
@@ -56,11 +62,22 @@ def _shift_words(words, offset: float):
 
 
 def _run_asr_on_segments(
-    asr_model, args, segments: list[np.ndarray], sampling_rate: int
+    asr_model,
+    args,
+    segments: list[np.ndarray],
+    sampling_rate: int,
+    process_segments: list[bool] | None = None,
 ):
+    if process_segments is not None and len(process_segments) != len(segments):
+        raise ValueError("process_segments must match the number of audio segments.")
+
     merged = []
     offset = 0.0
-    for segment in segments:
+    for index, segment in enumerate(segments):
+        if process_segments is not None and not process_segments[index]:
+            offset += len(segment) / float(sampling_rate)
+            continue
+
         chunk_output = _run_asr_on_segment(asr_model, args, segment, sampling_rate)
         for item in chunk_output:
             seg, text = item[:2]
@@ -74,9 +91,83 @@ def _run_asr_on_segments(
     return merged
 
 
+def transcribe_stereo_segments(
+    asr_model,
+    args,
+    segments: list[np.ndarray],
+    sampling_rate: int,
+    vad_detector: VoiceActivityDetector | None = None,
+):
+    """Gate and transcribe synchronized L/R segments on one shared timeline."""
+    if not segments:
+        return []
+    if any(segment.ndim != 2 or segment.shape[1] != 2 for segment in segments):
+        raise ValueError("Channel mode received a non-stereo preprocessed segment.")
+
+    segment_lengths = [len(segment) for segment in segments]
+    concatenated = np.concatenate(segments, axis=0)
+    gating = gate_stereo_waveform(
+        concatenated,
+        sampling_rate,
+        crosstalk_threshold_db=getattr(
+            args,
+            "channel_crosstalk_threshold_db",
+            DEFAULT_CROSSTALK_THRESHOLD_DB,
+        ),
+        vad_detector=vad_detector,
+    )
+
+    boundaries = np.cumsum([0, *segment_lengths])
+    minimum_active_samples = max(
+        1,
+        int(np.ceil(MIN_ASR_ACTIVE_DURATION_SEC * sampling_rate)),
+    )
+    merged = []
+    for channel, speaker in enumerate(("SPEAKER_00", "SPEAKER_01")):
+        channel_segments = [
+            gating.waveform[start:end, channel]
+            for start, end in zip(
+                boundaries[:-1],
+                boundaries[1:],
+                strict=True,
+            )
+        ]
+        active_segments = [
+            int(np.count_nonzero(gating.keep_mask[start:end, channel]))
+            >= minimum_active_samples
+            for start, end in zip(
+                boundaries[:-1],
+                boundaries[1:],
+                strict=True,
+            )
+        ]
+        asr_output = _run_asr_on_segments(
+            asr_model=asr_model,
+            args=args,
+            segments=channel_segments,
+            sampling_rate=sampling_rate,
+            process_segments=active_segments,
+        )
+        merged.extend((segment, speaker, text) for segment, text, *_ in asr_output)
+
+    merged.sort(key=lambda item: (item[0].start, item[0].end, item[1]))
+    return merged
+
+
 def transcribe(args):
-    dataset = AudioInput(args.audio_dir, target_files=args.audio_files)
-    args.num_speakers = dataset.num_speakers
+    channel_mode = bool(getattr(args, "channel_mode", False))
+    if channel_mode and args.online_llm:
+        raise ValueError(
+            "--channel_mode uses the selected local ASR model and cannot be "
+            "combined with --online_llm."
+        )
+
+    dataset = AudioInput(
+        args.audio_dir,
+        target_files=args.audio_files,
+        channel_mode=channel_mode,
+    )
+    args.num_speakers = 2 if channel_mode else dataset.num_speakers
 
     if args.audio_files is None and dataset.skipped_files:
         print(
@@ -91,6 +182,8 @@ def transcribe(args):
 
     if use_online_llm:
         online_llm_model = get_online_llm_model(args)
+    elif channel_mode:
+        asr_model = get_asr_model(args)
     else:
         # ASR and Diarization models
         asr_model = get_asr_model(args)
@@ -114,6 +207,13 @@ def transcribe(args):
         if use_online_llm:
             # OnlineLLM output already includes timestamp + speaker attribution.
             merged = online_llm_model.run(audio_path)
+        elif channel_mode:
+            merged = transcribe_stereo_segments(
+                asr_model=asr_model,
+                args=args,
+                segments=item["waveform"],
+                sampling_rate=dataset.sampling_rate,
+            )
         else:
             waveform_segments = item["waveform"]
             concatenated_waveform = np.concatenate(waveform_segments, axis=0)
@@ -247,6 +347,23 @@ if __name__ == "__main__":
         help=(
             "Use exclusive speaker diarization when the selected backend provides it "
             "(enabled by default)"
+        ),
+    )
+    parser.add_argument(
+        "--channel_mode",
+        action="store_true",
+        help=(
+            "Treat a 2-channel WAV as fixed speakers "
+            "(L=SPEAKER_00, R=SPEAKER_01) without diarization"
+        ),
+    )
+    parser.add_argument(
+        "--channel_crosstalk_threshold_db",
+        type=float,
+        default=DEFAULT_CROSSTALK_THRESHOLD_DB,
+        help=(
+            "Remove channel speech whose RMS is this many dB or more below "
+            "the other channel (default: %(default)s dB)"
         ),
     )
     parser.add_argument(

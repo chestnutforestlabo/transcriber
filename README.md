@@ -127,6 +127,38 @@ output/<file>.json
 frontend/public/transcripts/<file>.json
 The original audio is also copied to frontend/public/audios/, and index.json is auto‑updated for front‑end use.
 
+### DJI Mic Mini 2 のチャンネル分離モード
+
+2TX + 1RX で2人を録音する場合は、RX の録音モードを「ステレオ」にして
+TX1 を Lch、TX2 を Rch に分離してください。モノミックスされた WAV では
+チャンネル分離モードを使用できません。トランスミッター側のノイズ
+キャンセリングは、ASR に必要な音声成分を損なわないよう弱めを推奨します。
+
+取り込み後の WAV は `audios/num_speakers_2/` に置き、次のように実行します。
+
+```bash
+uv run src/backend/transcribe.py \
+  --audio_dir audios/num_speakers_2 \
+  --asr_model_name openai \
+  --channel_mode
+```
+
+Lch は `SPEAKER_00`、Rch は `SPEAKER_01` として出力されます。このモードでは
+ダイアライゼーションモデルを使用せず、各チャンネルを Silero VAD と短時間
+RMS 比でゲーティングして、相手話者の小さな漏れ込みを除外してから個別に
+ASR を実行します。同時発話のように両チャンネルが同程度の音量なら、両方を
+残します。
+
+漏れ込み判定は既定で「自チャンネルが相手より 6 dB 以上小さい場合」です。
+録音ゲインやマイク位置に応じて、たとえば
+`--channel_crosstalk_threshold_db -9` のように調整できます。値は負の dB で
+指定してください。
+
+DJI Mic Mini 2 の 48 kHz / 24 bit WAV は、既存パイプラインが 16 kHz に
+リサンプルするため変換せずに配置して構いません。1ch WAV を指定した場合は
+エラーになるので、通常の1マイク録音は `--channel_mode` なしで実行して
+ください。
+
 ### Diarization backends
 
 ローカルパイプラインでは次の話者識別バックエンドを選択できます。

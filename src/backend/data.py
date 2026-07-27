@@ -10,11 +10,13 @@ class AudioInput(Dataset):
         audio_dir: str,
         sampling_rate: int = 16000,
         target_files: list[str] | None = None,
-        processed_audio_dir: str = "outputs"
+        processed_audio_dir: str = "outputs",
+        channel_mode: bool = False,
     ):
         self.audio_dir = audio_dir
         self._num_speakers = audio_dir.replace("/","").split("_")[-1]
         self.sampling_rate = sampling_rate
+        self.channel_mode = channel_mode
         self.skipped_files: list[str] = []
         available_audio_list = sorted([
             fname for fname in os.listdir(audio_dir)
@@ -41,12 +43,29 @@ class AudioInput(Dataset):
             self.skipped_files = [fname for fname in available_audio_list if fname in processed_audio_files]
             self.audio_list = [fname for fname in available_audio_list if fname not in processed_audio_files]
 
+        if self.channel_mode:
+            self._validate_stereo_files()
+
     @property
     def num_speakers(self) -> int:
         return int(self._num_speakers)
 
     def __len__(self) -> int:
         return len(self.audio_list)
+
+    def _validate_stereo_files(self) -> None:
+        invalid_files = []
+        for fname in self.audio_list:
+            channels = sf.info(os.path.join(self.audio_dir, fname)).channels
+            if channels != 2:
+                invalid_files.append(f"{fname} ({channels}ch)")
+
+        if invalid_files:
+            raise ValueError(
+                "--channel_mode requires 2-channel stereo WAV files. "
+                "Use the normal mode without --channel_mode for mono recordings: "
+                + ", ".join(invalid_files)
+            )
 
     @staticmethod
     def _audio_envelope(waveform: np.ndarray, window_size: int) -> np.ndarray:
@@ -195,7 +214,10 @@ class AudioInput(Dataset):
     def __getitem__(self, idx: int) -> dict:
         fname = self.audio_list[idx]
         path = os.path.join(self.audio_dir, fname)
-        waveform, sr = sf.read(path)
+        if self.channel_mode:
+            waveform, sr = sf.read(path, always_2d=True, dtype="float32")
+        else:
+            waveform, sr = sf.read(path)
         if sr != self.sampling_rate:
             waveform = lr_resample(
                 waveform,

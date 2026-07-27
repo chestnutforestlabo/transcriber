@@ -1332,3 +1332,300 @@ mark {
     width: 200px;
   }
 }
+
+/* ===== Conversation coding timeline ===== */
+.transcript-viewer {
+  flex: 1;
+  min-height: 0;
+}
+
+.coding-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: -2px 0 8px;
+  padding: 6px 8px;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.coding-lane {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  align-items: center;
+  min-height: 14px;
+}
+
+.coding-lane-label {
+  padding-right: 8px;
+  color: #4d5661;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.coding-lane-track {
+  position: relative;
+  height: 12px;
+  overflow: visible;
+  border-radius: 3px;
+  background: #f1f3f5;
+}
+
+.coding-band {
+  position: absolute;
+  top: 1px;
+  height: 10px;
+  min-width: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  opacity: 0.82;
+}
+
+.coding-band:hover {
+  border: 0;
+  opacity: 1;
+  transform: scaleY(1.25);
+}
+
+.coding-band-会話 {
+  background: #43a047;
+}
+
+.coding-band-無言 {
+  background: #9aa0a6;
+}
+
+.coding-band-AI説明 {
+  background: #2563eb;
+}
+
+.coding-band-AI応答 {
+  background: #22b8cf;
+}
+
+.coding-band-システム停止 {
+  background: #e53935;
+}
+
+.coding-event-lane .coding-lane-track {
+  background: #fff8e1;
+}
+
+.coding-event-marker {
+  position: absolute;
+  top: -2px;
+  width: 9px;
+  height: 16px;
+  margin: 0 0 0 -4px;
+  padding: 0;
+  border: 1px solid #7a4f00;
+  border-radius: 5px 5px 2px 2px;
+  background: #ffb300;
+  z-index: 2;
+}
+
+.coding-event-marker:hover {
+  border-color: #4e3300;
+  background: #ff8f00;
+}
+
+/* ===== Conversation coding review ===== */
+.coding-review-panel {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  max-height: 34vh;
+  min-height: 150px;
+  border-top: 2px solid #b8c0ca;
+  background: #f8fafc;
+}
+
+.coding-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #d9dee5;
+  background: #eef3f7;
+  color: #263238;
+}
+
+.coding-review-count {
+  margin-left: 8px;
+  color: #66717d;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.coding-review-tools,
+.coding-review-tools label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.coding-review-tools select,
+.coding-review-summary select,
+.coding-review-editors input {
+  border: 1px solid #b7c0ca;
+  border-radius: 4px;
+  background: #fff;
+  color: #20262d;
+}
+
+.coding-review-tools select,
+.coding-review-summary select {
+  padding: 4px 6px;
+}
+
+.coding-export-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1px solid #2979ff;
+  background: #2979ff;
+  color: #fff;
+  font-size: 12px;
+}
+
+.coding-export-button:hover {
+  border-color: #125ed0;
+  background: #125ed0;
+}
+
+.coding-review-list {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.coding-review-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e5ea;
+  background: #fff;
+  cursor: pointer;
+}
+
+.coding-review-item:hover {
+  background: #f4f8fb;
+}
+
+.coding-review-item.active {
+  border-left: 4px solid #1890ff;
+  background: #e6f7ff;
+}
+
+.coding-review-summary {
+  display: grid;
+  grid-template-columns: 52px minmax(150px, auto) auto minmax(140px, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.coding-review-time {
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: #145ea8;
+  font-family: monospace;
+  font-size: 12px;
+  text-align: left;
+}
+
+.coding-review-time:hover {
+  border: 0;
+  text-decoration: underline;
+}
+
+.coding-review-speaker {
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #e8eef5;
+  color: #3a4754;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.coding-review-text {
+  overflow: hidden;
+  color: #343a40;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coding-review-editors {
+  display: grid;
+  grid-template-columns: 96px 96px auto minmax(130px, 1fr);
+  align-items: end;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.coding-review-editors label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #65717d;
+  font-size: 10px;
+}
+
+.coding-review-editors input {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.coding-review-status {
+  display: flex;
+  gap: 5px;
+}
+
+.coding-review-status button {
+  padding: 4px 7px;
+  border: 1px solid #c4cbd3;
+  background: #fff;
+  color: #47515c;
+  font-size: 11px;
+}
+
+.coding-review-status button.selected.confirmed {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.coding-review-status button.selected.correction {
+  border-color: #c62828;
+  background: #ffebee;
+  color: #b71c1c;
+}
+
+.coding-review-note {
+  min-width: 120px;
+}
+
+@media (max-width: 900px) {
+  .coding-review-summary {
+    grid-template-columns: 52px minmax(130px, 1fr);
+  }
+
+  .coding-review-speaker,
+  .coding-review-text {
+    grid-column: 2;
+  }
+
+  .coding-review-editors {
+    grid-template-columns: 85px 85px 1fr;
+  }
+
+  .coding-review-note {
+    grid-column: 1 / -1;
+  }
+}

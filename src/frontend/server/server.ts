@@ -73,7 +73,7 @@ app.post("/api/save-transcript", async (req: Request, res: Response) => {
     console.log("=== /api/save-transcript 受信データ ===")
     console.log(JSON.stringify(req.body, null, 2))
 
-    const { filename, data, speakerMapping } = req.body as SaveTranscriptRequest & { speakerMapping?: any }
+    const { filename, data } = req.body as SaveTranscriptRequest
     console.log("Received request to save transcript:", filename)
 
     // Validate input

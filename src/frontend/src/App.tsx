@@ -10,7 +10,8 @@ import BookmarkList from "./components/BookmarkList"
 import TagList from "./components/TagList"
 import ImageModal from "./components/ImageModal"
 import SearchBar from "./components/SearchBar"
-import type { TranscriptEntry, SpeakerMapping, Bookmark } from "./types"
+import CodingReviewPanel from "./components/CodingReviewPanel"
+import type { TranscriptEntry, SpeakerMapping, Bookmark, CodingData } from "./types"
 import {
   loadAudioTags,
   loadAllTags,
@@ -22,6 +23,24 @@ import {
   addBookmark as addBookmarkService,
   removeBookmark as removeBookmarkService,
 } from "./services/bookmarkService"
+
+const withReviewState = (data: CodingData): CodingData => ({
+  ...data,
+  intervals: data.intervals.map((item) => ({
+    ...item,
+    review: {
+      status: item.review?.status ?? null,
+      note: item.review?.note ?? "",
+    },
+  })),
+  events: data.events.map((item) => ({
+    ...item,
+    review: {
+      status: item.review?.status ?? null,
+      note: item.review?.note ?? "",
+    },
+  })),
+})
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -36,15 +55,14 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackRate, setPlaybackRate] = useState(1.0)
   const [speakerMapping, setSpeakerMapping] = useState<SpeakerMapping>({})
-  const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [saveError, setSaveError] = useState<string | null>(null)
   const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null)
   const [lastPlaybackPosition, setLastPlaybackPosition] = useState<number>(0)
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false)
   const saveInProgressRef = useRef(false)
-  const transcriptViewerRef = useRef<HTMLDivElement>(null)
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
+  const [coding, setCoding] = useState<CodingData | null>(null)
 
   const isInitialSpeakerSave = useRef(true)
   const isInitialTranscriptSave = useRef(true)
@@ -171,6 +189,35 @@ function App() {
       .catch((error) => console.error("Error loading transcript:", error))
   }, [selectedAudio])
 
+  useEffect(() => {
+    if (!selectedAudio) {
+      setCoding(null)
+      return
+    }
+    const controller = new AbortController()
+    const codingFile = selectedAudio.replace(/\.[^.]+$/, ".json")
+    setCoding(null)
+
+    fetch(`/coding/${codingFile}`, { signal: controller.signal })
+      .then((response) => {
+        if (response.status === 404) return null
+        if (!response.ok) {
+          throw new Error(`Failed to load coding JSON: ${response.statusText}`)
+        }
+        return response.json()
+      })
+      .then((data: CodingData | null) => {
+        if (data) setCoding(withReviewState(data))
+      })
+      .catch((error) => {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Error loading coding data:", error)
+        }
+      })
+
+    return () => controller.abort()
+  }, [selectedAudio])
+
   const handleSelectAudio = (audio: string) => {
     console.log("Selected audio:", audio)
     setIsPlaying(false)
@@ -268,7 +315,6 @@ function App() {
     const transcriptFile = selectedAudio.replace(".wav", ".json")
     console.log("Saving transcript changes to:", transcriptFile)
     saveInProgressRef.current = true
-    setIsSaving(true)
     setSaveStatus("saving")
     setSaveError(null)
     try {
@@ -307,7 +353,6 @@ function App() {
         setSaveError(null)
       }, 5000)
     } finally {
-      setIsSaving(false)
       saveInProgressRef.current = false
     }
   }
@@ -350,6 +395,10 @@ function App() {
     setTranscript((prev) => {
       const updated = [...prev]
       updated.splice(index, 1)
+      setTimeout(() => {
+        console.log("Saving after deleting entry")
+        saveTranscriptChanges(updated)
+      }, 100)
       return updated
     })
   
@@ -358,11 +407,6 @@ function App() {
     } else if (selectedEntryIndex !== null && selectedEntryIndex > index) {
       setSelectedEntryIndex(selectedEntryIndex - 1)
     }
-  
-    setTimeout(() => {
-      console.log("Saving after deleting entry")
-      saveTranscriptChanges([...updatedTranscript])
-    }, 100)
   }
 
   const handleAddEntryBetween = (index: number) => {
@@ -553,6 +597,14 @@ function App() {
             onAddEntryBetween={handleAddEntryBetween}
             onDeleteEntry={handleDeleteEntry}
           />
+          {coding && (
+            <CodingReviewPanel
+              coding={coding}
+              currentTime={currentTime}
+              onSeek={jumpToTime}
+              onChange={setCoding}
+            />
+          )}
           <AudioControls
             currentTime={currentTime}
             duration={duration}
@@ -567,8 +619,8 @@ function App() {
             onWaveformReady={handleWaveformReady}
             onTimeUpdate={handleTimeUpdate}
             onWaveformClick={handleWaveformClick}
-            transcript={transcript}
             lastPlaybackPosition={lastPlaybackPosition}
+            coding={coding}
           />
         </div>
         <div className="speaker-settings-container">

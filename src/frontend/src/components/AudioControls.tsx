@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import type React from "react"
-import type { TranscriptEntry } from "../types"
+import type WaveSurfer from "wavesurfer.js"
+import type { CodingData } from "../types"
+import CodingTimeline from "./CodingTimeline"
 
 interface AudioControlsProps {
   currentTime: number
@@ -18,8 +20,8 @@ interface AudioControlsProps {
   onWaveformReady: (duration: number) => void
   onTimeUpdate: (time: number) => void
   onWaveformClick: (time: number) => void
-  transcript: TranscriptEntry[]
   lastPlaybackPosition: number
+  coding: CodingData | null
 }
 
 const AudioControls: React.FC<AudioControlsProps> = ({
@@ -36,11 +38,11 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onWaveformReady,
   onTimeUpdate,
   onWaveformClick,
-  transcript,
   lastPlaybackPosition,
+  coding,
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null)
-  const wavesurferRef = useRef<any>(null)
+  const wavesurferRef = useRef<WaveSurfer | null>(null)
   const [showPlaybackRates, setShowPlaybackRates] = useState(false)
   const playbackRates = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
   const [isWavesurferReady, setIsWavesurferReady] = useState(false)
@@ -62,6 +64,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
 
     if (isInitializedRef.current || !waveformRef.current) return
+    const waveformElement = waveformRef.current
 
     const initWavesurfer = async () => {
       try {
@@ -71,8 +74,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           wavesurferRef.current.destroy()
         }
 
-        wavesurferRef.current = WaveSurfer.create({
-          container: waveformRef.current,
+        const waveSurfer = WaveSurfer.create({
+          container: waveformElement,
           waveColor: "#4a83ff",
           progressColor: "#1a56e8",
           cursorColor: "#333",
@@ -80,45 +83,42 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           barGap: 1,
           barRadius: 3,
           height: 60,
-          responsive: true,
         })
+        wavesurferRef.current = waveSurfer
 
-        wavesurferRef.current.on("ready", () => {
+        waveSurfer.on("ready", () => {
           console.log("Wavesurfer is ready")
           setIsWavesurferReady(true)
-          const audioDuration = wavesurferRef.current.getDuration()
+          const audioDuration = waveSurfer.getDuration()
           onWaveformReady(audioDuration)
         })
 
-        wavesurferRef.current.on("audioprocess", (time: number) => {
+        waveSurfer.on("audioprocess", (time: number) => {
           onTimeUpdate(time)
         })
 
-        wavesurferRef.current.on("seek", (progress: number) => {
-          const seekTime = progress * wavesurferRef.current.getDuration()
+        waveSurfer.on("seeking", (seekTime: number) => {
           onSeek(seekTime)
         })
 
-        wavesurferRef.current.on("click", (e: MouseEvent) => {
-          if (!wavesurferRef.current) return
-
-          const clickTime = wavesurferRef.current.getCurrentTime()
+        waveSurfer.on("click", () => {
+          const clickTime = waveSurfer.getCurrentTime()
           console.log("Waveform clicked at time:", clickTime)
 
           onWaveformClick(clickTime)
 
           if (isPlaying) {
-            wavesurferRef.current.play(clickTime)
+            waveSurfer.play(clickTime)
           }
         })
 
-        wavesurferRef.current.on("error", (error: any) => {
+        waveSurfer.on("error", (error: unknown) => {
           console.error("Wavesurfer error:", error)
         })
 
         if (audioSrc) {
           console.log("Loading audio:", `/audios/${audioSrc}`)
-          wavesurferRef.current.load(`/audios/${audioSrc}`)
+          waveSurfer.load(`/audios/${audioSrc}`)
         }
 
         isInitializedRef.current = true
@@ -241,6 +241,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   return (
     <div className="audio-controls">
       <div className="waveform-container" ref={waveformRef}></div>
+      {coding && <CodingTimeline coding={coding} duration={duration} onSeek={onSeek} />}
       <div className="controls-container">
         <div className="playback-rate-container" ref={playbackRateContainerRef}>
           <button onClick={() => setShowPlaybackRates(!showPlaybackRates)} className="playback-rate-button">

@@ -4,15 +4,21 @@ import "./index.css"
 import App from "./App.tsx"
 
 // Add debugging for audio context
-window.AudioContext = window.AudioContext || (window as any).webkitAudioContext
-const originalAudioContext = window.AudioContext
-window.AudioContext = class extends originalAudioContext {
-  constructor(...args: any[]) {
-    console.log("Creating AudioContext")
-    super(...args)
-    this.addEventListener("statechange", () => {
-      console.log("AudioContext state changed to:", this.state)
-    })
+type WindowWithWebkitAudio = Window & {
+  webkitAudioContext?: typeof AudioContext
+}
+
+const originalAudioContext =
+  window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext
+if (originalAudioContext) {
+  window.AudioContext = class extends originalAudioContext {
+    constructor(options?: AudioContextOptions) {
+      console.log("Creating AudioContext")
+      super(options)
+      this.addEventListener("statechange", () => {
+        console.log("AudioContext state changed to:", this.state)
+      })
+    }
   }
 }
 

@@ -3,14 +3,7 @@
 import React, { useRef, useEffect, useState } from "react"
 import { Edit, Copy, Bookmark, Save, X, Plus, Trash2 } from "lucide-react"
 import { createPortal } from "react-dom"
-
-export interface TranscriptEntry {
-  time?: string
-  start: number
-  end: number
-  speaker: string
-  text: string
-}
+import type { Bookmark as BookmarkType, TranscriptEntry } from "../types"
 
 interface TranscriptViewerProps {
   transcript: TranscriptEntry[]
@@ -23,7 +16,7 @@ interface TranscriptViewerProps {
   onAddEntryBetween: (index: number) => void
   onBookmarkEntry: (index: number) => void
   onDeleteEntry: (index: number) => void
-  bookmarks: Bookmark[]
+  bookmarks: BookmarkType[]
   currentAudioFile: string
 }
 

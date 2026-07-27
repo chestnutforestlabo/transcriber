@@ -1,4 +1,4 @@
-import type { Bookmark } from "../types"
+import type { Bookmark, TranscriptEntry } from "../types"
 
 export const loadBookmarks = (): Bookmark[] => {
   try {
@@ -20,7 +20,12 @@ export const saveBookmarks = (bookmarks: Bookmark[]): void => {
   }
 }
 
-export const addBookmark = (bookmarks: Bookmark[], audioFile: string, entryIndex: number, entry: any): Bookmark[] => {
+export const addBookmark = (
+  bookmarks: Bookmark[],
+  audioFile: string,
+  entryIndex: number,
+  entry: TranscriptEntry,
+): Bookmark[] => {
   const existingIndex = bookmarks.findIndex(
     (bookmark) => bookmark.audioFile === audioFile && bookmark.entryIndex === entryIndex,
   )

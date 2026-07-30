@@ -159,6 +159,77 @@ DJI Mic Mini 2 の 48 kHz / 24 bit WAV は、既存パイプラインが 16 kHz 
 エラーになるので、通常の1マイク録音は `--channel_mode` なしで実行して
 ください。
 
+### 擬似3チャンネル（Mac 2ch + iPhone 1ch）
+
+DJI Mic Mini 2 の2本に iPhone + AirPods を加えると、3人を1人1マイクで
+収録できます。Mac と iPhone の録音開始時刻が違っていても、会話の前後に
+全マイクへ聞こえるクラップを入れることで自動的に時刻を合わせます。
+
+```text
+話者A ─ DJI TX1 ─┐
+                  ├─ DJI RX ─ USB ─ Mac ─ 2ch WAV
+話者B ─ DJI TX2 ─┘                    ├─ Lch: SPEAKER_00
+                                      └─ Rch: SPEAKER_01
+
+話者C ─ AirPods ─ Bluetooth ─ iPhone ボイスメモ ─ mono m4a
+                                                    └─ SPEAKER_02
+```
+
+Mac 側は次のスクリプトで録音できます。引数なしでは AVFoundation の
+デバイス一覧を表示した後、DJI RX のデバイス名または番号を対話入力します。
+第1引数でデバイス、第2引数で出力先ディレクトリを直接指定することも
+できます。出力は `rec_YYYYMMDD_HHMMSS.wav`（48 kHz / 16 bit / 2ch）です。
+
+```bash
+scripts/record_mac_dji.sh
+# または
+scripts/record_mac_dji.sh "DJI MIC MINI" audios/num_speakers_3
+```
+
+録音手順は次のとおりです。
+
+1. Mac で `record_mac_dji.sh`、iPhone でボイスメモを開始します。順不同で、
+   厳密に同時である必要はありません。
+2. 全マイクに聞こえる位置で手を1回叩きます。
+3. 会話を収録します。
+4. 終了直前にもう1回手を叩き、両方の録音を停止します。
+5. iPhone の m4a を AirDrop などで Mac へ転送し、Mac の WAV と同じ
+   プロジェクト内へ置きます。
+
+メイン WAV が1つだけ入ったディレクトリを指定して実行します。
+
+```bash
+uv run src/backend/transcribe.py \
+  --audio_dir audios/num_speakers_3 \
+  --asr_model_name openai \
+  --channel_mode \
+  --aux_audio aux/speakerC.m4a
+```
+
+先頭と末尾の各120秒から onset 強度の相互相関を取り、開始オフセットと
+クロックドリフトを推定します。推定値と相関信頼度はコンソール、および
+文字起こし JSON の `meta.channel_alignment` に保存されます。信頼度警告が
+出た場合は波形を確認し、必要なら aux の開始位置がメイン時刻軸の何秒に
+当たるかを手動指定してください。擬似3チャンネルの JSON はトップレベルに
+`meta` と `transcripts` を持ち、従来モードの配列形式は変更しません。
+
+```bash
+uv run src/backend/transcribe.py \
+  --audio_dir audios/num_speakers_3 \
+  --asr_model_name openai \
+  --channel_mode \
+  --aux_audio aux/speakerC.m4a \
+  --aux_offset 1.7
+```
+
+補助音声を複数指定すると、指定順に `SPEAKER_02`、`SPEAKER_03` …となります。
+その場合、手動オフセットも補助音声と同じ順・同じ個数で指定します。
+ボイスメモはモノラルを前提とし、ステレオなど複数チャンネルだった場合は
+ch0 だけを使い、その旨をログへ表示します。AirPods の Bluetooth HFP 音声は
+帯域が狭く実質16 kHz程度ですが、Whisper も入力を16 kHzへ変換するため影響は
+限定的です。iOS のショートカットを使えば、ボイスメモの開始・停止も
+自動化できます。
+
 ### Diarization backends
 
 ローカルパイプラインでは次の話者識別バックエンドを選択できます。

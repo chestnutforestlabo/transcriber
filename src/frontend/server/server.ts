@@ -95,8 +95,18 @@ app.post("/api/save-transcript", async (req: Request, res: Response) => {
     console.log("Writing to file path:", filePath)
 
     // バックアップファイルを作成（既存ファイルがある場合）
+    let existingMeta: unknown
     try {
       await fs.promises.access(filePath, fs.constants.F_OK)
+      const existingPayload: unknown = JSON.parse(await fs.promises.readFile(filePath, "utf8"))
+      if (
+        existingPayload !== null &&
+        typeof existingPayload === "object" &&
+        !Array.isArray(existingPayload) &&
+        "meta" in existingPayload
+      ) {
+        existingMeta = (existingPayload as { meta: unknown }).meta
+      }
       const backupPath = `${filePath}.backup`
       await fs.promises.copyFile(filePath, backupPath)
       console.log("Created backup at:", backupPath)
@@ -106,7 +116,9 @@ app.post("/api/save-transcript", async (req: Request, res: Response) => {
 
     // ファイル書き込み - 同期的に書き込みを行い、確実に完了させる
     try {
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8")
+      const payload =
+        existingMeta === undefined ? data : { meta: existingMeta, transcripts: data }
+      fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf8")
       console.log("Successfully saved transcript to:", filePath)
     } catch (writeError) {
       console.error("Error writing file:", writeError)

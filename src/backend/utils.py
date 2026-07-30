@@ -266,7 +266,7 @@ def write_to_txt(spk_sent, file):
             fp.write(line)
 
 
-def save_transcripts_json(args, output_data, file_name):
+def save_transcripts_json(args, output_data, file_name, metadata=None):
     serializable = []
     prev_end = 0.0
     for i, item in enumerate(output_data):
@@ -284,8 +284,13 @@ def save_transcripts_json(args, output_data, file_name):
     for output_dir in output_dirs:
         os.makedirs(output_dir, exist_ok=True)
         output_file_path = os.path.join(output_dir, f"{file_name}.json")
+        payload = (
+            {"meta": metadata, "transcripts": serializable}
+            if metadata is not None
+            else serializable
+        )
         with open(output_file_path, "w", encoding="utf-8") as json_file:
-            json.dump(serializable, json_file, ensure_ascii=False, indent=2)
+            json.dump(payload, json_file, ensure_ascii=False, indent=2)
         if output_dir == output_dirs[1]:
             txt_file_path = os.path.join(output_dir, f"{file_name}.txt")
             with open(txt_file_path, "w", encoding="utf-8") as txt_file:

@@ -15,6 +15,12 @@ MIN_ASR_ACTIVE_DURATION_SEC = 0.1
 RMS_FRAME_DURATION_SEC = 0.032
 RMS_EPSILON = 1e-8
 
+# The upper quartile is a robust estimate of each microphone's ordinary
+# close-talk speech level.  Unlike the maximum it ignores clap/transient peaks,
+# and unlike the median it is not easily pulled down when VAD also detects
+# low-level bleed from another microphone.
+SPEECH_LEVEL_PERCENTILE = 75.0
+
 # Silero's defaults are tuned for general audio.  These shorter minimums keep
 # brief Japanese backchannels while still joining tiny VAD gaps.
 VAD_THRESHOLD = 0.5
@@ -43,8 +49,23 @@ class StereoGatingResult:
         return self.speech_mask & ~self.keep_mask
 
 
+@dataclass(frozen=True)
+class MultichannelGatingResult:
+    """Gated N-channel audio plus VAD, keep, and gain-calibration data."""
+
+    waveform: np.ndarray
+    speech_mask: np.ndarray
+    keep_mask: np.ndarray
+    speech_levels: np.ndarray
+
+    @property
+    def removed_mask(self) -> np.ndarray:
+        """Return VAD-positive samples removed as likely crosstalk."""
+        return self.speech_mask & ~self.keep_mask
+
+
 class SileroVoiceActivityDetector:
-    """Lazily loaded CPU VAD shared by the two input channels."""
+    """Lazily loaded CPU VAD shared by the input channels."""
 
     def __init__(self, threshold: float = VAD_THRESHOLD) -> None:
         """Store the VAD probability threshold and defer model loading."""
@@ -269,4 +290,108 @@ def gate_stereo_waveform(
         waveform=gated,
         speech_mask=speech_mask,
         keep_mask=keep_mask,
+    )
+
+
+def gate_multichannel_waveform(
+    waveform: np.ndarray,
+    sampling_rate: int,
+    crosstalk_threshold_db: float = DEFAULT_CROSSTALK_THRESHOLD_DB,
+    vad_detector: VoiceActivityDetector | None = None,
+) -> MultichannelGatingResult:
+    """Gate crosstalk across gain-normalized synchronized input channels."""
+    channels = np.asarray(waveform, dtype=np.float32)
+    if channels.ndim != 2 or channels.shape[1] < 2:
+        raise ValueError(
+            "Multichannel gating requires at least 2 channels "
+            f"(received shape {channels.shape})."
+        )
+    if crosstalk_threshold_db >= 0.0:
+        raise ValueError(
+            "The crosstalk threshold must be negative dB (for example, -6.0)."
+        )
+    if sampling_rate <= 0:
+        raise ValueError("sampling_rate must be positive.")
+    if len(channels) == 0:
+        empty_mask = np.zeros(channels.shape, dtype=bool)
+        return MultichannelGatingResult(
+            waveform=channels.copy(),
+            speech_mask=empty_mask,
+            keep_mask=empty_mask.copy(),
+            speech_levels=np.ones(channels.shape[1], dtype=np.float64),
+        )
+
+    detector = vad_detector or SileroVoiceActivityDetector()
+    speech_mask = np.column_stack(
+        [
+            _intervals_to_mask(
+                detector(channels[:, channel], sampling_rate),
+                len(channels),
+            )
+            for channel in range(channels.shape[1])
+        ]
+    )
+
+    frame_samples = max(1, int(round(RMS_FRAME_DURATION_SEC * sampling_rate)))
+    frame_count = int(np.ceil(len(channels) / frame_samples))
+    padded_samples = frame_count * frame_samples
+    padded_waveform = np.pad(
+        channels,
+        ((0, padded_samples - len(channels)), (0, 0)),
+    )
+    frames = padded_waveform.reshape(
+        frame_count,
+        frame_samples,
+        channels.shape[1],
+    )
+    rms = np.sqrt(np.mean(np.square(frames, dtype=np.float64), axis=1))
+
+    padded_speech = np.pad(
+        speech_mask,
+        ((0, padded_samples - len(channels)), (0, 0)),
+    )
+    active_frames = padded_speech.reshape(
+        frame_count,
+        frame_samples,
+        channels.shape[1],
+    ).any(axis=1)
+    speech_levels = np.ones(channels.shape[1], dtype=np.float64)
+    for channel in range(channels.shape[1]):
+        candidates = rms[active_frames[:, channel], channel]
+        candidates = candidates[candidates > RMS_EPSILON]
+        if candidates.size:
+            speech_levels[channel] = max(
+                RMS_EPSILON,
+                float(np.percentile(candidates, SPEECH_LEVEL_PERCENTILE)),
+            )
+
+    normalized_rms = rms / speech_levels[None, :]
+    active_normalized_rms = np.where(active_frames, normalized_rms, 0.0)
+    maximum_rms = np.max(active_normalized_rms, axis=1, keepdims=True)
+    relative_db = 20.0 * np.log10(
+        (active_normalized_rms + RMS_EPSILON)
+        / (maximum_rms + RMS_EPSILON)
+    )
+    keep_frames = active_frames & (relative_db >= crosstalk_threshold_db)
+
+    minimum_frames = max(
+        1,
+        int(np.ceil(MIN_GATE_STATE_DURATION_SEC * sampling_rate / frame_samples)),
+    )
+    for channel in range(channels.shape[1]):
+        keep_frames[:, channel] = _suppress_short_reversals(
+            keep_frames[:, channel],
+            active_frames[:, channel],
+            minimum_frames,
+        )
+
+    frame_keep_mask = np.repeat(keep_frames, frame_samples, axis=0)[: len(channels)]
+    keep_mask = speech_mask & frame_keep_mask
+    gated = channels.copy()
+    gated[~keep_mask] = 0.0
+    return MultichannelGatingResult(
+        waveform=gated,
+        speech_mask=speech_mask,
+        keep_mask=keep_mask,
+        speech_levels=speech_levels,
     )

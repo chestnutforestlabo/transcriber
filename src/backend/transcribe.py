@@ -5,12 +5,18 @@ import tempfile
 import numpy as np
 import soundfile as sf
 import torch
+from alignment import (
+    DEFAULT_ALIGNMENT_WINDOW_SEC,
+    AlignedChannels,
+    align_audio_files,
+)
 from data import AudioInput
 from pyannote.core import Segment
 from stereo import (
     DEFAULT_CROSSTALK_THRESHOLD_DB,
     MIN_ASR_ACTIVE_DURATION_SEC,
     VoiceActivityDetector,
+    gate_multichannel_waveform,
     gate_stereo_waveform,
 )
 from tqdm import tqdm
@@ -154,8 +160,132 @@ def transcribe_stereo_segments(
     return merged
 
 
+def transcribe_multichannel_segments(
+    asr_model,
+    args,
+    segments: list[np.ndarray],
+    sampling_rate: int,
+    timeline_offset_sec: float = 0.0,
+    vad_detector: VoiceActivityDetector | None = None,
+):
+    """Gate and transcribe synchronized N-channel segments."""
+    if not segments:
+        return []
+    channel_count = segments[0].shape[1] if segments[0].ndim == 2 else 0
+    if channel_count < 2 or any(
+        segment.ndim != 2 or segment.shape[1] != channel_count
+        for segment in segments
+    ):
+        raise ValueError(
+            "Pseudo-multichannel mode received inconsistent channel segments."
+        )
+
+    segment_lengths = [len(segment) for segment in segments]
+    concatenated = np.concatenate(segments, axis=0)
+    gating = gate_multichannel_waveform(
+        concatenated,
+        sampling_rate,
+        crosstalk_threshold_db=getattr(
+            args,
+            "channel_crosstalk_threshold_db",
+            DEFAULT_CROSSTALK_THRESHOLD_DB,
+        ),
+        vad_detector=vad_detector,
+    )
+
+    boundaries = np.cumsum([0, *segment_lengths])
+    minimum_active_samples = max(
+        1,
+        int(np.ceil(MIN_ASR_ACTIVE_DURATION_SEC * sampling_rate)),
+    )
+    merged = []
+    for channel in range(channel_count):
+        channel_segments = [
+            gating.waveform[start:end, channel]
+            for start, end in zip(
+                boundaries[:-1],
+                boundaries[1:],
+                strict=True,
+            )
+        ]
+        active_segments = [
+            int(np.count_nonzero(gating.keep_mask[start:end, channel]))
+            >= minimum_active_samples
+            for start, end in zip(
+                boundaries[:-1],
+                boundaries[1:],
+                strict=True,
+            )
+        ]
+        asr_output = _run_asr_on_segments(
+            asr_model=asr_model,
+            args=args,
+            segments=channel_segments,
+            sampling_rate=sampling_rate,
+            process_segments=active_segments,
+        )
+        speaker = f"SPEAKER_{channel:02d}"
+        for segment, text, *_ in asr_output:
+            shifted = Segment(
+                segment.start + timeline_offset_sec,
+                segment.end + timeline_offset_sec,
+            )
+            merged.append((shifted, speaker, text))
+
+    merged.sort(key=lambda item: (item[0].start, item[0].end, item[1]))
+    return merged
+
+
+def _print_alignment_summary(aligned: AlignedChannels) -> None:
+    for channel, (path, alignment) in enumerate(
+        zip(aligned.aux_paths, aligned.alignments, strict=True),
+        start=2,
+    ):
+        start_confidence = (
+            f"{alignment.start_anchor.confidence:.3f}"
+            if alignment.start_anchor is not None
+            else "manual"
+        )
+        end_confidence = (
+            f"{alignment.end_anchor.confidence:.3f}"
+            if alignment.end_anchor is not None
+            else "n/a"
+        )
+        start_peak_ratio = (
+            f"{alignment.start_anchor.peak_ratio:.2f}"
+            if alignment.start_anchor is not None
+            else "n/a"
+        )
+        end_peak_ratio = (
+            f"{alignment.end_anchor.peak_ratio:.2f}"
+            if alignment.end_anchor is not None
+            else "n/a"
+        )
+        print(
+            f"Aux ch{channel} ({path}): offset={alignment.offset_sec:+.6f}s, "
+            f"drift={alignment.drift_ppm:+.2f}ppm, "
+            f"start_confidence={start_confidence} (peak_ratio={start_peak_ratio}), "
+            f"end_confidence={end_confidence} (peak_ratio={end_peak_ratio}), "
+            f"method={alignment.method}"
+        )
+        for message in alignment.warnings:
+            print(f"WARNING: Aux ch{channel}: {message}")
+    print(
+        "Aligned overlap on main timeline: "
+        f"{aligned.overlap_start_sec:.3f}s–{aligned.overlap_end_sec:.3f}s"
+    )
+
+
 def transcribe(args):
     channel_mode = bool(getattr(args, "channel_mode", False))
+    aux_paths = list(getattr(args, "aux_audio", None) or [])
+    manual_offsets = getattr(args, "aux_offset", None)
+    if aux_paths and not channel_mode:
+        raise ValueError("--aux_audio is only valid together with --channel_mode.")
+    if manual_offsets and not aux_paths:
+        raise ValueError("--aux_offset requires --aux_audio.")
+    if manual_offsets is not None and len(manual_offsets) != len(aux_paths):
+        raise ValueError("--aux_offset requires exactly one value per --aux_audio.")
     if channel_mode and args.online_llm:
         raise ValueError(
             "--channel_mode uses the selected local ASR model and cannot be "
@@ -167,7 +297,9 @@ def transcribe(args):
         target_files=args.audio_files,
         channel_mode=channel_mode,
     )
-    args.num_speakers = 2 if channel_mode else dataset.num_speakers
+    args.num_speakers = (
+        2 + len(aux_paths) if channel_mode else dataset.num_speakers
+    )
 
     if args.audio_files is None and dataset.skipped_files:
         print(
@@ -177,6 +309,11 @@ def transcribe(args):
     if len(dataset) == 0:
         print("No audio files to process.")
         return []
+    if aux_paths and len(dataset) != 1:
+        raise ValueError(
+            "--aux_audio describes channels for one main WAV; select exactly "
+            "one file with --audio_files when --audio_dir contains multiple WAVs."
+        )
 
     use_online_llm = bool(args.online_llm)
 
@@ -197,7 +334,7 @@ def transcribe(args):
     processed_files = []
     data_iter = (
         ({"basename": basename} for basename in dataset.audio_list)
-        if use_online_llm
+        if use_online_llm or aux_paths
         else dataset
     )
     # Process and save each file sequentially
@@ -207,6 +344,34 @@ def transcribe(args):
         if use_online_llm:
             # OnlineLLM output already includes timestamp + speaker attribution.
             merged = online_llm_model.run(audio_path)
+            transcript_meta = None
+        elif aux_paths:
+            aligned = align_audio_files(
+                main_path=audio_path,
+                aux_paths=aux_paths,
+                target_sampling_rate=dataset.sampling_rate,
+                manual_offsets_sec=manual_offsets,
+                window_sec=getattr(
+                    args,
+                    "aux_alignment_window_sec",
+                    DEFAULT_ALIGNMENT_WINDOW_SEC,
+                ),
+            )
+            _print_alignment_summary(aligned)
+            aligned_segments = dataset.split_preserving_timeline(
+                aligned.waveform,
+                aligned.sampling_rate,
+            )
+            merged = transcribe_multichannel_segments(
+                asr_model=asr_model,
+                args=args,
+                segments=aligned_segments,
+                sampling_rate=aligned.sampling_rate,
+                timeline_offset_sec=aligned.overlap_start_sec,
+            )
+            transcript_meta = {
+                "channel_alignment": aligned.to_meta(main_path=audio_path),
+            }
         elif channel_mode:
             merged = transcribe_stereo_segments(
                 asr_model=asr_model,
@@ -214,6 +379,7 @@ def transcribe(args):
                 segments=item["waveform"],
                 sampling_rate=dataset.sampling_rate,
             )
+            transcript_meta = None
         else:
             waveform_segments = item["waveform"]
             concatenated_waveform = np.concatenate(waveform_segments, axis=0)
@@ -238,10 +404,16 @@ def transcribe(args):
 
             # Merge ASR + speaker info
             merged = diarize_text(args, asr_output, diar_output)
+            transcript_meta = None
 
         # Save JSON and TXT for this file
         basename_no_ext = os.path.splitext(basename)[0]
-        save_transcripts_json(args, merged, basename_no_ext)
+        save_transcripts_json(
+            args,
+            merged,
+            basename_no_ext,
+            metadata=transcript_meta,
+        )
         # Update index.json immediately
         save_index_json(basename)
 
@@ -362,8 +534,37 @@ if __name__ == "__main__":
         type=float,
         default=DEFAULT_CROSSTALK_THRESHOLD_DB,
         help=(
-            "Remove channel speech whose RMS is this many dB or more below "
-            "the other channel (default: %(default)s dB)"
+            "Remove channel speech whose normalized RMS is this many dB or "
+            "more below the loudest channel (default: %(default)s dB)"
+        ),
+    )
+    parser.add_argument(
+        "--aux_audio",
+        type=str,
+        nargs="+",
+        default=None,
+        help=(
+            "Auxiliary recording(s) to align as SPEAKER_02 onward; valid only "
+            "with --channel_mode"
+        ),
+    )
+    parser.add_argument(
+        "--aux_offset",
+        type=float,
+        nargs="+",
+        default=None,
+        help=(
+            "Manual main-timeline start offset in seconds for each --aux_audio; "
+            "disables automatic drift correction for that auxiliary channel"
+        ),
+    )
+    parser.add_argument(
+        "--aux_alignment_window_sec",
+        type=float,
+        default=DEFAULT_ALIGNMENT_WINDOW_SEC,
+        help=(
+            "Duration of the start/end windows used for clap alignment "
+            "(default: %(default)s seconds)"
         ),
     )
     parser.add_argument(

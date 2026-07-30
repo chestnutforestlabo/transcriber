@@ -211,6 +211,51 @@ class AudioInput(Dataset):
         )
         return segments if segments else [compressed]
 
+    def split_preserving_timeline(
+        self,
+        waveform: np.ndarray,
+        sr: int,
+        min_chunk_sec: float = 20.0,
+        max_chunk_sec: float = 30.0,
+        min_split_silence_sec: float = 0.15,
+    ) -> list[np.ndarray]:
+        """Split aligned audio without deleting samples from its reference timeline."""
+        if len(waveform) == 0:
+            return [waveform]
+
+        min_chunk = max(1, int(min_chunk_sec * sr))
+        max_chunk = max(min_chunk, int(max_chunk_sec * sr))
+        minimum_silence = max(1, int(min_split_silence_sec * sr))
+        silence_midpoints = [
+            (start + end) // 2
+            for start, end in self._detect_silences(waveform, sr)
+            if end - start >= minimum_silence
+        ]
+
+        boundaries = [0]
+        while len(waveform) - boundaries[-1] > max_chunk:
+            start = boundaries[-1]
+            candidates = [
+                midpoint
+                for midpoint in silence_midpoints
+                if start + min_chunk <= midpoint <= start + max_chunk
+            ]
+            boundaries.append(candidates[-1] if candidates else start + max_chunk)
+        boundaries.append(len(waveform))
+
+        if (
+            len(boundaries) >= 3
+            and boundaries[-1] - boundaries[-2] < min_chunk
+            and boundaries[-1] - boundaries[-3] <= max_chunk
+        ):
+            boundaries.pop(-2)
+
+        return [
+            waveform[start:end]
+            for start, end in zip(boundaries[:-1], boundaries[1:], strict=True)
+            if end > start
+        ]
+
     def __getitem__(self, idx: int) -> dict:
         fname = self.audio_list[idx]
         path = os.path.join(self.audio_dir, fname)

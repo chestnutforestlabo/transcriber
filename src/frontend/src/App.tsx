@@ -160,10 +160,15 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Loaded transcript data:", data)
-        setTranscript(data)
+        const entries: TranscriptEntry[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.transcripts)
+            ? data.transcripts
+            : []
+        setTranscript(entries)
 
-        if (data.length > 0) {
-          setDuration(data[data.length - 1].end)
+        if (entries.length > 0) {
+          setDuration(entries[entries.length - 1].end)
         }
 
         try {

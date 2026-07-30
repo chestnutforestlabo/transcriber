@@ -47,7 +47,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ audioFiles, onJumpToResult }) => 
               continue
             }
 
-            const transcript: TranscriptEntry[] = await response.json()
+            const payload = await response.json()
+            const transcript: TranscriptEntry[] = Array.isArray(payload)
+              ? payload
+              : Array.isArray(payload?.transcripts)
+                ? payload.transcripts
+                : []
 
             transcript.forEach((entry, index) => {
               const lowerSearchTerm = searchTerm.toLowerCase()

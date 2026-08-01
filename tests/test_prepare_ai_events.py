@@ -314,3 +314,79 @@ def test_frames_are_discarded_before_event_decoding_and_files_are_merged(tmp_pat
     assert [event["request_id"] for event in events] == ["earlier", "later"]
     assert all("frames" not in event for event in events)
     assert json.loads(cleaned) == {"event": "x", "frames": None, "kept": 1}
+
+
+def test_v2_without_bracket_falls_back_to_recording_window(tmp_path, capsys):
+    """押し忘れ対応: v2 ログにブラケットが無くても録音窓で処理できる。"""
+    audio = tmp_path / "walk.wav"
+    log = tmp_path / "app.jsonl"
+    _write_audio(audio, duration=60.0)
+    _write_log(
+        log,
+        [
+            {
+                "event": "speech_start",
+                "at": "2026-07-31T09:00:02Z",
+                "id": "s1",
+                "kind": "scene",
+                "text": "右に赤い看板",
+            },
+            {
+                "event": "speech_end",
+                "at": "2026-07-31T09:00:04Z",
+                "id": "s1",
+                "reason": "finished",
+            },
+        ],
+    )
+
+    result = prepare_ai_events(
+        [log],
+        audio,
+        recording_start="2026-07-31T18:00:00+09:00",
+    )
+
+    assert result["meta"]["experiment"] == {"start": 0.0, "end": 60.0}
+    assert result["ai_utterances"] == [
+        {
+            "start": 2.0,
+            "end": 4.0,
+            "kind": "scene",
+            "text": "右に赤い看板",
+            "end_reason": "finished",
+            "estimated_end": False,
+        }
+    ]
+
+
+def test_sidecar_time_json_is_discovered_automatically(tmp_path, capsys):
+    """record_mac_dji.sh の sidecar があれば --sync/--recording_start 不要。"""
+    audio = tmp_path / "rec_20260731_180000.wav"
+    log = tmp_path / "app.jsonl"
+    _write_audio(audio, duration=60.0)
+    (tmp_path / "rec_20260731_180000.time.json").write_text(
+        '{"recording_start": "2026-07-31T18:00:00+09:00"}\n', encoding="utf-8"
+    )
+    _write_log(
+        log,
+        [
+            {
+                "event": "speech_start",
+                "at": "2026-07-31T09:00:05Z",
+                "id": "s1",
+                "kind": "scene",
+                "text": "左に横断歩道",
+            },
+            {
+                "event": "speech_end",
+                "at": "2026-07-31T09:00:07Z",
+                "id": "s1",
+                "reason": "finished",
+            },
+        ],
+    )
+
+    result = prepare_ai_events([log], audio)
+
+    assert result["ai_utterances"][0]["start"] == 5.0
+    assert result["ai_utterances"][0]["end"] == 7.0

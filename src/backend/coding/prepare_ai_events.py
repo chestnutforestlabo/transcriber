@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -279,7 +280,19 @@ def _experiment_window(
     starts = [event for event in events if _event_name(event) == "experiment_start"]
     ends = [event for event in events if _event_name(event) == "experiment_end"]
     if not starts or not ends:
-        raise ValueError("schema v2 logs require experiment_start and experiment_end")
+        # 実験ブラケットの押し忘れ運用に対応: v2 ログでも録音窓([0, 音声長])を
+        # ブラケットとして使う。同期は --sync / --recording_start に依存する。
+        print(
+            "WARNING: experiment_start/experiment_end not found; "
+            "falling back to the recording window as the experiment bracket.",
+            file=sys.stderr,
+        )
+        return (
+            anchor.log_time,
+            anchor.log_time + timedelta(seconds=duration_sec),
+            0.0,
+            duration_sec,
+        )
 
     if anchor_event is not None and _event_name(anchor_event) == "experiment_start":
         start_event = anchor_event
@@ -599,6 +612,18 @@ def prepare_ai_events(
     if not log_files:
         raise ValueError("At least one JSONL log file is required")
     audio_path = Path(audio_file)
+    if sync is None and recording_start is None:
+        # record_mac_dji.sh が書き出す sidecar(<name>.time.json)を自動発見する。
+        # 人間の同期操作(ボタン・発声・クラップ)なしで絶対時刻同期を成立させる。
+        sidecar = audio_path.with_suffix(".time.json")
+        if sidecar.exists():
+            payload = json.loads(sidecar.read_text(encoding="utf-8"))
+            recording_start = payload.get("recording_start")
+            print(
+                f"INFO: using recording_start {recording_start} "
+                f"from sidecar {sidecar.name}",
+                file=sys.stderr,
+            )
     duration_sec = float(sf.info(audio_path).duration)
     events = read_merged_events(log_files, legacy=legacy)
     anchor, anchor_event = _resolve_anchor(

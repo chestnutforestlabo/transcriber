@@ -11,10 +11,19 @@ audio_device="${1:-}"
 output_directory="${2:-.}"
 
 if [[ -z "$audio_device" ]]; then
-    echo "Available AVFoundation devices:"
-    ffmpeg -hide_banner -f avfoundation -list_devices true -i "" 2>&1 || true
+    # -list_devices は一覧表示後に必ず Input/output error を返す(仕様)ので、
+    # 音声デバイスの行だけを抜き出して表示する。
+    device_list="$(ffmpeg -hide_banner -f avfoundation -list_devices true -i "" 2>&1 | sed -n '/audio devices:/,/^\[in/p' | grep -E '^\[AVFoundation' | sed 's/^\[AVFoundation[^]]*\] //')"
+    echo "利用可能なオーディオ入力デバイス:"
+    echo "$device_list" | tail -n +2
+    suggestion="$(echo "$device_list" | grep -iE "DJI|Wireless Mic" | head -1 | sed -E 's/^\[([0-9]+)\].*/\1/')"
     echo
-    read -r -p "DJI RX audio device name or number: " audio_device
+    if [[ -n "$suggestion" ]]; then
+        read -r -p "DJI RX のデバイス番号 [${suggestion}]: " audio_device
+        audio_device="${audio_device:-$suggestion}"
+    else
+        read -r -p "DJI RX のデバイス番号または名前: " audio_device
+    fi
 fi
 
 if [[ -z "$audio_device" ]]; then

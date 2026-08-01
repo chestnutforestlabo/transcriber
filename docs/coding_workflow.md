@@ -103,3 +103,13 @@ bash scripts/frontend.sh
 「✗要修正」を選び、必要に応じてメモを記入します。「エクスポート」を押すと、
 各区間・イベントに `review` を追加した `<basename>.review.json` を
 ブラウザからダウンロードできます。
+
+## レビュー結果を可視化へ反映する(2026-08-01 追加)
+
+1. ビューアで確認・修正し、「エクスポート」で `<名前>.review.json` を保存
+2. それを `outputs/coding/reviewed/` に置く(ファイル名は任意。中の `audio` 名で自動対応付け)
+3. 再生成:
+   `uv run src/backend/coding/visualize_coding.py --auto outputs/coding --reviewed outputs/coding/reviewed --output outputs/coding/coding_summary.html`
+
+「✗要修正」にした項目は集計から除外され、各録音にレビュー済み件数・除外件数が注記される。
+ラベルや時刻をビューアで修正した値はそのまま集計に反映される。

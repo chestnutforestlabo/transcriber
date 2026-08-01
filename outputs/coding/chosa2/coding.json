@@ -1,0 +1,834 @@
+{
+  "version": 1,
+  "audio": "調査2.wav",
+  "intervals": [
+    {
+      "id": "iv-0001",
+      "label": "無言",
+      "start": 0.0,
+      "end": 0.014,
+      "source": "llm",
+      "note": "対象時間窓の開始から最初の人間発話まで"
+    },
+    {
+      "id": "iv-0002",
+      "label": "会話",
+      "start": 0.014,
+      "end": 296.74666666666667,
+      "source": "llm",
+      "note": "応答・相槌を意味的に確認し、AIログと一致する機械発話を人間発話から除外したうえで、3秒以上の会話中断がないと判定"
+    },
+    {
+      "id": "iv-0003",
+      "label": "AI説明",
+      "start": 1.505,
+      "end": 8.745,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0004",
+      "label": "AI説明",
+      "start": 13.87,
+      "end": 17.183,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0005",
+      "label": "AI説明",
+      "start": 25.412,
+      "end": 29.865,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0006",
+      "label": "AI説明",
+      "start": 37.59,
+      "end": 42.541,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0007",
+      "label": "システム停止",
+      "start": 42.676,
+      "end": 46.304,
+      "source": "auto",
+      "note": "session_stop(reason=user)→session_start から自動導出"
+    },
+    {
+      "id": "iv-0008",
+      "label": "AI説明",
+      "start": 57.767,
+      "end": 61.866,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0009",
+      "label": "システム停止",
+      "start": 62.927,
+      "end": 66.228,
+      "source": "auto",
+      "note": "session_stop(reason=user)→session_start から自動導出"
+    },
+    {
+      "id": "iv-0010",
+      "label": "AI説明",
+      "start": 78.051,
+      "end": 84.146,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0011",
+      "label": "AI説明",
+      "start": 85.461,
+      "end": 93.976,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0012",
+      "label": "AI説明",
+      "start": 96.255,
+      "end": 99.391,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0013",
+      "label": "AI説明",
+      "start": 101.88,
+      "end": 104.343,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0014",
+      "label": "システム停止",
+      "start": 104.442,
+      "end": 107.53,
+      "source": "auto",
+      "note": "session_stop(reason=user)→session_start から自動導出"
+    },
+    {
+      "id": "iv-0015",
+      "label": "AI説明",
+      "start": 118.639,
+      "end": 122.565,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0016",
+      "label": "AI説明",
+      "start": 123.748,
+      "end": 127.641,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0017",
+      "label": "AI説明",
+      "start": 132.215,
+      "end": 139.749,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0018",
+      "label": "AI説明",
+      "start": 140.459,
+      "end": 144.595,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0019",
+      "label": "AI説明",
+      "start": 145.325,
+      "end": 149.246,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0020",
+      "label": "AI説明",
+      "start": 149.954,
+      "end": 156.882,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0021",
+      "label": "AI説明",
+      "start": 157.568,
+      "end": 163.916,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0022",
+      "label": "AI説明",
+      "start": 170.103,
+      "end": 174.135,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0023",
+      "label": "AI説明",
+      "start": 175.995,
+      "end": 180.162,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0024",
+      "label": "AI説明",
+      "start": 182.427,
+      "end": 184.814,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0025",
+      "label": "AI説明",
+      "start": 185.934,
+      "end": 189.639,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0026",
+      "label": "AI説明",
+      "start": 190.371,
+      "end": 196.691,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0027",
+      "label": "AI説明",
+      "start": 197.454,
+      "end": 205.277,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0028",
+      "label": "システム停止",
+      "start": 205.453,
+      "end": 209.732,
+      "source": "auto",
+      "note": "session_stop(reason=user)→session_start から自動導出"
+    },
+    {
+      "id": "iv-0029",
+      "label": "AI説明",
+      "start": 219.938,
+      "end": 223.719,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0030",
+      "label": "AI説明",
+      "start": 226.791,
+      "end": 229.318,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0031",
+      "label": "AI説明",
+      "start": 239.997,
+      "end": 243.693,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0032",
+      "label": "AI説明",
+      "start": 244.38,
+      "end": 248.093,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0033",
+      "label": "AI説明",
+      "start": 249.277,
+      "end": 253.114,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0034",
+      "label": "AI説明",
+      "start": 255.055,
+      "end": 258.183,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0035",
+      "label": "AI説明",
+      "start": 260.275,
+      "end": 268.368,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0036",
+      "label": "AI説明",
+      "start": 269.182,
+      "end": 276.717,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0037",
+      "label": "AI説明",
+      "start": 277.379,
+      "end": 280.806,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0038",
+      "label": "AI説明",
+      "start": 281.564,
+      "end": 285.457,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    },
+    {
+      "id": "iv-0039",
+      "label": "AI説明",
+      "start": 289.187,
+      "end": 296.74666666666667,
+      "source": "auto",
+      "note": "アプリログ speech_start/speech_end（kind=scene）"
+    }
+  ],
+  "events": [
+    {
+      "id": "ev-0001",
+      "label": "ガイド発話",
+      "time": 1.678,
+      "end": 5.326,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "ひぐち行きます。",
+      "note": ""
+    },
+    {
+      "id": "ev-0002",
+      "label": "視覚障害者から同行者への質問",
+      "time": 5.326,
+      "end": 7.41,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "喋ってみてもらっていいですか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0003",
+      "label": "ガイド発話",
+      "time": 8.654,
+      "end": 10.286,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {},
+      "text": "入口行きます。",
+      "note": ""
+    },
+    {
+      "id": "ev-0004",
+      "label": "ガイド発話",
+      "time": 12.014,
+      "end": 16.558,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "行きます。",
+      "note": ""
+    },
+    {
+      "id": "ev-0005",
+      "label": "同行者から視覚障害者への質問",
+      "time": 20.654,
+      "end": 22.51,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "どんな感じなんだろう。",
+      "note": ""
+    },
+    {
+      "id": "ev-0006",
+      "label": "同行者から視覚障害者への質問",
+      "time": 26.574,
+      "end": 31.246,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "あんま聞こえないのかな。",
+      "note": ""
+    },
+    {
+      "id": "ev-0007",
+      "label": "視覚障害者から同行者への質問",
+      "time": 34.67,
+      "end": 38.382,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "楽しくないというか、カンコンバセーションはできないの。",
+      "note": ""
+    },
+    {
+      "id": "ev-0008",
+      "label": "同行者から視覚障害者への質問",
+      "time": 38.382,
+      "end": 42.574,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "などういうこと？あれはビジュアルパパッとベイスターベイターズは？",
+      "note": ""
+    },
+    {
+      "id": "ev-0009",
+      "label": "同行者から視覚障害者への質問",
+      "time": 45.422,
+      "end": 47.214,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "聞こえなかったか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0010",
+      "label": "同行者から視覚障害者への質問",
+      "time": 61.294,
+      "end": 62.514,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "何を知りたいんだ。",
+      "note": ""
+    },
+    {
+      "id": "ev-0011",
+      "label": "視覚障害者からの話題提示",
+      "time": 62.894,
+      "end": 65.614,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "なんかさこれ俺のは肌でさ。",
+      "note": ""
+    },
+    {
+      "id": "ev-0012",
+      "label": "AI情報の共有",
+      "time": 79.79,
+      "end": 85.646,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ],
+        "ai_reference": "within_30s"
+      },
+      "text": "別にシャドウで列になったところでどうでもいいんだよな。",
+      "note": "AIの車道を車が列になって進んでいるという説明と内容が一致"
+    },
+    {
+      "id": "ev-0013",
+      "label": "視覚障害者からの話題提示",
+      "time": 121.678,
+      "end": 126.222,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "広い場があるって知ったってどうでもいいよな。",
+      "note": ""
+    },
+    {
+      "id": "ev-0014",
+      "label": "ガイド発話",
+      "time": 129.358,
+      "end": 131.154,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {},
+      "text": "信号を止まります。",
+      "note": ""
+    },
+    {
+      "id": "ev-0015",
+      "label": "同行者から視覚障害者への質問",
+      "time": 131.822,
+      "end": 133.664,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "信号はなんか言いますかそいつ。",
+      "note": ""
+    },
+    {
+      "id": "ev-0016",
+      "label": "AI情報の共有",
+      "time": 143.374,
+      "end": 147.136,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ],
+        "ai_reference": "within_30s"
+      },
+      "text": "なんか歩行者の情報で別に東口から来ればいいからその。",
+      "note": "直前のAIによる歩行者情報をもとに、情報選択について話題を提示"
+    },
+    {
+      "id": "ev-0017",
+      "label": "AI情報の共有",
+      "time": 152.064,
+      "end": 155.118,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ],
+        "ai_reference": "within_30s"
+      },
+      "text": "車の情報とかもどうでもいいしな。",
+      "note": "直前のAIによる横断歩道上の車両説明と内容が一致"
+    },
+    {
+      "id": "ev-0018",
+      "label": "同行者からの話題提示",
+      "time": 159.758,
+      "end": 161.65,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "まあ次のレイヤーなんじゃないですか。それは。",
+      "note": ""
+    },
+    {
+      "id": "ev-0019",
+      "label": "視覚障害者からの話題提示",
+      "time": 180.334,
+      "end": 182.93,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "いや、正直ビビるな。",
+      "note": ""
+    },
+    {
+      "id": "ev-0020",
+      "label": "ガイド発話",
+      "time": 180.398,
+      "end": 183.246,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "よし行きます。",
+      "note": ""
+    },
+    {
+      "id": "ev-0021",
+      "label": "ガイド発話",
+      "time": 184.206,
+      "end": 185.97,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "ちょっとゆっくり歩きます。",
+      "note": ""
+    },
+    {
+      "id": "ev-0022",
+      "label": "AI情報の共有",
+      "time": 185.838,
+      "end": 190.016,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示",
+          "質問"
+        ],
+        "ai_reference": "within_30s"
+      },
+      "text": "なんか左のティッシュンゴー赤とかさ、普通に今緑じゃない照明は。",
+      "note": "AIの信号は赤という説明と、現在の見え方の不一致について質問"
+    },
+    {
+      "id": "ev-0023",
+      "label": "AI情報の共有",
+      "time": 190.24,
+      "end": 192.594,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "質問"
+        ],
+        "ai_reference": "within_30s"
+      },
+      "text": "なのに間違えちゃうくない。",
+      "note": "直前の信号説明の誤りについての継続質問"
+    },
+    {
+      "id": "ev-0024",
+      "label": "同行者から視覚障害者への質問",
+      "time": 195.342,
+      "end": 197.294,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "あ、マジですか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0025",
+      "label": "同行者からの周囲説明",
+      "time": 207.374,
+      "end": 209.298,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "response_type": "自発",
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "芸者のタクシー捕まえて。",
+      "note": ""
+    },
+    {
+      "id": "ev-0026",
+      "label": "同行者からの周囲説明",
+      "time": 221.838,
+      "end": 224.178,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "response_type": "自発",
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "まあすごい前の女性がこちらを見てきたけど。",
+      "note": ""
+    },
+    {
+      "id": "ev-0027",
+      "label": "同行者からの周囲説明",
+      "time": 231.598,
+      "end": 234.574,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "response_type": "自発",
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "あんまり見た目がおもろくないところ来ましたけど。",
+      "note": ""
+    },
+    {
+      "id": "ev-0028",
+      "label": "同行者から視覚障害者への質問",
+      "time": 234.574,
+      "end": 235.872,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {},
+      "text": "なんか説明されますか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0029",
+      "label": "同行者からの周囲説明",
+      "time": 241.646,
+      "end": 244.05,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "response_type": "自発",
+        "co_labels": [
+          "質問"
+        ]
+      },
+      "text": "工事中だからね、あんまり出ないんですかね。",
+      "note": ""
+    },
+    {
+      "id": "ev-0030",
+      "label": "ガイド発話",
+      "time": 246.222,
+      "end": 250.798,
+      "speaker": "同行者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {},
+      "text": "はい、左寄ります。",
+      "note": ""
+    },
+    {
+      "id": "ev-0031",
+      "label": "視覚障害者から同行者への質問",
+      "time": 252.398,
+      "end": 260.05,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "一点質問、えっと鈴木さんにお伺いいたします。えっとAIが常に秀な説明話すことでこの観光を楽しむことに繋がりましたでしょうか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0032",
+      "label": "視覚障害者から同行者への質問",
+      "time": 260.142,
+      "end": 264.046,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {},
+      "text": "その場合を一から七で評価していただきたいです。",
+      "note": ""
+    },
+    {
+      "id": "ev-0033",
+      "label": "視覚障害者から同行者への質問",
+      "time": 264.046,
+      "end": 266.962,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {},
+      "text": "うんね真ん中が四ってこと。",
+      "note": ""
+    },
+    {
+      "id": "ev-0034",
+      "label": "視覚障害者から同行者への質問",
+      "time": 276.75,
+      "end": 281.202,
+      "speaker": "視覚障害者",
+      "tags": [
+        "周囲の話題"
+      ],
+      "attrs": {
+        "co_labels": [
+          "話題提示"
+        ]
+      },
+      "text": "えと、エアが常に周囲の様子を話すことで、この観光に楽しむことに繋がりましたでしょうか。",
+      "note": ""
+    },
+    {
+      "id": "ev-0035",
+      "label": "視覚障害者から同行者への質問",
+      "time": 281.39,
+      "end": 282.866,
+      "speaker": "視覚障害者",
+      "tags": [],
+      "attrs": {},
+      "text": "問題はちょっと位置からなんで引き出しだっけ。",
+      "note": ""
+    },
+    {
+      "id": "ev-0036",
+      "label": "同行者から視覚障害者への質問",
+      "time": 283.182,
+      "end": 285.01,
+      "speaker": "同行者",
+      "tags": [],
+      "attrs": {},
+      "text": "僕自身が楽しいか。",
+      "note": ""
+    }
+  ]
+}

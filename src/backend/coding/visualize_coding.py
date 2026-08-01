@@ -39,27 +39,44 @@ def _fmt_mmss(seconds: float) -> str:
     return f"{seconds // 60}:{seconds % 60:02d}"
 
 
+def _is_rejected(item: dict) -> bool:
+    """ビューアで「✗要修正」にされた項目は集計から除外する。"""
+    review = item.get("review")
+    return isinstance(review, dict) and review.get("status") == "needs_correction"
+
+
 def _load_one(path: Path) -> dict:
     data = json.loads(path.read_text(encoding="utf-8"))
     durations: dict[str, float] = defaultdict(float)
     max_end = 0.0
+    rejected = 0
+    reviewed = 0
+    for item in data.get("intervals", []) + data.get("events", []):
+        review = item.get("review")
+        if isinstance(review, dict) and review.get("status"):
+            reviewed += 1
     for item in data.get("intervals", []):
+        if _is_rejected(item):
+            rejected += 1
+            continue
         start = float(item["start"])
         end = float(item["end"])
         if math.isfinite(start) and math.isfinite(end) and end > start:
             durations[item["label"]] += end - start
             max_end = max(max_end, end)
-    events = Counter(item["label"] for item in data.get("events", []))
+    kept_events = [e for e in data.get("events", []) if not _is_rejected(e)]
+    rejected += sum(1 for e in data.get("events", []) if _is_rejected(e))
+    events = Counter(item["label"] for item in kept_events)
     for item in data.get("events", []):
         max_end = max(max_end, float(item.get("end") or item.get("time") or 0.0))
-    tag_count = sum(
-        1 for item in data.get("events", []) if "周囲の話題" in (item.get("tags") or [])
-    )
+    tag_count = sum(1 for item in kept_events if "周囲の話題" in (item.get("tags") or []))
     return {
         "intervals": dict(durations),
         "events": dict(events),
         "tags": tag_count,
         "max_end": max_end,
+        "rejected": rejected,
+        "reviewed": reviewed,
     }
 
 
@@ -90,6 +107,8 @@ def build_dataset(
                 "intervals": one["intervals"],
                 "events": one["events"],
                 "tags": one["tags"],
+                "rejected": one["rejected"],
+                "reviewed": one["reviewed"],
             }
         )
     return {
@@ -198,7 +217,10 @@ DATA.interval_order.forEach((lab, i) => {
 const ivRoot = document.getElementById("intervals");
 DATA.recordings.forEach(rec => {
   const div = document.createElement("div"); div.className = "rec";
-  div.innerHTML = `<div class="rec-name">${rec.name} <span>(${fmt(rec.duration)})</span></div>`;
+  const revNote = rec.reviewed > 0
+    ? ` / レビュー済み${rec.reviewed}件` + (rec.rejected > 0 ? `・要修正除外${rec.rejected}件` : "")
+    : "";
+  div.innerHTML = `<div class="rec-name">${rec.name} <span>(${fmt(rec.duration)}${revNote})</span></div>`;
   DATA.interval_order.forEach((lab, i) => {
     if (!(lab in rec.intervals)) return;
     const sec = rec.intervals[lab];
@@ -247,11 +269,65 @@ evRoot.querySelectorAll("td[data-tip]").forEach(td => {
 """
 
 
+DISPLAY_NAMES = {
+    "chosa1": "調査1", "chosa2": "調査2", "chosa3": "調査3",
+    "chosa4": "調査4", "chosa5": "調査5", "interview": "インタビュー",
+}
+AUTO_ORDER = ["chosa1", "chosa2", "chosa3", "chosa4", "chosa5", "interview"]
+
+
+def _discover(auto_dir: Path, reviewed_dir: Path | None) -> dict[str, Path]:
+    """outputs/coding を走査し、レビュー済みエクスポートがあれば優先する。
+
+    レビューエクスポート(ビューアの「エクスポート」で保存した JSON)は
+    reviewed_dir に置くだけでよい。ファイル名は任意で、中の "audio" フィールド
+    (例 "chosa1.wav")から対応する録音を特定して coding.json を置き換える。
+    """
+    base: dict[str, Path] = {}
+    aliases: dict[str, str] = {}
+    for path in sorted(auto_dir.glob("*/coding.json")):
+        key = path.parent.name
+        base[key] = path
+        aliases[key] = key
+        if key in DISPLAY_NAMES:
+            aliases[DISPLAY_NAMES[key]] = key
+        try:
+            own_audio = json.loads(path.read_text(encoding="utf-8")).get("audio", "")
+            if own_audio:
+                aliases[Path(str(own_audio)).stem] = key
+        except (OSError, json.JSONDecodeError):
+            pass
+    if reviewed_dir and reviewed_dir.is_dir():
+        for path in sorted(reviewed_dir.glob("*.json")):
+            try:
+                audio = json.loads(path.read_text(encoding="utf-8")).get("audio", "")
+            except (OSError, json.JSONDecodeError):
+                continue
+            stem = Path(str(audio)).stem
+            # ".review" などの付加サフィックスも許容する
+            key = aliases.get(stem) or aliases.get(stem.split(".")[0])
+            if key:
+                base[key] = path
+                print(f"レビュー反映: {key} ← {path.name}")
+    ordered = [k for k in AUTO_ORDER if k in base]
+    ordered += [k for k in sorted(base) if k not in ordered]
+    return {DISPLAY_NAMES.get(k, k): base[k] for k in ordered}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="コーディング結果の可視化 HTML を生成")
     parser.add_argument(
-        "--coding", nargs="+", required=True, metavar="名前=path",
+        "--coding", nargs="+", metavar="名前=path",
         help="表示名=coding.json のペア(表示順どおりに)",
+    )
+    parser.add_argument(
+        "--auto", metavar="DIR",
+        help="DIR/*/coding.json を自動収集(chosaN→調査N の表示名で)",
+    )
+    parser.add_argument(
+        "--reviewed", metavar="DIR",
+        help="ビューアでエクスポートしたレビュー JSON を置くディレクトリ。"
+             "audio 名で対応録音の集計元を置き換える(--auto と併用)",
     )
     parser.add_argument(
         "--audio", nargs="*", default=[], metavar="名前=path",
@@ -260,6 +336,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--subtitle", default="")
     args = parser.parse_args(argv)
+    if bool(args.coding) == bool(args.auto):
+        raise SystemExit("--coding か --auto のどちらか一方を指定してください")
 
     def parse_pairs(pairs: list[str]) -> dict[str, Path]:
         mapping: dict[str, Path] = {}
@@ -270,7 +348,14 @@ def main(argv: list[str] | None = None) -> int:
             mapping[name.strip()] = Path(path.strip())
         return mapping
 
-    coding = parse_pairs(args.coding)
+    if args.auto:
+        coding = _discover(
+            Path(args.auto), Path(args.reviewed) if args.reviewed else None
+        )
+        if not coding:
+            raise SystemExit(f"coding.json が見つかりません: {args.auto}")
+    else:
+        coding = parse_pairs(args.coding)
     audio = parse_pairs(args.audio)
     dataset = build_dataset(coding, audio)
     subtitle = args.subtitle or (

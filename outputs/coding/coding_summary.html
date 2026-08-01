@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コーディング結果サマリー</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --surface-2: #f2f1ee;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #8a897f;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --seq-lo: #eaf1fb; --seq-hi: #2a78d6; --grid: #e4e3de;
+    background: var(--surface-1); color: var(--text-primary);
+    padding: 24px; max-width: 1080px; margin: 0 auto;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --surface-2: #242422;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #8a897f;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --seq-lo: #1d2c40; --seq-hi: #3987e5; --grid: #3a3a37;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --surface-2: #242422;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #8a897f;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --seq-lo: #1d2c40; --seq-hi: #3987e5; --grid: #3a3a37;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 15px; margin: 28px 0 4px; }
+  .note { color: var(--text-muted); font-size: 12px; margin: 0 0 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px;
+            color: var(--text-secondary); margin: 8px 0 14px; }
+  .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+                margin-right: 5px; vertical-align: -1px; }
+  .rec { margin-bottom: 18px; }
+  .rec-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .rec-name span { color: var(--text-muted); font-weight: 400; }
+  .row { display: grid; grid-template-columns: 96px 1fr; align-items: center;
+         gap: 8px; margin: 3px 0; font-size: 12px; }
+  .row .lab { color: var(--text-secondary); text-align: right; }
+  .track { position: relative; height: 16px; background: var(--surface-2);
+           border-radius: 4px; overflow: visible; }
+  .bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; min-width: 2px; }
+  .val { position: absolute; left: 4px; top: -1px; font-size: 11px; line-height: 18px;
+         color: var(--text-primary); white-space: nowrap; }
+  .val.outside { color: var(--text-secondary); }
+  table.heat { border-collapse: separate; border-spacing: 2px; font-size: 12px; width: 100%; }
+  table.heat th { font-weight: 400; color: var(--text-secondary); padding: 4px 6px; }
+  table.heat th.rowh { text-align: right; white-space: nowrap; }
+  table.heat td { text-align: center; padding: 6px 4px; border-radius: 4px; min-width: 44px; }
+  .foot { color: var(--text-muted); font-size: 11px; margin-top: 24px; }
+  .tip { position: fixed; pointer-events: none; background: var(--text-primary);
+         color: var(--surface-1); padding: 4px 8px; border-radius: 6px; font-size: 12px;
+         opacity: 0; transition: opacity .08s; z-index: 10; white-space: nowrap; }
+</style></head>
+<body><div class="viz-root">
+<h1>コーディング結果サマリー</h1>
+<div class="sub">ドライラン 2026-07-31(手動実行版コーディング、レビュー前の値)</div>
+
+<h2>区間ラベル — 録音時間に占める割合</h2>
+<p class="note">バーは各録音の長さに対する%(ラベル併記は 実時間)。会話と AI 説明などのレーンは並行して成立するため、合計は100%になりません。</p>
+<div class="legend" id="legend"></div>
+<div id="intervals"></div>
+
+<h2>イベントラベル — 件数</h2>
+<p class="note">セルの濃さは件数(録音ごとの補正なし)。最下段の「周囲の話題」はイベントに併記されるタグの件数。</p>
+<div id="events" style="overflow-x:auto"></div>
+
+<div class="foot">生成: transcriber visualize_coding.py(コーディング JSON から決定論的に集計)。
+ラベル件数は LLM コーディングの実行ごとに数件変動しうる。確定値はレビュー UI での人間確認後の値を用いること。</div>
+<div class="tip" id="tip"></div>
+</div>
+<script>
+const DATA = {"recordings": [{"name": "調査1", "duration": 337.65, "intervals": {"無言": 0.302, "会話": 337.34799999999996}, "events": {"ガイド発話": 13, "視覚障害者からの話題提示": 1, "同行者からの周囲説明": 19, "視覚障害者から同行者への質問": 12, "同行者から視覚障害者への質問": 8, "同行者からの話題提示": 3}, "tags": 49}, {"name": "調査2", "duration": 296.74666666666667, "intervals": {"無言": 0.014, "会話": 296.73266666666666, "AI説明": 160.57466666666656, "システム停止": 14.296}, "events": {"ガイド発話": 7, "視覚障害者から同行者への質問": 7, "同行者から視覚障害者への質問": 9, "視覚障害者からの話題提示": 3, "AI情報の共有": 5, "同行者からの話題提示": 1, "同行者からの周囲説明": 4}, "tags": 16}, {"name": "調査3", "duration": 299.54133333333334, "intervals": {"無言": 3.8333333333333397, "システム停止": 67.53033333333335, "会話": 213.84799999999998, "AI説明": 15.13800000000002, "AI応答": 28.686000000000007}, "events": {"同行者からの話題提示": 2, "同行者から視覚障害者への質問": 4, "ガイド発話": 7, "同行者からの周囲説明": 3, "視覚障害者から同行者への質問": 4, "視覚障害者からの話題提示": 3, "応答なし発話": 2}, "tags": 5}, {"name": "調査4", "duration": 394.13, "intervals": {"無言": 0.078, "会話": 394.052}, "events": {"ガイド発話": 3, "視覚障害者から同行者への質問": 5, "応答なし発話": 3, "同行者からの周囲説明": 2, "視覚障害者からの話題提示": 3, "同行者から視覚障害者への質問": 2}, "tags": 8}, {"name": "調査5", "duration": 356.37333333333333, "intervals": {"無言": 87.694, "AI説明": 75.212, "会話": 268.6793333333333, "AI応答": 31.990000000000016, "システム停止": 49.817333333333316}, "events": {"ガイド発話": 5, "視覚障害者からの話題提示": 6, "視覚障害者から同行者への質問": 6, "AI情報の共有": 9, "同行者からの周囲説明": 7, "同行者から視覚障害者への質問": 2, "同行者からの話題提示": 3, "応答なし発話": 4}, "tags": 26}, {"name": "インタビュー", "duration": 1345.897375, "intervals": {"会話": 1345.8833750000001}, "events": {"同行者から視覚障害者への質問": 2, "同行者からの話題提示": 8, "視覚障害者からの話題提示": 23, "同行者からの周囲説明": 2}, "tags": 16}], "interval_order": ["会話", "無言", "AI説明", "AI応答", "システム停止"], "event_order": ["視覚障害者からの話題提示", "同行者からの話題提示", "視覚障害者から同行者への質問", "同行者から視覚障害者への質問", "AI情報の共有", "同行者からの周囲説明", "応答なし発話", "ガイド発話"], "tag_row": "周囲の話題(タグ)"};
+const SERIES = ["--s1","--s2","--s3","--s4","--s5"];
+const css = getComputedStyle(document.querySelector(".viz-root"));
+const tip = document.getElementById("tip");
+function showTip(e, html) { tip.innerHTML = html; tip.style.opacity = 1;
+  tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY + 12) + "px"; }
+function hideTip() { tip.style.opacity = 0; }
+function fmt(s) { s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+
+const legend = document.getElementById("legend");
+DATA.interval_order.forEach((lab, i) => {
+  const item = document.createElement("span");
+  item.innerHTML = `<span class="sw" style="background:var(${SERIES[i]})"></span>${lab}`;
+  legend.appendChild(item);
+});
+
+const ivRoot = document.getElementById("intervals");
+DATA.recordings.forEach(rec => {
+  const div = document.createElement("div"); div.className = "rec";
+  div.innerHTML = `<div class="rec-name">${rec.name} <span>(${fmt(rec.duration)})</span></div>`;
+  DATA.interval_order.forEach((lab, i) => {
+    if (!(lab in rec.intervals)) return;
+    const sec = rec.intervals[lab];
+    const pct = rec.duration > 0 ? Math.min(100, sec / rec.duration * 100) : 0;
+    const row = document.createElement("div"); row.className = "row";
+    const inside = pct > 22;
+    row.innerHTML = `<div class="lab">${lab}</div>
+      <div class="track"><div class="bar" style="width:${pct}%;background:var(${SERIES[i]})"></div>
+      <div class="val ${inside ? "" : "outside"}" style="left:${inside ? "4px" : `calc(${pct}% + 6px)`}">
+      ${Math.round(pct)}%・${fmt(sec)}</div></div>`;
+    row.addEventListener("mousemove", e => showTip(e, `${rec.name} / ${lab}: ${fmt(sec)}(${pct.toFixed(1)}%)`));
+    row.addEventListener("mouseleave", hideTip);
+    div.appendChild(row);
+  });
+  ivRoot.appendChild(div);
+});
+
+const evRoot = document.getElementById("events");
+const names = DATA.recordings.map(r => r.name);
+const rows = DATA.event_order.map(lab => ({lab, vals: DATA.recordings.map(r => r.events[lab] || 0)}));
+rows.push({lab: DATA.tag_row, vals: DATA.recordings.map(r => r.tags)});
+const maxVal = Math.max(1, ...rows.flatMap(r => r.vals));
+function mix(hex1, hex2, t) {
+  const a = hex1.match(/\w\w/g).map(x => parseInt(x, 16));
+  const b = hex2.match(/\w\w/g).map(x => parseInt(x, 16));
+  return "rgb(" + a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",") + ")";
+}
+const lo = css.getPropertyValue("--seq-lo").trim(), hi = css.getPropertyValue("--seq-hi").trim();
+const darkText = css.getPropertyValue("--surface-1").trim();
+let html = `<table class="heat"><tr><th></th>${names.map(n => `<th>${n}</th>`).join("")}</tr>`;
+rows.forEach(r => {
+  html += `<tr><th class="rowh">${r.lab}</th>` + r.vals.map((v, i) => {
+    const t = v / maxVal;
+    const bg = v === 0 ? "var(--surface-2)" : mix(lo.replace("#",""), hi.replace("#",""), 0.15 + 0.85 * t);
+    const color = t > 0.55 ? darkText : "var(--text-primary)";
+    return `<td style="background:${bg};color:${color}" data-tip="${names[i]} / ${r.lab}: ${v}件">${v || ""}</td>`;
+  }).join("") + "</tr>";
+});
+html += "</table>";
+evRoot.innerHTML = html;
+evRoot.querySelectorAll("td[data-tip]").forEach(td => {
+  td.addEventListener("mousemove", e => showTip(e, td.dataset.tip));
+  td.addEventListener("mouseleave", hideTip);
+});
+</script></body></html>

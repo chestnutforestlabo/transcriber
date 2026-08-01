@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "audio": "実験後インタビュー.wav",
+  "duration_sec": 1345.897375,
+  "chunks": [
+    {
+      "prompt": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0001.prompt.txt",
+      "result": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0001.json",
+      "window_start": 0.0,
+      "window_end": 630.0,
+      "core_start": 0.0,
+      "core_end": 600.0
+    },
+    {
+      "prompt": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0002.prompt.txt",
+      "result": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0002.json",
+      "window_start": 570.0,
+      "window_end": 1230.0,
+      "core_start": 600.0,
+      "core_end": 1200.0
+    },
+    {
+      "prompt": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0003.prompt.txt",
+      "result": "outputs/coding/実験後インタビュー/coding_prompt_chunks/chunk-0003.json",
+      "window_start": 1170.0,
+      "window_end": 1345.897375,
+      "core_start": 1200.0,
+      "core_end": 1345.897375
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "meta": {
+    "schema_version": 2,
+    "sync": {
+      "description": "recording_start=2026-07-31T18:32:53+09:00",
+      "audio_anchor_sec": 0.0,
+      "log_anchor_at": "2026-07-31T09:32:53Z"
+    },
+    "duration_sec": 299.54133333333334,
+    "log_files": [
+      "coding_inputs_log.jsonl"
+    ],
+    "experiment": {
+      "start": 0.0,
+      "end": 299.54133333333334
+    }
+  },
+  "ai_utterances": [
+    {
+      "start": 10.107,
+      "end": 11.095,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 15.063,
+      "end": 15.523,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 15.524,
+      "end": 16.553,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 18.549,
+      "end": 19.447,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 23.134,
+      "end": 23.873,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 45.125,
+      "end": 46.152,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 49.914,
+      "end": 50.917,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 57.859,
+      "end": 59.104,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 58.056,
+      "end": 64.835,
+      "kind": "scene",
+      "text": "左沿いに明るく照らされた店舗のガラス面があります。、右前方は歩行者が多く、通行が混み合っています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 65.535,
+      "end": 71.659,
+      "kind": "scene",
+      "text": "左側にイタリアのファッションブランド「MARNI」の店舗です。、通りの反対側に日本のセレクトショップ「TOMORROWLAND」があります。",
+      "end_reason": "cancelled",
+      "estimated_end": false
+    },
+    {
+      "start": 71.766,
+      "end": 72.502,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 101.694,
+      "end": 110.933,
+      "kind": "qa_answer",
+      "text": "目の前の黄色く照らされた店舗は、オニツカタイガー銀座イエローコンセプトストアです。ネット情報では、銀座5丁目6番2号にあります。 (",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 113.121,
+      "end": 113.857,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 136.108,
+      "end": 144.96,
+      "kind": "qa_answer",
+      "text": "工作場ではなく、衣料品店のショーウィンドウです。左側はMARNIで、黄色い展示スペースに服を着せたマネキンや小物が並んでいます。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 151.217,
+      "end": 151.952,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 173.622,
+      "end": 184.217,
+      "kind": "qa_answer",
+      "text": "この辺には、左側にイタリアのファッションブランド「MARNI」、通りの反対側に日本のセレクトショップ「TOMORROWLAND」があります。現在は少し通り過ぎている可能性があります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 187.764,
+      "end": 188.5,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 205.509,
+      "end": 206.939,
+      "kind": "system",
+      "text": "聞き取れませんでした。終わります",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 227.792,
+      "end": 228.818,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 229.7,
+      "end": 230.609,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 237.64,
+      "end": 238.884,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 241.712,
+      "end": 243.771,
+      "kind": "system",
+      "text": "解析を続けています。応答を待っています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 248.303,
+      "end": 250.538,
+      "kind": "scene",
+      "text": "左手前にフランスの高級ブランド「DIOR」の店舗です。",
+      "end_reason": "cancelled",
+      "estimated_end": false
+    },
+    {
+      "start": 250.671,
+      "end": 251.697,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    }
+  ],
+  "speech_yields": [],
+  "qa_interactions": [
+    {
+      "qa_start": 14.985,
+      "question_heard": null,
+      "question": "",
+      "answer_start": null,
+      "answer_text": ""
+    },
+    {
+      "qa_start": 23.047,
+      "question_heard": 36.591,
+      "question": "前に右にある店は",
+      "answer_start": null,
+      "answer_text": "前方右手、道路の向かいにあるのは「ディオール」の店舗です。"
+    },
+    {
+      "qa_start": 71.658,
+      "question_heard": 86.22,
+      "question": "目の前にある店舗の名前は待って待って",
+      "answer_start": 101.694,
+      "answer_text": "目の前の黄色く照らされた店舗は、オニツカタイガー銀座イエローコンセプトストアです。ネット情報では、銀座5丁目6番2号にあります。 ("
+    },
+    {
+      "qa_start": 113.038,
+      "question_heard": 127.402,
+      "question": "売ってるものは何じゃないかもしれないけど工作場かな",
+      "answer_start": 136.108,
+      "answer_text": "工作場ではなく、衣料品店のショーウィンドウです。左側はMARNIで、黄色い展示スペースに服を着せたマネキンや小物が並んでいます。"
+    },
+    {
+      "qa_start": 151.11,
+      "question_heard": 165.548,
+      "question": "ここらにある店は何",
+      "answer_start": 173.622,
+      "answer_text": "この辺には、左側にイタリアのファッションブランド「MARNI」、通りの反対側に日本のセレクトショップ「TOMORROWLAND」があります。現在は少し通り過ぎている可能性があります。"
+    },
+    {
+      "qa_start": 187.686,
+      "question_heard": null,
+      "question": "",
+      "answer_start": null,
+      "answer_text": ""
+    }
+  ],
+  "system_stops": [
+    {
+      "start": 0.0,
+      "end": 9.739
+    },
+    {
+      "start": 15.517,
+      "end": 18.266
+    },
+    {
+      "start": 45.118,
+      "end": 49.635
+    },
+    {
+      "start": 227.785,
+      "end": 229.433
+    },
+    {
+      "start": 250.664,
+      "end": 299.54133333333334
+    }
+  ],
+  "prompt_modes": [
+    {
+      "time": 0.0,
+      "mode": "knownBrands"
+    }
+  ]
+}

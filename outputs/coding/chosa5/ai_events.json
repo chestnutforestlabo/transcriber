@@ -1,0 +1,314 @@
+{
+  "meta": {
+    "schema_version": 2,
+    "sync": {
+      "description": "recording_start=2026-07-31T18:47:00+09:00",
+      "audio_anchor_sec": 0.0,
+      "log_anchor_at": "2026-07-31T09:47:00Z"
+    },
+    "duration_sec": 356.37333333333333,
+    "log_files": [
+      "coding_inputs_log.jsonl"
+    ],
+    "experiment": {
+      "start": 0.0,
+      "end": 356.37333333333333
+    }
+  },
+  "ai_utterances": [
+    {
+      "start": 1.486,
+      "end": 8.663,
+      "kind": "scene",
+      "text": "右前方の信号が青に変わっています。、左奥に日本のドラッグストア「ダイコクドラッグ」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 9.571,
+      "end": 16.497,
+      "kind": "scene",
+      "text": "左前方の歩道に歩行者数人が立っています。、右前方の車道側では信号が青に変わっています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 17.602,
+      "end": 21.529,
+      "kind": "scene",
+      "text": "左手前の店舗前に赤い人形が3体並んでいます。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 22.078,
+      "end": 22.817,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 42.953,
+      "end": 50.305,
+      "kind": "qa_answer",
+      "text": "この通りには、ファッション店の「MOUSSY」、ドラッグストアの「ダイコクドラッグ」、赤い人形を飾った玩具店があります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 55.72,
+      "end": 56.748,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 58.233,
+      "end": 59.139,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 62.935,
+      "end": 63.672,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 80.928,
+      "end": 92.998,
+      "kind": "qa_answer",
+      "text": "この先は広い歩道がまっすぐ続き、歩行者が複数います。すぐ右前から女性がこちらへ近づいているため、少し左寄りを進んでください。右側は車道で、車が通っています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 98.449,
+      "end": 102.587,
+      "kind": "scene",
+      "text": "右前方の歩道を、歩行者2人がこちらへ近づいています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 103.942,
+      "end": 106.505,
+      "kind": "scene",
+      "text": "右前方の歩道に歩行者がいます。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 109.915,
+      "end": 113.227,
+      "kind": "scene",
+      "text": "右の車道を自転車が前方へ走っています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 116.023,
+      "end": 123.661,
+      "kind": "scene",
+      "text": "左手前は英国の高級ブランド「dunhill」の店舗です。、右前方に日本の通信会社「NTT EAST」の看板です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 124.772,
+      "end": 128.912,
+      "kind": "scene",
+      "text": "左手前は日本の婦人服ブランド「LOUNIE」の店舗です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 129.73,
+      "end": 130.467,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 152.072,
+      "end": 156.747,
+      "kind": "qa_answer",
+      "text": "西側の左手前は、日本の婦人服ブランド「LOUNIE」の店舗です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 163.331,
+      "end": 167.004,
+      "kind": "scene",
+      "text": "右向かいはドイツの筆記具ブランド「MONTBLANC」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 169.583,
+      "end": 172.467,
+      "kind": "scene",
+      "text": "右側の車道を車が通行しています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 175.967,
+      "end": 179.714,
+      "kind": "scene",
+      "text": "右前方の横断歩道は歩行者用信号が青です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 180.341,
+      "end": 181.079,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 200.843,
+      "end": 208.736,
+      "kind": "qa_answer",
+      "text": "右前方の横断歩道へ進んでください。歩行者用信号は青ですが、手前を横切る車道があるため、車に注意して渡ってください。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 217.77,
+      "end": 220.874,
+      "kind": "scene",
+      "text": "右手前の歩道は歩行者が行き交っています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 227.496,
+      "end": 230.313,
+      "kind": "scene",
+      "text": "右手前から歩行者が近づいています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 241.707,
+      "end": 245.705,
+      "kind": "scene",
+      "text": "左手前は日本のカフェチェーン「EXCELSIOR CAFFÉ」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 250.508,
+      "end": 251.245,
+      "kind": "system",
+      "text": "質問をどうぞ",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 263.637,
+      "end": 265.069,
+      "kind": "system",
+      "text": "聞き取れませんでした。終わります",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 277.858,
+      "end": 284.928,
+      "kind": "scene",
+      "text": "左手前はフランスの高級ブランド「DIOR」です。、通りの反対側にもフランスの高級ブランド「DIOR」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 293.698,
+      "end": 297.445,
+      "kind": "scene",
+      "text": "左手前はフランスの高級ブランド「Dior」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 304.328,
+      "end": 308.679,
+      "kind": "scene",
+      "text": "左手前はドイツ発の高級ブランド「MCM」です。、右側の横断歩道付近に自転車の人がいます。",
+      "end_reason": "cancelled",
+      "estimated_end": false
+    },
+    {
+      "start": 308.814,
+      "end": 309.843,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    }
+  ],
+  "speech_yields": [],
+  "qa_interactions": [
+    {
+      "qa_start": 21.974,
+      "question_heard": 37.368,
+      "question": "この通りにはどんな店がある",
+      "answer_start": 42.953,
+      "answer_text": "この通りには、ファッション店の「MOUSSY」、ドラッグストアの「ダイコクドラッグ」、赤い人形を飾った玩具店があります。"
+    },
+    {
+      "qa_start": 62.862,
+      "question_heard": 76.677,
+      "question": "この先には何がある",
+      "answer_start": 80.928,
+      "answer_text": "この先は広い歩道がまっすぐ続き、歩行者が複数います。すぐ右前から女性がこちらへ近づいているため、少し左寄りを進んでください。右側は車道で、車が通っています。"
+    },
+    {
+      "qa_start": 129.625,
+      "question_heard": 145.001,
+      "question": "西は何",
+      "answer_start": 152.072,
+      "answer_text": "西側の左手前は、日本の婦人服ブランド「LOUNIE」の店舗です。"
+    },
+    {
+      "qa_start": 180.266,
+      "question_heard": 195.12,
+      "question": "どこに行けばいいですか",
+      "answer_start": 200.843,
+      "answer_text": "右前方の横断歩道へ進んでください。歩行者用信号は青ですが、手前を横切る車道があるため、車に注意して渡ってください。"
+    },
+    {
+      "qa_start": 250.428,
+      "question_heard": null,
+      "question": "",
+      "answer_start": null,
+      "answer_text": ""
+    }
+  ],
+  "system_stops": [
+    {
+      "start": 55.713,
+      "end": 57.964
+    },
+    {
+      "start": 308.807,
+      "end": 356.37333333333333
+    }
+  ],
+  "prompt_modes": [
+    {
+      "time": 0.0,
+      "mode": "knownBrands"
+    }
+  ]
+}

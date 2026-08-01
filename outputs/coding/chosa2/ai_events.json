@@ -1,0 +1,412 @@
+{
+  "meta": {
+    "schema_version": 2,
+    "sync": {
+      "description": "recording_start=2026-07-31T18:22:47+09:00",
+      "audio_anchor_sec": 0.0,
+      "log_anchor_at": "2026-07-31T09:22:47Z"
+    },
+    "duration_sec": 296.74666666666667,
+    "log_files": [
+      "chosa2_logs/single_key_walkguide_20260731_182005_32F9ECE3.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182211_44D29B6B.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182333_863CA0A9.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182353_C5AB61E3.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182434_62A4DD0E.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182616_BF931DF1.jsonl",
+      "chosa2_logs/single_key_walkguide_20260731_182856_F3042433.jsonl"
+    ],
+    "experiment": {
+      "start": 0.0,
+      "end": 296.74666666666667
+    }
+  },
+  "ai_utterances": [
+    {
+      "start": 1.505,
+      "end": 8.745,
+      "kind": "scene",
+      "text": "左奥に、米国のカジュアルブランド「Abercrombie & Fitch」です。、右手前から歩行者が近づいています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 13.87,
+      "end": 17.183,
+      "kind": "scene",
+      "text": "右前方の車道に、バイクが停車しています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 25.412,
+      "end": 29.865,
+      "kind": "scene",
+      "text": "右奥のビル上部に、日本の真珠ブランド「MIKIMOTO」の看板です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 37.59,
+      "end": 42.541,
+      "kind": "scene",
+      "text": "左手前に、時間帯表示付きの交通規制標識があります。、右側の店舗窓に、バッグを持つマネキンが並びます。",
+      "end_reason": "cancelled",
+      "estimated_end": false
+    },
+    {
+      "start": 42.681,
+      "end": 43.711,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 46.563,
+      "end": 47.649,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 54.975,
+      "end": 56.217,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 57.767,
+      "end": 61.866,
+      "kind": "scene",
+      "text": "左奥の縦看板に、日本の婦人靴ブランド「DIANA」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 62.933,
+      "end": 63.96,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 66.497,
+      "end": 67.401,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 74.942,
+      "end": 76.182,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 78.051,
+      "end": 84.146,
+      "kind": "scene",
+      "text": "左の車道を、車が列になって進んでいます。、右奥の歩道には、複数の歩行者がいます。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 85.461,
+      "end": 93.976,
+      "kind": "scene",
+      "text": "左奥に、米国の宝飾ブランド「TIFFANY & CO.」です。、右側に、フランスの高級ブランド「BALENCIAGA」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 96.255,
+      "end": 99.391,
+      "kind": "scene",
+      "text": "右手前から、歩行者がこちらへ向かっています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 101.88,
+      "end": 104.343,
+      "kind": "scene",
+      "text": "右手前に、イタリアの高級ブランド「VALENTINO」です。",
+      "end_reason": "cancelled",
+      "estimated_end": false
+    },
+    {
+      "start": 104.449,
+      "end": 105.478,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 107.798,
+      "end": 108.706,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 116.243,
+      "end": 117.485,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 118.639,
+      "end": 122.565,
+      "kind": "scene",
+      "text": "左の車道脇に、側面ドアを開けた白いバンがあります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 123.748,
+      "end": 127.641,
+      "kind": "scene",
+      "text": "右手前に、イタリアの高級ブランド「FENDI」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 132.215,
+      "end": 139.749,
+      "kind": "scene",
+      "text": "右前方に、スペインの高級革製品ブランド「LOEWE」です。、左手前から歩行者がすれ違います。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 140.459,
+      "end": 144.595,
+      "kind": "scene",
+      "text": "右前方に、スペインの高級ブランド「LOEWE」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 145.325,
+      "end": 149.246,
+      "kind": "scene",
+      "text": "左前方の横断歩道に黒い車が入り込んでいます。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 149.954,
+      "end": 156.882,
+      "kind": "scene",
+      "text": "右前方の横断歩道を黒いミニバンが通過中です。、左奥の建物に「VINTAGE SHOP」の看板があります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 157.568,
+      "end": 163.916,
+      "kind": "scene",
+      "text": "左前方に、日本の衣料品ブランド「GU」です。、右前方の車道を黒いタクシーが横切ります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 170.103,
+      "end": 174.135,
+      "kind": "scene",
+      "text": "左前方の横断歩道を白い乗用車が横切り中です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 175.995,
+      "end": 180.162,
+      "kind": "scene",
+      "text": "左前方を米国配車サービス「Uber」の車が横切ります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 182.427,
+      "end": 184.814,
+      "kind": "scene",
+      "text": "右前方の信号は赤です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 185.934,
+      "end": 189.639,
+      "kind": "scene",
+      "text": "右手前に、スペインの高級ブランド「LOEWE」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 190.371,
+      "end": 196.691,
+      "kind": "scene",
+      "text": "右手前に、スペインの高級ブランド「LOEWE」です。、左前方から傘を差した歩行者が近づいています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 197.454,
+      "end": 205.277,
+      "kind": "scene",
+      "text": "左向かいに、日本の衣料品ブランド「GU」です。、右奥の縦看板に、日本の化粧品ブランド「FANCL」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 205.459,
+      "end": 206.488,
+      "kind": "system",
+      "text": "案内を停止しました",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 209.995,
+      "end": 211.011,
+      "kind": "system",
+      "text": "案内を開始します",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 217.941,
+      "end": 219.183,
+      "kind": "system",
+      "text": "周囲を解析しています",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 219.938,
+      "end": 223.719,
+      "kind": "scene",
+      "text": "右前方に歩行者が連なり、通路が狭まっています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 226.791,
+      "end": 229.318,
+      "kind": "scene",
+      "text": "右手前を歩行者がすれ違います。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 239.997,
+      "end": 243.693,
+      "kind": "scene",
+      "text": "左向かいに、フランスの高級ブランド「LONGCHAMP」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 244.38,
+      "end": 248.093,
+      "kind": "scene",
+      "text": "左奥に、日本の高級宝飾ブランド「TASAKI」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 249.277,
+      "end": 253.114,
+      "kind": "scene",
+      "text": "左向かいに、日本の宝飾ブランド「TASAKI」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 255.055,
+      "end": 258.183,
+      "kind": "scene",
+      "text": "左前方の歩道脇に街路樹があります。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 260.275,
+      "end": 268.368,
+      "kind": "scene",
+      "text": "左奥に、米国の高級宝飾ブランド「TIFFANY」です。、右向かいに、日本の衣料品ブランド「GU」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 269.182,
+      "end": 276.717,
+      "kind": "scene",
+      "text": "左奥に、米国の宝飾ブランド「TIFFANY & CO.」です。、右向かいに、日本の衣料品ブランド「GU」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 277.379,
+      "end": 280.806,
+      "kind": "scene",
+      "text": "右手前の車道に黒い大型車が停まっています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 281.564,
+      "end": 285.457,
+      "kind": "scene",
+      "text": "右手前の車道脇に黒いミニバンが停車しています。",
+      "end_reason": "finished",
+      "estimated_end": false
+    },
+    {
+      "start": 289.187,
+      "end": 296.74666666666667,
+      "kind": "scene",
+      "text": "左奥の壁面に、米国ITブランド「Apple」のiPhone 17e広告です。、右奥に、フランスの革製品ブランド「LONGCHAMP」です。",
+      "end_reason": "finished",
+      "estimated_end": false
+    }
+  ],
+  "speech_yields": [],
+  "qa_interactions": [],
+  "system_stops": [
+    {
+      "start": 42.676,
+      "end": 46.304
+    },
+    {
+      "start": 62.927,
+      "end": 66.228
+    },
+    {
+      "start": 104.442,
+      "end": 107.53
+    },
+    {
+      "start": 205.453,
+      "end": 209.732
+    }
+  ],
+  "prompt_modes": [
+    {
+      "time": 0.0,
+      "mode": "knownBrands"
+    }
+  ]
+}

@@ -36,8 +36,10 @@ def parse_speaker_roles(value: str) -> dict[str, str]:
                 "--speaker_roles must look like "
                 "'SPEAKER_00=視覚障害者,SPEAKER_01=同行者'"
             )
-        if role not in {"視覚障害者", "同行者"}:
-            raise ValueError(f"Unsupported role {role!r}; use 視覚障害者 or 同行者")
+        if role not in {"視覚障害者", "同行者", "実験者"}:
+            raise ValueError(
+                f"Unsupported role {role!r}; use 視覚障害者 / 同行者 / 実験者"
+            )
         mapping[speaker] = role
     if not mapping:
         raise ValueError("At least one speaker role mapping is required")
@@ -50,6 +52,9 @@ def load_transcript(
 ) -> list[dict[str, Any]]:
     """Load and role-map the transcriber JSON format."""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(data, dict) and isinstance(data.get("transcripts"), list):
+        # 擬似3chモードの出力は {meta, transcripts} 形式
+        data = data["transcripts"]
     if not isinstance(data, list):
         raise ValueError("Transcript JSON must be an array")
     transcript: list[dict[str, Any]] = []

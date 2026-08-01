@@ -19,7 +19,7 @@ EVENT_LABELS = frozenset(
         "ガイド発話",
     }
 )
-SPEAKERS = frozenset({"視覚障害者", "同行者"})
+SPEAKERS = frozenset({"視覚障害者", "同行者", "実験者"})
 SOURCES = frozenset({"auto", "llm"})
 TAGS = frozenset({"周囲の話題"})
 CO_LABELS = frozenset({"話題提示", "質問"})

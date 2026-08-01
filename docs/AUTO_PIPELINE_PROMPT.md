@@ -43,8 +43,11 @@
 - `code_conversation.sh` はホスト側で実行する(codex CLI を使うため)。ホストに `python` コマンドが無い場合は python3 へのシムを PATH に用意する
 - 各実行で `Validation succeeded` が出ることを確認。失敗したらエラー内容を報告し、他のファイルの処理は続行
 
-### 4. 成果物の配置と報告
+### 4. 可視化・成果物の配置と報告
 
+- **可視化レポートを生成する**(コーディングが1件でも成功した場合は必須):
+  `docker compose exec -T backend uv run src/backend/coding/visualize_coding.py --coding "調査1=outputs/coding/chosa1/coding.json" ...(成功した全ファイルを表示順に) "インタビュー=outputs/coding/interview/coding.json" --audio "調査1=audios/num_speakers_2/chosa1.wav" ...(あるもののみ) --subtitle "<セッション名と日付>" --output outputs/coding/coding_summary.html`
+  - 各録音の区間ラベル時間(録音時間比)とイベント件数ヒートマップの HTML が生成される。最終報告にこのパスを必ず記載する
 - 各 coding.json のフロントエンドコピー(スクリプトが自動配置)を確認
 - **最終報告**(これが成果物)を以下の表形式でまとめる:
   - ファイルごと: 発話数 / コーディングモード(AI付き・文字起こしのみ) / 区間ラベル分布 / イベントラベル分布 / 警告(チャンネル異常・アライメント低信頼・ブラケット欠落・検証エラー)

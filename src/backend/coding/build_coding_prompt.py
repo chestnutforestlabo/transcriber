@@ -101,6 +101,21 @@ def _coding_window(ai_events: Mapping[str, Any]) -> tuple[float, float]:
     return lower, upper
 
 
+def _transcript_window(
+    transcript: Sequence[Mapping[str, Any]],
+) -> tuple[float, float]:
+    """Derive the available coding window when there is no application log."""
+    if not transcript:
+        raise ValueError(
+            "Cannot determine the coding window from an empty transcript "
+            "without --ai_events"
+        )
+    upper = max(float(item["end"]) for item in transcript)
+    if not math.isfinite(upper) or upper <= 0:
+        raise ValueError("Transcript end times must define a positive coding window")
+    return 0.0, upper
+
+
 def _clip(
     start: float,
     end: float,
@@ -116,6 +131,7 @@ def build_human_interval_candidates(
     duration_sec: float,
     *,
     start_sec: float = 0.0,
+    check_ai_addressed_speech: bool = True,
 ) -> list[dict[str, Any]]:
     """Create conversation/silence candidates using the three-second gap rule."""
     if start_sec < 0 or duration_sec <= start_sec:
@@ -162,7 +178,11 @@ def build_human_interval_candidates(
             "start": start,
             "end": end,
             "source": "auto",
-            "note": "3秒ギャップ規則による候補。LLMが応答・相槌とAI宛発話を確認する",
+            "note": (
+                "3秒ギャップ規則による候補。LLMが応答・相槌とAI宛発話を確認する"
+                if check_ai_addressed_speech
+                else "3秒ギャップ規則による候補。LLMが応答・相槌を確認する"
+            ),
         }
         for start, end in conversation
         if start < end
@@ -183,53 +203,63 @@ def build_human_interval_candidates(
 
 def build_scaffold(
     transcript: Sequence[Mapping[str, Any]],
-    ai_events: Mapping[str, Any],
+    ai_events: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build all deterministic interval labels and human interval candidates."""
-    lower, upper = _coding_window(ai_events)
+    lower, upper = (
+        _coding_window(ai_events)
+        if ai_events is not None
+        else _transcript_window(transcript)
+    )
     intervals: list[dict[str, Any]] = []
-    for utterance in ai_events.get("ai_utterances", []):
-        if not isinstance(utterance, dict):
-            continue
-        label = KIND_TO_INTERVAL_LABEL.get(utterance.get("kind"))
-        if label is None:
-            continue
-        clipped = _clip(
-            float(utterance["start"]),
-            float(utterance["end"]),
-            lower,
-            upper,
-        )
-        if clipped is None:
-            continue
-        intervals.append(
-            {
-                "label": label,
-                "start": clipped[0],
-                "end": clipped[1],
-                "source": "auto",
-                "note": (
-                    f"アプリログ speech_start/speech_end"
-                    f"（kind={utterance.get('kind')}）"
-                ),
-            }
-        )
-    for stop in ai_events.get("system_stops", []):
-        if not isinstance(stop, dict):
-            continue
-        clipped = _clip(float(stop["start"]), float(stop["end"]), lower, upper)
-        if clipped is not None:
+    if ai_events is not None:
+        for utterance in ai_events.get("ai_utterances", []):
+            if not isinstance(utterance, dict):
+                continue
+            label = KIND_TO_INTERVAL_LABEL.get(utterance.get("kind"))
+            if label is None:
+                continue
+            clipped = _clip(
+                float(utterance["start"]),
+                float(utterance["end"]),
+                lower,
+                upper,
+            )
+            if clipped is None:
+                continue
             intervals.append(
                 {
-                    "label": "システム停止",
+                    "label": label,
                     "start": clipped[0],
                     "end": clipped[1],
                     "source": "auto",
-                    "note": "session_stop(reason=user)→session_start から自動導出",
+                    "note": (
+                        f"アプリログ speech_start/speech_end"
+                        f"（kind={utterance.get('kind')}）"
+                    ),
                 }
             )
+        for stop in ai_events.get("system_stops", []):
+            if not isinstance(stop, dict):
+                continue
+            clipped = _clip(float(stop["start"]), float(stop["end"]), lower, upper)
+            if clipped is not None:
+                intervals.append(
+                    {
+                        "label": "システム停止",
+                        "start": clipped[0],
+                        "end": clipped[1],
+                        "source": "auto",
+                        "note": "session_stop(reason=user)→session_start から自動導出",
+                    }
+                )
     intervals.extend(
-        build_human_interval_candidates(transcript, upper, start_sec=lower)
+        build_human_interval_candidates(
+            transcript,
+            upper,
+            start_sec=lower,
+            check_ai_addressed_speech=ai_events is not None,
+        )
     )
     intervals.sort(key=lambda item: (item["start"], item["end"], item["label"]))
     for index, item in enumerate(intervals, start=1):
@@ -296,16 +326,19 @@ def build_prompt_text(
     *,
     audio_name: str,
     transcript: Sequence[Mapping[str, Any]],
-    ai_events: Mapping[str, Any],
+    ai_events: Mapping[str, Any] | None = None,
     scaffold: Mapping[str, Any],
     coding_scheme: str,
     window: tuple[float, float] | None = None,
     core_window: tuple[float, float] | None = None,
 ) -> str:
     """Build the complete prompt consumed by ``codex exec``."""
-    lower, upper = window or _coding_window(ai_events)
+    lower, upper = window or (
+        _coding_window(ai_events)
+        if ai_events is not None
+        else _transcript_window(transcript)
+    )
     visible_transcript = _filter_transcript(transcript, lower, upper)
-    visible_ai_events = _filter_ai_events(ai_events, lower, upper)
     visible_scaffold = _filter_scaffold(scaffold, lower, upper)
     chunk_instruction = ""
     if core_window is not None:
@@ -339,13 +372,52 @@ def build_prompt_text(
                 "tags": ["周囲の話題"],
                 "attrs": {
                     "co_labels": ["話題提示"],
-                    "ai_reference": "within_30s",
+                    **(
+                        {"ai_reference": "within_30s"}
+                        if ai_events is not None
+                        else {}
+                    ),
                 },
                 "text": "該当発話テキスト",
                 "note": "",
             }
         ],
     }
+    if ai_events is None:
+        return f"""あなたは会話コーディング担当です。
+以下の定義、決定論的スキャフォールド、役割変換済み文字起こしを突き合わせ、
+指定スキーマに適合する最終コーディングを作成してください。
+対象音声は {audio_name}、対象時間窓は {lower:.3f}〜{upper:.3f} 秒です。{chunk_instruction}
+
+重要な指示:
+- 出力は有効なJSONオブジェクトのみとし、Markdown、コードフェンス、説明文を付けない。
+- intervals と events はそれぞれ時刻順に並べ、全idを一意にする。
+- この録音に AI は関与しない。AI説明/AI応答/システム停止/AI情報の共有 は付与対象外。
+- 会話・無言は候補である。応答と相槌を意味的に確認して境界を確定し、確定・修正した
+  会話/無言は source="llm" とする。
+- 人間側ラベル（話題提示、質問、周囲説明、応答なし発話、ガイド発話、
+  周囲の話題タグ、相槌判定による会話区間確定）に集中する。
+- 質問が新しい話題を開始する場合も attrs.co_labels に "話題提示" を入れる。
+- 同行者からの周囲説明には attrs.response_type を "自発" または "質問応答" で
+  必ず入れる。
+- attrs の未使用属性は省略してよいが attrs 自体は必ずオブジェクトにする。
+- tags は該当時だけ "周囲の話題" を含め、それ以外は空配列にする。
+- イベントの time/end/text は根拠となる1発話の範囲と本文に合わせる。
+
+## コーディングスキーム
+{coding_scheme}
+
+## 出力スキーマ例（ラベルは定義に従って置き換える）
+{json.dumps(schema_example, ensure_ascii=False, indent=2)}
+
+## 決定論的スキャフォールド
+{json.dumps(visible_scaffold, ensure_ascii=False, indent=2)}
+
+## 文字起こし（話者役割変換済み）
+{json.dumps(visible_transcript, ensure_ascii=False, indent=2)}
+"""
+
+    visible_ai_events = _filter_ai_events(ai_events, lower, upper)
     return f"""あなたは観光実験の会話コーディング担当です。
 以下の定義、決定論的スキャフォールド、役割変換済み文字起こし、アプリログを
 突き合わせ、指定スキーマに適合する最終コーディングを作成してください。
@@ -409,14 +481,18 @@ def _chunk_windows(
 def write_prompts(
     *,
     transcript_path: str | Path,
-    ai_events_path: str | Path,
+    ai_events_path: str | Path | None = None,
     speaker_roles: Mapping[str, str],
     output_path: str | Path,
     chunk_minutes: float | None = None,
 ) -> Path:
     """Write one prompt, or chunk prompts plus a machine-readable manifest."""
     transcript = load_transcript(transcript_path, speaker_roles)
-    ai_events = json.loads(Path(ai_events_path).read_text(encoding="utf-8"))
+    ai_events = (
+        json.loads(Path(ai_events_path).read_text(encoding="utf-8"))
+        if ai_events_path is not None
+        else None
+    )
     scaffold = build_scaffold(transcript, ai_events)
     scheme = CODING_SCHEME_PATH.read_text(encoding="utf-8")
     output = Path(output_path)
@@ -440,11 +516,19 @@ def write_prompts(
 
     chunks_dir = output.parent / f"{output.stem}_chunks"
     chunks_dir.mkdir(parents=True, exist_ok=True)
-    lower, upper = _coding_window(ai_events)
+    lower, upper = (
+        _coding_window(ai_events)
+        if ai_events is not None
+        else _transcript_window(transcript)
+    )
     manifest: dict[str, Any] = {
         "version": 1,
         "audio": audio_name,
-        "duration_sec": float(ai_events["meta"]["duration_sec"]),
+        "duration_sec": (
+            float(ai_events["meta"]["duration_sec"])
+            if ai_events is not None
+            else upper
+        ),
         "chunks": [],
     }
     for index, (window, core) in enumerate(
@@ -582,10 +666,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         merge_chunk_results(args.merge_manifest, args.output)
         print(args.output)
         return 0
-    if not (args.transcript and args.ai_events and args.speaker_roles):
+    if not (args.transcript and args.speaker_roles):
         raise SystemExit(
-            "--transcript, --ai_events, and --speaker_roles are required "
-            "when building prompts"
+            "--transcript and --speaker_roles are required when building prompts"
         )
     path = write_prompts(
         transcript_path=args.transcript,

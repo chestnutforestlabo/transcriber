@@ -12,7 +12,7 @@ chunk_minutes=""
 output=""
 
 usage() {
-    echo "Usage: $0 --transcript FILE --ai_events FILE --speaker_roles MAPPING [--chunk_minutes N] [--output FILE]"
+    echo "Usage: $0 --transcript FILE --speaker_roles MAPPING [--ai_events FILE] [--chunk_minutes N] [--output FILE]"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -49,7 +49,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$transcript" || -z "$ai_events" || -z "$speaker_roles" ]]; then
+if [[ -z "$transcript" || -z "$speaker_roles" ]]; then
     usage >&2
     exit 2
 fi
@@ -57,7 +57,7 @@ if [[ ! -f "$transcript" ]]; then
     echo "Transcript not found: $transcript" >&2
     exit 2
 fi
-if [[ ! -f "$ai_events" ]]; then
+if [[ -n "$ai_events" && ! -f "$ai_events" ]]; then
     echo "AI events not found: $ai_events" >&2
     exit 2
 fi
@@ -78,10 +78,12 @@ mkdir -p "$coding_dir" "src/frontend/public/coding"
 build_args=(
     src/backend/coding/build_coding_prompt.py
     --transcript "$transcript"
-    --ai_events "$ai_events"
     --speaker_roles "$speaker_roles"
     --output "$prompt_path"
 )
+if [[ -n "$ai_events" ]]; then
+    build_args+=(--ai_events "$ai_events")
+fi
 if [[ -n "$chunk_minutes" ]]; then
     build_args+=(--chunk_minutes "$chunk_minutes")
 fi

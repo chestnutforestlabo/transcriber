@@ -57,6 +57,58 @@ def test_scaffold_maps_only_codable_ai_kinds_and_system_stops():
     assert labels.count("無言") == 1
 
 
+def test_transcript_only_prompt_excludes_ai_labels(tmp_path):
+    """Omitting AI events builds only human scaffolds and states the exclusion."""
+    transcript_path = tmp_path / "interview.json"
+    prompt_path = tmp_path / "coding_prompt.txt"
+    transcript_path.write_text(
+        json.dumps(
+            [
+                {
+                    "start": 2.0,
+                    "end": 3.0,
+                    "speaker": "SPEAKER_00",
+                    "text": "今日はどこへ行きましたか",
+                },
+                {
+                    "start": 4.0,
+                    "end": 6.0,
+                    "speaker": "SPEAKER_01",
+                    "text": "庭園へ行きました",
+                },
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    scaffold = build_scaffold(
+        [
+            {"start": 2.0, "end": 3.0},
+            {"start": 4.0, "end": 6.0},
+        ]
+    )
+    path = write_prompts(
+        transcript_path=transcript_path,
+        speaker_roles={
+            "SPEAKER_00": "視覚障害者",
+            "SPEAKER_01": "同行者",
+        },
+        output_path=prompt_path,
+    )
+    prompt = path.read_text(encoding="utf-8")
+
+    assert [item["label"] for item in scaffold["intervals"]] == ["無言", "会話"]
+    assert path == prompt_path
+    assert "対象時間窓は 0.000〜6.000 秒" in prompt
+    assert (
+        "この録音に AI は関与しない。"
+        "AI説明/AI応答/システム停止/AI情報の共有 は付与対象外。"
+    ) in prompt
+    assert "人間側ラベル" in prompt
+    assert "## AIイベント（音声相対秒）" not in prompt
+
+
 def test_chunk_prompts_use_sixty_second_overlap_and_merge_by_core(tmp_path):
     """Chunk overlap informs boundaries while each core contributes once."""
     transcript_path = tmp_path / "walk.json"

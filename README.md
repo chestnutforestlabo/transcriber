@@ -143,6 +143,18 @@ uv run src/backend/transcribe.py \
   --channel_mode
 ```
 
+OpenAI Whisper は既定で beam size 5 を使用します。固有名詞や収録時の語彙を
+補助したい場合は、次のように初期プロンプトも指定できます。
+
+```bash
+uv run src/backend/transcribe.py \
+  --audio_dir audios/num_speakers_2 \
+  --asr_model_name openai \
+  --channel_mode \
+  --asr_beam_size 5 \
+  --asr_initial_prompt "銀座、ルイ・ヴィトン、シャネル、ピンマイク、文字起こし"
+```
+
 Lch は `SPEAKER_00`、Rch は `SPEAKER_01` として出力されます。このモードでは
 ダイアライゼーションモデルを使用せず、各チャンネルを Silero VAD と短時間
 RMS 比でゲーティングして、相手話者の小さな漏れ込みを除外してから個別に

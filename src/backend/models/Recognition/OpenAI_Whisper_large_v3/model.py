@@ -27,6 +27,8 @@ class AutomaticSpeechRecognition(BaseModel):
             language=self.args.openai_language,
             verbose=False,
             word_timestamps=True,
+            beam_size=getattr(self.args, "asr_beam_size", 5),
+            initial_prompt=getattr(self.args, "asr_initial_prompt", None),
         )
         return result, start_time
 

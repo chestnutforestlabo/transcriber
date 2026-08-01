@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import tempfile
 
 import numpy as np
@@ -23,6 +24,32 @@ from tqdm import tqdm
 from utils import diarize_text, save_index_json, save_transcripts_json
 
 from models import get_asr_model, get_online_llm_model, get_sd_model
+
+
+ASR_SEGMENT_PADDING_SEC = 0.2
+ASR_MAX_INPUT_DURATION_SEC = 30.0
+TIMESTAMPLESS_CHANNEL_ASR_MODELS = frozenset({"kotoba", "qwen"})
+
+# Short, quiet clips commonly make ASR models emit video-ending boilerplate.
+# These phrases are discarded only when they make up the complete ASR result.
+ASR_HALLUCINATION_PATTERNS = (
+    "ご視聴ありがとうございました",
+    "ご視聴ありがとうございます",
+    "最後までご視聴ありがとうございました",
+    "ご覧いただきありがとうございました",
+    "字幕をご覧いただきありがとうございました",
+    "ご清聴ありがとうございました",
+    "ご静聴ありがとうございました",
+    "チャンネル登録よろしくお願いします",
+    "チャンネル登録をお願いします",
+    "高評価とチャンネル登録をお願いします",
+    "thank you for watching",
+    "thanks for watching",
+)
+_ASR_TEXT_DECORATION_RE = re.compile(
+    r"[\s。、，,.!！?？…・:：;；「」『』（）()"
+    r"【】\[\]\"'“”‘’]+"
+)
 
 
 def _to_mono(segment: np.ndarray) -> np.ndarray:
@@ -97,6 +124,120 @@ def _run_asr_on_segments(
     return merged
 
 
+def _normalize_asr_text(text: str) -> str:
+    return _ASR_TEXT_DECORATION_RE.sub("", text).casefold()
+
+
+def _is_empty_or_hallucination(text: str) -> bool:
+    normalized = _normalize_asr_text(text)
+    if not normalized:
+        return True
+
+    normalized_patterns = tuple(
+        _normalize_asr_text(phrase) for phrase in ASR_HALLUCINATION_PATTERNS
+    )
+    remaining = normalized
+    while remaining:
+        matched = next(
+            (phrase for phrase in normalized_patterns if remaining.startswith(phrase)),
+            None,
+        )
+        if matched is None:
+            return False
+        remaining = remaining[len(matched) :]
+    return True
+
+
+def _active_asr_intervals(
+    active_mask: np.ndarray,
+    sampling_rate: int,
+) -> list[tuple[int, int]]:
+    """Return VAD runs whose padded ASR inputs fit within 30 seconds."""
+    mask = np.asarray(active_mask, dtype=bool)
+    if mask.ndim != 1:
+        raise ValueError("active_mask must be one-dimensional.")
+
+    padded = np.pad(mask.astype(np.int8), (1, 1))
+    changes = np.diff(padded)
+    starts = np.flatnonzero(changes == 1)
+    ends = np.flatnonzero(changes == -1)
+    minimum_samples = max(
+        1,
+        int(np.ceil(MIN_ASR_ACTIVE_DURATION_SEC * sampling_rate)),
+    )
+    maximum_core_duration_sec = max(
+        0.0,
+        ASR_MAX_INPUT_DURATION_SEC - 2.0 * ASR_SEGMENT_PADDING_SEC,
+    )
+    maximum_samples = max(1, int(maximum_core_duration_sec * sampling_rate))
+
+    intervals = []
+    for start, end in zip(starts, ends, strict=True):
+        start = int(start)
+        end = int(end)
+        sample_count = end - start
+        if sample_count < minimum_samples:
+            continue
+
+        chunk_count = int(np.ceil(sample_count / maximum_samples))
+        boundaries = [
+            start + round(sample_count * index / chunk_count)
+            for index in range(chunk_count + 1)
+        ]
+        intervals.extend(
+            (chunk_start, chunk_end)
+            for chunk_start, chunk_end in zip(
+                boundaries[:-1],
+                boundaries[1:],
+                strict=True,
+            )
+            if chunk_end > chunk_start
+        )
+    return intervals
+
+
+def _run_asr_on_vad_intervals(
+    asr_model,
+    args,
+    waveform: np.ndarray,
+    active_mask: np.ndarray,
+    sampling_rate: int,
+):
+    """Transcribe timestamp-less ASR input while retaining VAD boundaries."""
+    mono = _to_mono(np.asarray(waveform))
+    mask = np.asarray(active_mask, dtype=bool)
+    if len(mono) != len(mask):
+        raise ValueError("waveform and active_mask must have the same length.")
+
+    padding_samples = max(0, int(round(ASR_SEGMENT_PADDING_SEC * sampling_rate)))
+    results = []
+    for start, end in _active_asr_intervals(mask, sampling_rate):
+        padded_start = max(0, start - padding_samples)
+        padded_end = min(len(mono), end + padding_samples)
+        raw_segments = _run_asr_on_segment(
+            asr_model,
+            args,
+            mono[padded_start:padded_end],
+            sampling_rate,
+        )
+        text = " ".join(
+            str(item[1]).strip()
+            for item in (raw_segments or [])
+            if isinstance(item, (tuple, list))
+            and len(item) >= 2
+            and str(item[1]).strip()
+        )
+        if _is_empty_or_hallucination(text):
+            continue
+        results.append(
+            (
+                Segment(start / float(sampling_rate), end / float(sampling_rate)),
+                text,
+            )
+        )
+    return results
+
+
 def transcribe_stereo_segments(
     asr_model,
     args,
@@ -130,30 +271,41 @@ def transcribe_stereo_segments(
     )
     merged = []
     for channel, speaker in enumerate(("SPEAKER_00", "SPEAKER_01")):
-        channel_segments = [
-            gating.waveform[start:end, channel]
-            for start, end in zip(
-                boundaries[:-1],
-                boundaries[1:],
-                strict=True,
+        if args.asr_model_name in TIMESTAMPLESS_CHANNEL_ASR_MODELS:
+            padded_source = concatenated[:, channel].copy()
+            padded_source[gating.removed_mask[:, channel]] = 0.0
+            asr_output = _run_asr_on_vad_intervals(
+                asr_model=asr_model,
+                args=args,
+                waveform=padded_source,
+                active_mask=gating.keep_mask[:, channel],
+                sampling_rate=sampling_rate,
             )
-        ]
-        active_segments = [
-            int(np.count_nonzero(gating.keep_mask[start:end, channel]))
-            >= minimum_active_samples
-            for start, end in zip(
-                boundaries[:-1],
-                boundaries[1:],
-                strict=True,
+        else:
+            channel_segments = [
+                gating.waveform[start:end, channel]
+                for start, end in zip(
+                    boundaries[:-1],
+                    boundaries[1:],
+                    strict=True,
+                )
+            ]
+            active_segments = [
+                int(np.count_nonzero(gating.keep_mask[start:end, channel]))
+                >= minimum_active_samples
+                for start, end in zip(
+                    boundaries[:-1],
+                    boundaries[1:],
+                    strict=True,
+                )
+            ]
+            asr_output = _run_asr_on_segments(
+                asr_model=asr_model,
+                args=args,
+                segments=channel_segments,
+                sampling_rate=sampling_rate,
+                process_segments=active_segments,
             )
-        ]
-        asr_output = _run_asr_on_segments(
-            asr_model=asr_model,
-            args=args,
-            segments=channel_segments,
-            sampling_rate=sampling_rate,
-            process_segments=active_segments,
-        )
         merged.extend((segment, speaker, text) for segment, text, *_ in asr_output)
 
     merged.sort(key=lambda item: (item[0].start, item[0].end, item[1]))
@@ -200,30 +352,41 @@ def transcribe_multichannel_segments(
     )
     merged = []
     for channel in range(channel_count):
-        channel_segments = [
-            gating.waveform[start:end, channel]
-            for start, end in zip(
-                boundaries[:-1],
-                boundaries[1:],
-                strict=True,
+        if args.asr_model_name in TIMESTAMPLESS_CHANNEL_ASR_MODELS:
+            padded_source = concatenated[:, channel].copy()
+            padded_source[gating.removed_mask[:, channel]] = 0.0
+            asr_output = _run_asr_on_vad_intervals(
+                asr_model=asr_model,
+                args=args,
+                waveform=padded_source,
+                active_mask=gating.keep_mask[:, channel],
+                sampling_rate=sampling_rate,
             )
-        ]
-        active_segments = [
-            int(np.count_nonzero(gating.keep_mask[start:end, channel]))
-            >= minimum_active_samples
-            for start, end in zip(
-                boundaries[:-1],
-                boundaries[1:],
-                strict=True,
+        else:
+            channel_segments = [
+                gating.waveform[start:end, channel]
+                for start, end in zip(
+                    boundaries[:-1],
+                    boundaries[1:],
+                    strict=True,
+                )
+            ]
+            active_segments = [
+                int(np.count_nonzero(gating.keep_mask[start:end, channel]))
+                >= minimum_active_samples
+                for start, end in zip(
+                    boundaries[:-1],
+                    boundaries[1:],
+                    strict=True,
+                )
+            ]
+            asr_output = _run_asr_on_segments(
+                asr_model=asr_model,
+                args=args,
+                segments=channel_segments,
+                sampling_rate=sampling_rate,
+                process_segments=active_segments,
             )
-        ]
-        asr_output = _run_asr_on_segments(
-            asr_model=asr_model,
-            args=args,
-            segments=channel_segments,
-            sampling_rate=sampling_rate,
-            process_segments=active_segments,
-        )
         speaker = f"SPEAKER_{channel:02d}"
         for segment, text, *_ in asr_output:
             shifted = Segment(
@@ -573,6 +736,18 @@ if __name__ == "__main__":
         choices=["kotoba", "openai", "qwen"],
         default="openai",
         help="ASR model to use",
+    )
+    parser.add_argument(
+        "--asr_beam_size",
+        type=int,
+        default=5,
+        help="Beam size for OpenAI Whisper decoding (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--asr_initial_prompt",
+        type=str,
+        default=None,
+        help="Optional vocabulary/context prompt for OpenAI Whisper",
     )
     args = parser.parse_args()
     main(args)

@@ -24,6 +24,17 @@ class FixedVoiceActivityDetector:
         return self.intervals
 
 
+class PerChannelVoiceActivityDetector:
+    def __init__(self, intervals_by_channel):
+        self.intervals_by_channel = intervals_by_channel
+        self.call_count = 0
+
+    def __call__(self, waveform, sampling_rate):
+        intervals = self.intervals_by_channel[self.call_count]
+        self.call_count += 1
+        return intervals
+
+
 def test_crosstalk_gate_removes_leakage_and_keeps_speaker_and_overlap():
     sampling_rate = 16_000
     waveform = np.zeros((4 * sampling_rate, 2), dtype=np.float32)
@@ -138,6 +149,125 @@ def test_channel_mode_asr_is_mocked_per_channel_and_merged_by_start():
         (Segment(0.0, 1.0), "SPEAKER_00", "左の発話"),
         (Segment(1.0, 2.0), "SPEAKER_01", "右の発話"),
     ]
+
+
+@pytest.mark.parametrize("asr_model_name", ["qwen", "kotoba"])
+def test_timestampless_channel_asr_uses_vad_boundaries_and_padded_audio(
+    asr_model_name,
+):
+    sampling_rate = 1_000
+    sample_count = 3_000
+    left = np.linspace(0.1, 0.5, sample_count, dtype=np.float32)
+    waveform = np.column_stack([left, np.zeros(sample_count, dtype=np.float32)])
+    intervals = [(500, 1_000), (1_800, 2_300)]
+    detector = PerChannelVoiceActivityDetector([intervals, []])
+
+    class MockASR:
+        def __init__(self):
+            self.calls = []
+
+        def run(self, audio):
+            if isinstance(audio, tuple):
+                audio, received_sampling_rate = audio
+                assert received_sampling_rate == sampling_rate
+            self.calls.append(audio.copy())
+            return [(Segment(0.1, 0.2), f"発話{len(self.calls)}")]
+
+    asr = MockASR()
+    output = transcribe_stereo_segments(
+        asr,
+        SimpleNamespace(
+            asr_model_name=asr_model_name,
+            channel_crosstalk_threshold_db=-6.0,
+        ),
+        [waveform],
+        sampling_rate,
+        vad_detector=detector,
+    )
+
+    assert detector.call_count == 2
+    assert len(asr.calls) == 2
+    np.testing.assert_array_equal(asr.calls[0], left[300:1_200])
+    np.testing.assert_array_equal(asr.calls[1], left[1_600:2_500])
+    assert output == [
+        (Segment(0.5, 1.0), "SPEAKER_00", "発話1"),
+        (Segment(1.8, 2.3), "SPEAKER_00", "発話2"),
+    ]
+
+
+def test_timestampless_channel_asr_discards_empty_and_hallucinated_text():
+    sampling_rate = 1_000
+    sample_count = 3_000
+    waveform = np.column_stack(
+        [
+            np.ones(sample_count, dtype=np.float32),
+            np.zeros(sample_count, dtype=np.float32),
+        ]
+    )
+    intervals = [(200, 600), (1_000, 1_400), (2_000, 2_400)]
+
+    class MockASR:
+        def __init__(self):
+            self.responses = iter(
+                ["", "ご視聴ありがとうございました。", "実際の発話"]
+            )
+
+        def run(self, audio):
+            return [(Segment(0.0, len(audio) / sampling_rate), next(self.responses))]
+
+    output = transcribe_stereo_segments(
+        MockASR(),
+        SimpleNamespace(
+            asr_model_name="kotoba",
+            channel_crosstalk_threshold_db=-6.0,
+        ),
+        [waveform],
+        sampling_rate,
+        vad_detector=PerChannelVoiceActivityDetector([intervals, []]),
+    )
+
+    assert output == [
+        (Segment(2.0, 2.4), "SPEAKER_00", "実際の発話"),
+    ]
+
+
+def test_timestampless_channel_asr_splits_continuous_speech_over_30_seconds():
+    sampling_rate = 100
+    sample_count = 65 * sampling_rate
+    waveform = np.column_stack(
+        [
+            np.ones(sample_count, dtype=np.float32),
+            np.zeros(sample_count, dtype=np.float32),
+        ]
+    )
+
+    class MockASR:
+        def __init__(self):
+            self.calls = 0
+            self.call_durations = []
+
+        def run(self, audio):
+            self.calls += 1
+            self.call_durations.append(len(audio) / sampling_rate)
+            return [(Segment(0.0, len(audio) / sampling_rate), "連続発話")]
+
+    asr = MockASR()
+    output = transcribe_stereo_segments(
+        asr,
+        SimpleNamespace(
+            asr_model_name="kotoba",
+            channel_crosstalk_threshold_db=-6.0,
+        ),
+        [waveform],
+        sampling_rate,
+        vad_detector=PerChannelVoiceActivityDetector([[(0, sample_count)], []]),
+    )
+
+    assert asr.calls == 3
+    assert output[0][0].start == 0.0
+    assert output[-1][0].end == 65.0
+    assert all(segment.duration <= 30.0 for segment, _, _ in output)
+    assert all(duration <= 30.0 for duration in asr.call_durations)
 
 
 def test_stereo_preprocess_keeps_channels_sample_aligned(tmp_path):

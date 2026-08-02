@@ -1351,7 +1351,8 @@ mark {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  height: var(--coding-timeline-height, auto);
+  /* ドラッグ値は「上限」扱い: コンテンツ以上に広げて空白を作らない */
+  max-height: var(--coding-timeline-height, none);
   margin: -2px 0 8px;
   padding: 6px 8px;
   overflow: hidden;
@@ -1374,7 +1375,13 @@ mark {
   grid-template-columns: 82px 1fr;
   align-items: center;
   flex: 1 1 auto;
+  /* 領域を広げてもバーが間延びしないよう上限を設ける */
+  max-height: 28px;
   min-height: 14px;
+}
+
+.coding-lane.coding-event-lane {
+  max-height: 40px;
 }
 
 .coding-lane-label {

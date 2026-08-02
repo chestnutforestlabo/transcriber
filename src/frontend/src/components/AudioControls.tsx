@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import type React from "react"
 import type WaveSurfer from "wavesurfer.js"
-import type { CodingData } from "../types"
-import CodingTimeline from "./CodingTimeline"
 
 interface AudioControlsProps {
   currentTime: number
@@ -21,7 +19,6 @@ interface AudioControlsProps {
   onTimeUpdate: (time: number) => void
   onWaveformClick: (time: number) => void
   lastPlaybackPosition: number
-  coding: CodingData | null
 }
 
 const AudioControls: React.FC<AudioControlsProps> = ({
@@ -39,7 +36,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onTimeUpdate,
   onWaveformClick,
   lastPlaybackPosition,
-  coding,
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null)
   const wavesurferRef = useRef<WaveSurfer | null>(null)
@@ -242,9 +238,6 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     <div className="audio-controls">
       {/* wavesurfer は再生エンジンとして必要なので DOM には残し、表示だけ畳む */}
       <div className="waveform-container waveform-hidden" ref={waveformRef}></div>
-      {coding && (
-        <CodingTimeline coding={coding} duration={duration} currentTime={currentTime} onSeek={onSeek} />
-      )}
       <div className="controls-container">
         <div className="playback-rate-container" ref={playbackRateContainerRef}>
           <button onClick={() => setShowPlaybackRates(!showPlaybackRates)} className="playback-rate-button">

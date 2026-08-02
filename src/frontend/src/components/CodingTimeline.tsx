@@ -17,10 +17,11 @@ const intervalColors: Record<CodingIntervalLabel, string> = {
   システム停止: "#e87ba4",
 }
 
-// 相互排他な区間は1本のレーンにまとめる: 人間側(会話/無言)と AI側(説明/応答/停止)
+// 相互排他な区間は1本のレーンにまとめる: 人間側(会話/無言)と Q&A使用窓/停止。
+// AI説明(自発ナレーション)は録音に入らないため廃止(旧データにあっても表示しない)
 const laneGroups: { key: string; title: string; labels: CodingIntervalLabel[] }[] = [
   { key: "human", title: "会話/無言", labels: ["会話", "無言"] },
-  { key: "ai", title: "AI/停止", labels: ["AI説明", "AI応答", "システム停止"] },
+  { key: "ai", title: "Q&A/停止", labels: ["AI応答", "システム停止"] },
 ]
 
 // イベントは話者ごとのレーンに分かれるため、「誰から」はレーンで表現される。

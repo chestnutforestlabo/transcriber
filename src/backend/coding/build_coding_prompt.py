@@ -17,11 +17,10 @@ CODING_SCHEME_PATH = REPO_ROOT / "docs" / "coding_scheme.md"
 GAP_THRESHOLD_SEC = 3.0
 CHUNK_OVERLAP_SEC = 60.0
 
-KIND_TO_INTERVAL_LABEL = {
-    "scene": "AI説明",
-    "qa_answer": "AI応答",
-    "deepdive": "AI応答",
-}
+# AIの自発ナレーション(scene)はイヤホン再生で録音に入らないため区間ラベルにしない。
+# AI応答は「Q&A機能を使っている時間」(ボタン押下→回答読み上げ終了)として
+# qa_interactions と qa/deepdive 発話のログから窓を組み立てる
+QA_ANSWER_KINDS = {"qa_answer", "deepdive"}
 
 
 def parse_speaker_roles(value: str) -> dict[str, str]:
@@ -218,30 +217,49 @@ def build_scaffold(
     )
     intervals: list[dict[str, Any]] = []
     if ai_events is not None:
-        for utterance in ai_events.get("ai_utterances", []):
-            if not isinstance(utterance, dict):
-                continue
-            label = KIND_TO_INTERVAL_LABEL.get(utterance.get("kind"))
-            if label is None:
-                continue
-            clipped = _clip(
-                float(utterance["start"]),
-                float(utterance["end"]),
-                lower,
-                upper,
+        answer_utterances = sorted(
+            (
+                u
+                for u in ai_events.get("ai_utterances", [])
+                if isinstance(u, dict) and u.get("kind") in QA_ANSWER_KINDS
+            ),
+            key=lambda u: float(u["start"]),
+        )
+        interactions = sorted(
+            (
+                q
+                for q in ai_events.get("qa_interactions", [])
+                if isinstance(q, dict)
+            ),
+            key=lambda q: float(q["qa_start"]),
+        )
+        for index, interaction in enumerate(interactions):
+            start = float(interaction["qa_start"])
+            next_start = (
+                float(interactions[index + 1]["qa_start"])
+                if index + 1 < len(interactions)
+                else math.inf
             )
+            # この対話に属する回答 = ボタン押下以降・次の押下より前に始まる最初のqa/deepdive発話
+            end = None
+            for utterance in answer_utterances:
+                utterance_start = float(utterance["start"])
+                if utterance_start >= start - 0.5 and utterance_start < next_start:
+                    end = float(utterance["end"])
+                    break
+            if end is None or end <= start:
+                # 回答まで到達しなかった対話(キャンセル・認識失敗)は窓にしない
+                continue
+            clipped = _clip(start, end, lower, upper)
             if clipped is None:
                 continue
             intervals.append(
                 {
-                    "label": label,
+                    "label": "AI応答",
                     "start": clipped[0],
                     "end": clipped[1],
                     "source": "auto",
-                    "note": (
-                        f"アプリログ speech_start/speech_end"
-                        f"（kind={utterance.get('kind')}）"
-                    ),
+                    "note": "Q&A使用窓(ボタン押下→回答読み上げ終了)をログから自動導出",
                 }
             )
         for stop in ai_events.get("system_stops", []):
@@ -368,26 +386,30 @@ def build_prompt_text(
             }
         ],
         "events": [
+            # 例は「新しい話題を開く質問」: 1つの発話に複数ラベルが該当するときは、
+            # 同じ time/end/speaker/text のイベントをラベルごとに複数作る
             {
                 "id": "ev-0001",
-                # 例は「新しい話題を開く質問」: この場合だけ話題提示を併記する。
-                # 単独の話題提示イベントに co_labels を付けてはいけない
                 "label": "視覚障害者から同行者への質問",
                 "time": 34.5,
                 "end": 37.2,
                 "speaker": "視覚障害者",
                 "tags": ["周囲の話題"],
-                "attrs": {
-                    "co_labels": ["話題提示"],
-                    **(
-                        {"ai_reference": "within_30s"}
-                        if ai_events is not None
-                        else {}
-                    ),
-                },
+                "attrs": {},
                 "text": "該当発話テキスト",
                 "note": "",
-            }
+            },
+            {
+                "id": "ev-0002",
+                "label": "視覚障害者からの話題提示",
+                "time": 34.5,
+                "end": 37.2,
+                "speaker": "視覚障害者",
+                "tags": ["周囲の話題"],
+                "attrs": {},
+                "text": "該当発話テキスト",
+                "note": "",
+            },
         ],
     }
     if ai_events is None:
@@ -399,12 +421,14 @@ def build_prompt_text(
 重要な指示:
 - 出力は有効なJSONオブジェクトのみとし、Markdown、コードフェンス、説明文を付けない。
 - intervals と events はそれぞれ時刻順に並べ、全idを一意にする。
-- この録音に AI は関与しない。AI説明/AI応答/システム停止/AI情報の共有 は付与対象外。
+- この録音に AI は関与しない。AI応答/システム停止/AI情報の共有 は付与対象外。
 - 会話・無言は候補である。応答と相槌を意味的に確認して境界を確定し、確定・修正した
   会話/無言は source="llm" とする。
 - 人間側ラベル（話題提示、質問、周囲説明、応答なし発話、ガイド発話、
   周囲の話題タグ、相槌判定による会話区間確定）に集中する。
-- 質問が新しい話題を開始する場合も attrs.co_labels に "話題提示" を入れる。
+- 1つの発話に複数のラベルが該当する場合は、同じ time/end/speaker/text の
+  イベントをラベルごとに複数作る（attrs.co_labels は使わない）。
+- 質問が新しい話題を開始する場合は、その発話に話題提示イベントも併せて作る。
 - 同行者からの周囲説明には attrs.response_type を "自発" または "質問応答" で
   必ず入れる。
 - attrs の未使用属性は省略してよいが attrs 自体は必ずオブジェクトにする。
@@ -433,21 +457,29 @@ def build_prompt_text(
 重要な指示:
 - 出力は有効なJSONオブジェクトのみとし、Markdown、コードフェンス、説明文を付けない。
 - intervals と events はそれぞれ時刻順に並べ、全idを一意にする。
-- ログ由来の AI説明・AI応答・システム停止は時刻と source="auto" を維持する。
+- ログ由来の AI応答(Q&A使用窓)・システム停止は時刻と source="auto" を維持する。
+- AIの自発ナレーション(kind=scene)はイヤホン再生で録音に入らないため、
+  区間ラベルにしない。AI情報の共有の30秒判定の参考情報としてだけ使う。
 - 会話・無言は候補である。応答と相槌を意味的に確認して境界を確定し、確定・修正した
   会話/無言は source="llm" とする。
 - AI宛のQ&A発話は人間同士の会話区間から除外する。qa_interactions の question と
   文字起こしを照合する。
+- AI宛のQ&A発話(AI応答窓内の発話、qa_interactions の question と内容が一致する
+  発話)には、質問・話題提示などの人間向けイベントを付与しない。特に
+  「視覚障害者から同行者への質問」への誤付与に注意する。
 - 話題提示、質問、AI情報の共有、周囲の話題、周囲説明、ガイド発話、
   応答なし発話を定義どおり意味判断して付与する。
-- AI情報の共有には attrs.co_labels に "話題提示" または "質問" を必ず入れる。
-- 質問が新しい話題を開始する場合も attrs.co_labels に "話題提示" を入れる。
+- 1つの発話に複数のラベルが該当する場合は、同じ time/end/speaker/text の
+  イベントをラベルごとに複数作る（attrs.co_labels は使わない）。
+- AI情報の共有の発話には、話題提示か質問のイベントも必ず併せて作る。
+- 質問が新しい話題を開始する場合は、その発話に話題提示イベントも併せて作る。
 - 同行者からの周囲説明には attrs.response_type を "自発" または "質問応答" で
-  必ず入れる。
+  必ず入れる。AI情報の共有には attrs.ai_reference を "explicit" または
+  "within_30s" で必ず入れる。
 - attrs の未使用属性は省略してよいが attrs 自体は必ずオブジェクトにする。
 - tags は該当時だけ "周囲の話題" を含め、それ以外は空配列にする。
 - イベントの time/end/text は根拠となる1発話の範囲と本文に合わせる。
-- system/tsunagi のAI発話は参考情報であり、AI説明・AI応答にはしない。
+- system/tsunagi のAI発話も参考情報であり、区間ラベルにはしない。
 
 ## コーディングスキーム
 {coding_scheme}

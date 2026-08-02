@@ -18,7 +18,8 @@ interface CodingReviewPanelProps {
   onChange: (coding: CodingData) => void
 }
 
-const intervalLabels: CodingIntervalLabel[] = ["会話", "無言", "AI説明", "AI応答", "システム停止"]
+// AI説明は録音に入らないため廃止(旧データ表示のみ許容)。AI応答=Q&A使用窓
+const intervalLabels: CodingIntervalLabel[] = ["会話", "無言", "AI応答", "システム停止"]
 const eventLabels: CodingEventLabel[] = [
   "視覚障害者からの話題提示",
   "同行者からの話題提示",
@@ -29,9 +30,8 @@ const eventLabels: CodingEventLabel[] = [
   "応答なし発話",
   "ガイド発話",
 ]
-// スキーム表の併記ルール: 質問が新話題を開く場合は「話題提示」を、
-// AI情報の共有には「話題提示」か「質問」を必ず併記する
-const coLabelValues = ["話題提示", "質問"]
+// 2026-08-02 のスキーム改訂で「併記」(attrs.co_labels)は廃止。
+// 複数ラベルは同一発話への複数イベント付与で表現する(追加フォームで行を足す)
 const surroundTag = "周囲の話題"
 // スキーム表: 同行者からの周囲説明は 自発/質問応答 の属性記録が必須
 const responseTypes = ["自発", "質問応答"]
@@ -49,7 +49,6 @@ interface ReviewRow {
   speaker?: string
   text?: string
   source?: string
-  coLabels?: string[]
   tags?: string[]
   responseType?: string
   review: CodingReview
@@ -59,11 +58,6 @@ const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
   const remainder = Math.floor(seconds % 60)
   return `${minutes}:${String(remainder).padStart(2, "0")}`
-}
-
-const eventCoLabels = (event: CodingEvent): string[] => {
-  const raw = event.attrs?.co_labels
-  return Array.isArray(raw) ? raw.filter((value): value is string => typeof value === "string") : []
 }
 
 const newRowId = (prefix: string) =>
@@ -103,7 +97,6 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
       speaker: event.speaker,
       text: event.text,
       source: event.source,
-      coLabels: eventCoLabels(event),
       tags: event.tags ?? [],
       responseType:
         typeof event.attrs?.response_type === "string" ? event.attrs.response_type : undefined,
@@ -168,15 +161,6 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
     } else {
       updateEvent(row.index, field === "start" ? { time: value } : { end: value })
     }
-  }
-
-  const toggleCoLabel = (row: ReviewRow, value: string) => {
-    const event = coding.events[row.index]
-    const current = eventCoLabels(event)
-    const next = current.includes(value)
-      ? current.filter((item) => item !== value)
-      : [...current, value]
-    updateEvent(row.index, { attrs: { ...event.attrs, co_labels: next } })
   }
 
   const toggleTag = (row: ReviewRow) => {
@@ -350,8 +334,6 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
         {filteredRows.map((row) => {
           const isActive = currentTime >= row.start && currentTime < row.end
           const isHuman = row.source === "human"
-          const needsCoLabel =
-            row.kind === "event" && row.label === "AI情報の共有" && (row.coLabels ?? []).length === 0
           return (
             <article
               className={`coding-review-item ${isActive ? "active" : ""}`}
@@ -403,17 +385,6 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
               </div>
               {row.kind === "event" && (
                 <div className="coding-review-chips" onClick={(event) => event.stopPropagation()}>
-                  {coLabelValues.map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      className={`coding-chip ${(row.coLabels ?? []).includes(value) ? "on" : ""}`}
-                      aria-pressed={(row.coLabels ?? []).includes(value)}
-                      onClick={() => toggleCoLabel(row, value)}
-                    >
-                      併記: {value}
-                    </button>
-                  ))}
                   <button
                     type="button"
                     className={`coding-chip tag ${(row.tags ?? []).includes(surroundTag) ? "on" : ""}`}
@@ -440,7 +411,6 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
                       )}
                     </>
                   )}
-                  {needsCoLabel && <span className="coding-chip-warning">併記必須(話題提示か質問)</span>}
                 </div>
               )}
               <div className="coding-review-editors" onClick={(event) => event.stopPropagation()}>

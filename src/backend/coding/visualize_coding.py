@@ -20,9 +20,9 @@ import math
 from collections import Counter, defaultdict
 from pathlib import Path
 
-# スキーム 2026-08-01 改訂で AI 由来の区間ラベル(AI説明/AI応答/システム停止)は
-# コーディング対象外になったため、サマリーには会話/無言だけを載せる
-INTERVAL_ORDER = ["会話", "無言"]
+# AI応答=Q&A使用窓(ログ自動付与)。AI説明は録音に入らないため廃止、
+# システム停止はタイムライン表示専用でサマリー集計には載せない
+INTERVAL_ORDER = ["会話", "無言", "AI応答"]
 EVENT_ORDER = [
     "視覚障害者からの話題提示",
     "同行者からの話題提示",
@@ -34,8 +34,6 @@ EVENT_ORDER = [
     "ガイド発話",
 ]
 TAG_ROW = "周囲の話題(タグ)"
-CO_TOPIC_ROW = "併記: 話題提示"
-CO_QUESTION_ROW = "併記: 質問"
 
 
 def _fmt_mmss(seconds: float) -> str:
@@ -77,13 +75,6 @@ def _load_one(path: Path) -> dict:
         max_end = max(max_end, float(item.get("end") or item.get("time") or 0.0))
     tag_count = sum(1 for item in kept_events if "周囲の話題" in (item.get("tags") or []))
 
-    def _co_labels(event: dict) -> list:
-        attrs = event.get("attrs") or {}
-        co = attrs.get("co_labels")
-        return co if isinstance(co, list) else []
-
-    co_topic = sum(1 for item in kept_events if "話題提示" in _co_labels(item))
-    co_question = sum(1 for item in kept_events if "質問" in _co_labels(item))
     human = sum(
         1 for item in kept_intervals + kept_events if item.get("source") == "human"
     )
@@ -91,8 +82,6 @@ def _load_one(path: Path) -> dict:
         "intervals": dict(durations),
         "events": dict(events),
         "tags": tag_count,
-        "co_topic": co_topic,
-        "co_question": co_question,
         "human": human,
         "max_end": max_end,
         "rejected": rejected,
@@ -127,8 +116,6 @@ def build_dataset(
                 "intervals": one["intervals"],
                 "events": one["events"],
                 "tags": one["tags"],
-                "co_topic": one["co_topic"],
-                "co_question": one["co_question"],
                 "human": one["human"],
                 "rejected": one["rejected"],
                 "reviewed": one["reviewed"],
@@ -139,8 +126,6 @@ def build_dataset(
         "interval_order": INTERVAL_ORDER,
         "event_order": EVENT_ORDER,
         "tag_row": TAG_ROW,
-        "co_topic_row": CO_TOPIC_ROW,
-        "co_question_row": CO_QUESTION_ROW,
     }
 
 
@@ -236,7 +221,7 @@ HTML_TEMPLATE = """<!doctype html>
 
 <h2>イベントラベル — 件数</h2>
 <p class="note">セルの濃さは件数(録音ごとの補正なし)。「周囲の話題」はイベントに併記されるタグの件数。
-「併記: 話題提示 / 質問」は attrs.co_labels の集計(新話題を開く質問への話題提示併記、AI情報の共有への必須併記)。</p>
+複数ラベルは同一発話への複数イベントとして直接件数に含まれる。</p>
 <div id="events" style="overflow-x:auto"></div>
 
 <h2>ラベル件数の分布 — 箱ひげ図</h2>
@@ -295,8 +280,6 @@ const evRoot = document.getElementById("events");
 const names = DATA.recordings.map(r => r.name);
 const rows = DATA.event_order.map(lab => ({lab, vals: DATA.recordings.map(r => r.events[lab] || 0)}));
 rows.push({lab: DATA.tag_row, vals: DATA.recordings.map(r => r.tags)});
-rows.push({lab: DATA.co_topic_row, vals: DATA.recordings.map(r => r.co_topic || 0)});
-rows.push({lab: DATA.co_question_row, vals: DATA.recordings.map(r => r.co_question || 0)});
 const maxVal = Math.max(1, ...rows.flatMap(r => r.vals));
 function mix(hex1, hex2, t) {
   const a = hex1.match(/\\w\\w/g).map(x => parseInt(x, 16));
@@ -325,8 +308,6 @@ evRoot.querySelectorAll("td[data-tip]").forEach(td => {
 const boxRows = [
   ...DATA.event_order.map(lab => ({lab, get: r => r.events[lab] || 0})),
   {lab: DATA.tag_row, get: r => r.tags || 0},
-  {lab: DATA.co_topic_row, get: r => r.co_topic || 0},
-  {lab: DATA.co_question_row, get: r => r.co_question || 0},
 ];
 const boxSelect = document.getElementById("boxSelect");
 const boxRoot = document.getElementById("boxplots");

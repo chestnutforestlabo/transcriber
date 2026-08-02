@@ -124,17 +124,14 @@ def _validate_attrs(
     if not isinstance(attrs, dict):
         errors.append(f"{location}.attrs must be an object")
         return
+    # co_labels は旧「併記」方式の名残。現行方式は同一発話への複数イベント付与で、
+    # 旧データ読み込みのため値の型だけ検証し、必須要件は課さない
     co_labels = attrs.get("co_labels", [])
     if not isinstance(co_labels, list) or any(
         label_value not in CO_LABELS for label_value in co_labels
     ):
         errors.append(
             f"{location}.attrs.co_labels must contain only '話題提示' or '質問'"
-        )
-        co_labels = []
-    if label == "AI情報の共有" and not (set(co_labels) & CO_LABELS):
-        errors.append(
-            f"{location}: AI情報の共有 requires 話題提示 or 質問 in attrs.co_labels"
         )
     response_type = attrs.get("response_type")
     if label == "同行者からの周囲説明" and response_type not in RESPONSE_TYPES:

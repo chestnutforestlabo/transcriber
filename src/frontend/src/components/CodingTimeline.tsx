@@ -74,17 +74,24 @@ const renderBand = (
   )
 }
 
-// 会話と無言は相互排他の区間なので1本のレーンにまとめて表示する
-const mergedLaneLabels: CodingIntervalLabel[] = ["会話", "無言"]
-const separateLaneLabels: CodingIntervalLabel[] = ["AI説明", "AI応答", "システム停止"]
+// 相互排他な区間は1本のレーンにまとめる: 人間側(会話/無言)と AI側(説明/応答/停止)
+const laneGroups: { key: string; title: string; labels: CodingIntervalLabel[] }[] = [
+  { key: "human", title: "会話/無言", labels: ["会話", "無言"] },
+  { key: "ai", title: "AI/停止", labels: ["AI説明", "AI応答", "システム停止"] },
+]
 
 const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, currentTime, onSeek }) => {
-  const mergedIntervals = coding.intervals.filter((interval) =>
-    (mergedLaneLabels as string[]).includes(interval.label),
-  )
-  const visibleSeparateLabels = separateLaneLabels.filter((label) =>
-    coding.intervals.some((interval) => interval.label === label),
-  )
+  const visibleGroups = laneGroups
+    .map((group) => ({
+      ...group,
+      presentLabels: group.labels.filter((label) =>
+        coding.intervals.some((interval) => interval.label === label),
+      ),
+      intervals: coding.intervals.filter((interval) =>
+        (group.labels as string[]).includes(interval.label),
+      ),
+    }))
+    .filter((group) => group.intervals.length > 0)
   const visibleEventLabels = eventLabelOrder.filter((label) =>
     coding.events.some((event) => event.label === label),
   )
@@ -101,28 +108,20 @@ const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, curre
   return (
     <div className="coding-timeline" aria-label="コーディングタイムライン">
       <div className="coding-timeline-lanes" onClick={seekFromTrackClick}>
-        {mergedIntervals.length > 0 && (
-          <div className="coding-lane" key="会話無言">
+        {visibleGroups.map((group) => (
+          <div className="coding-lane" key={group.key}>
             <span className="coding-lane-label">
-              <i className="coding-legend-swatch" style={{ background: intervalColors["会話"] }} />
-              <i className="coding-legend-swatch" style={{ background: intervalColors["無言"] }} />
-              会話/無言
+              {group.presentLabels.map((label) => (
+                <i
+                  key={label}
+                  className="coding-legend-swatch"
+                  style={{ background: intervalColors[label] }}
+                />
+              ))}
+              {group.title}
             </span>
             <div className="coding-lane-track">
-              {mergedIntervals.map((interval) => renderBand(interval, duration, onSeek))}
-            </div>
-          </div>
-        )}
-        {visibleSeparateLabels.map((label) => (
-          <div className="coding-lane" key={label}>
-            <span className="coding-lane-label">
-              <i className="coding-legend-swatch" style={{ background: intervalColors[label] }} />
-              {label}
-            </span>
-            <div className="coding-lane-track">
-              {coding.intervals
-                .filter((interval) => interval.label === label)
-                .map((interval) => renderBand(interval, duration, onSeek))}
+              {group.intervals.map((interval) => renderBand(interval, duration, onSeek))}
             </div>
           </div>
         ))}

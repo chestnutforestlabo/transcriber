@@ -1379,10 +1379,6 @@ mark {
   min-height: 14px;
 }
 
-.coding-lane.coding-event-lane {
-  max-height: 40px;
-}
-
 .coding-lane-label {
   padding-right: 8px;
   color: #4d5661;
@@ -1422,24 +1418,29 @@ mark {
   background: #fbfbf4;
 }
 
-/* 色は CodingTimeline.tsx の eventColors からインラインで付く */
-.coding-event-marker {
+/* イベントのピル。重なったイベントは1ピル内の色セグメントとして並ぶ
+   (色は CodingTimeline.tsx の categoryColors からインラインで付く) */
+.coding-event-pill {
   position: absolute;
-  top: 50%;
-  width: 9px;
-  height: 120%;
-  min-height: 16px;
-  margin: 0 0 0 -4px;
+  top: 8%;
+  display: flex;
+  height: 84%;
+  margin: 0;
   padding: 0;
+  overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.35);
-  border-radius: 4px;
-  transform: translateY(-50%);
+  border-radius: 5px;
   z-index: 2;
 }
 
-.coding-event-marker:hover {
+.coding-event-pill:hover {
   border-color: rgba(0, 0, 0, 0.7);
-  filter: brightness(1.15);
+  filter: brightness(1.12);
+}
+
+.coding-event-seg {
+  flex: 1 1 auto;
+  min-width: 3px;
 }
 
 .coding-playhead {

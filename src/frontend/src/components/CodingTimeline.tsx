@@ -8,7 +8,7 @@ interface CodingTimelineProps {
   onSeek: (time: number) => void
 }
 
-// 区間・イベントとも「どのラベルか」が一目で分かるようラベルごとに固定色を割り当てる
+// 区間は「どのラベルか」が一目で分かるようラベルごとに固定色を割り当てる
 const intervalColors: Record<CodingIntervalLabel, string> = {
   会話: "#2a78d6",
   無言: "#c2c9d0",
@@ -17,27 +17,37 @@ const intervalColors: Record<CodingIntervalLabel, string> = {
   システム停止: "#e87ba4",
 }
 
-const eventLabelOrder: CodingEventLabel[] = [
-  "視覚障害者からの話題提示",
-  "同行者からの話題提示",
-  "視覚障害者から同行者への質問",
-  "同行者から視覚障害者への質問",
-  "AI情報の共有",
-  "同行者からの周囲説明",
-  "応答なし発話",
-  "ガイド発話",
+// 相互排他な区間は1本のレーンにまとめる: 人間側(会話/無言)と AI側(説明/応答/停止)
+const laneGroups: { key: string; title: string; labels: CodingIntervalLabel[] }[] = [
+  { key: "human", title: "会話/無言", labels: ["会話", "無言"] },
+  { key: "ai", title: "AI/停止", labels: ["AI説明", "AI応答", "システム停止"] },
 ]
 
-const eventColors: Record<CodingEventLabel, string> = {
-  視覚障害者からの話題提示: "#1f77b4",
-  同行者からの話題提示: "#9467bd",
-  視覚障害者から同行者への質問: "#17becf",
-  同行者から視覚障害者への質問: "#e377c2",
+// イベントは話者ごとのレーンに分かれるため、「誰から」はレーンで表現される。
+// 色はラベルの種類(話題提示/質問/…)だけを表し、方向違いの同種ラベルは同色
+const categoryByLabel: Record<CodingEventLabel, string> = {
+  視覚障害者からの話題提示: "話題提示",
+  同行者からの話題提示: "話題提示",
+  視覚障害者から同行者への質問: "質問",
+  同行者から視覚障害者への質問: "質問",
+  AI情報の共有: "AI情報の共有",
+  同行者からの周囲説明: "周囲説明",
+  応答なし発話: "応答なし発話",
+  ガイド発話: "ガイド発話",
+}
+
+const categoryOrder = ["話題提示", "質問", "AI情報の共有", "周囲説明", "応答なし発話", "ガイド発話"]
+
+const categoryColors: Record<string, string> = {
+  話題提示: "#1f77b4",
+  質問: "#17becf",
   AI情報の共有: "#d62728",
-  同行者からの周囲説明: "#2ca02c",
+  周囲説明: "#2ca02c",
   応答なし発話: "#7f7f7f",
   ガイド発話: "#bc9d22",
 }
+
+const speakerLaneOrder = ["視覚障害者", "同行者", "実験者"]
 
 // .coding-lane の grid-template-columns 先頭(ラベル列)と揃えること
 const LABEL_COLUMN_PX = 82
@@ -47,25 +57,30 @@ const percent = (value: number, duration: number) => {
   return Math.max(0, Math.min(100, (value / duration) * 100))
 }
 
-// 時間の重なる(または見た目上つぶれる)イベントを別の行へ振り分ける貪欲パッキング。
-// 戻り値: イベントid→行番号 と 必要行数
-const packEventRows = (events: CodingData["events"], duration: number) => {
+type EventCluster = {
+  id: string
+  start: number
+  end: number
+  events: CodingData["events"]
+}
+
+// 時間が重なる(または見た目上つぶれる)イベントを1つのピルへまとめる。
+// ピル内は色セグメントに分かれ、重なりの内訳が一目で見える
+const clusterEvents = (events: CodingData["events"], duration: number): EventCluster[] => {
   const minSpan = duration > 0 ? duration * 0.012 : 1
   const sorted = [...events].sort((a, b) => a.time - b.time || a.end - b.end)
-  const rowEnds: number[] = []
-  const rowById = new Map<string, number>()
+  const clusters: EventCluster[] = []
   for (const event of sorted) {
     const visualEnd = Math.max(event.end, event.time + minSpan)
-    let row = rowEnds.findIndex((end) => end <= event.time)
-    if (row === -1) {
-      row = rowEnds.length
-      rowEnds.push(visualEnd)
+    const last = clusters[clusters.length - 1]
+    if (last && event.time < last.end) {
+      last.end = Math.max(last.end, visualEnd)
+      last.events = [...last.events, event]
     } else {
-      rowEnds[row] = visualEnd
+      clusters.push({ id: event.id, start: event.time, end: visualEnd, events: [event] })
     }
-    rowById.set(event.id, row)
   }
-  return { rowById, rowCount: Math.max(1, rowEnds.length) }
+  return clusters
 }
 
 const renderBand = (
@@ -95,12 +110,6 @@ const renderBand = (
   )
 }
 
-// 相互排他な区間は1本のレーンにまとめる: 人間側(会話/無言)と AI側(説明/応答/停止)
-const laneGroups: { key: string; title: string; labels: CodingIntervalLabel[] }[] = [
-  { key: "human", title: "会話/無言", labels: ["会話", "無言"] },
-  { key: "ai", title: "AI/停止", labels: ["AI説明", "AI応答", "システム停止"] },
-]
-
 const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, currentTime, onSeek }) => {
   const visibleGroups = laneGroups
     .map((group) => ({
@@ -113,8 +122,11 @@ const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, curre
       ),
     }))
     .filter((group) => group.intervals.length > 0)
-  const visibleEventLabels = eventLabelOrder.filter((label) =>
-    coding.events.some((event) => event.label === label),
+  const visibleSpeakers = speakerLaneOrder.filter((speaker) =>
+    coding.events.some((event) => event.speaker === speaker),
+  )
+  const visibleCategories = categoryOrder.filter((category) =>
+    coding.events.some((event) => categoryByLabel[event.label] === category),
   )
 
   // 波形を廃止したぶん、レーンの空白部クリックでシークできるようにする
@@ -146,49 +158,52 @@ const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, curre
             </div>
           </div>
         ))}
-        {coding.events.length > 0 &&
-          (() => {
-            const { rowById, rowCount } = packEventRows(coding.events, duration)
-            const laneHeight = rowCount * 14 + 4
-            return (
-              <div
-                className="coding-lane coding-event-lane"
-                style={{ height: laneHeight, maxHeight: laneHeight }}
-              >
-                <span className="coding-lane-label">イベント</span>
-                <div className="coding-lane-track">
-                  {coding.events.map((event) => {
-                    const row = rowById.get(event.id) ?? 0
-                    const spanPct =
-                      percent(event.end, duration) - percent(event.time, duration)
-                    return (
-                      <button
-                        type="button"
+        {visibleSpeakers.map((speaker) => (
+          <div className="coding-lane coding-event-lane" key={speaker}>
+            <span className="coding-lane-label">{speaker}</span>
+            <div className="coding-lane-track">
+              {clusterEvents(
+                coding.events.filter((event) => event.speaker === speaker),
+                duration,
+              ).map((cluster) => {
+                const left = percent(cluster.start, duration)
+                const width = percent(cluster.end, duration) - left
+                return (
+                  <button
+                    type="button"
+                    key={cluster.id}
+                    className="coding-event-pill"
+                    style={{ left: `${left}%`, width: `max(9px, ${Math.max(width, 0)}%)` }}
+                    onClick={(clickEvent) => {
+                      clickEvent.stopPropagation()
+                      onSeek(cluster.start)
+                    }}
+                    title={cluster.events
+                      .map(
+                        (event) =>
+                          `${event.label} ${event.time.toFixed(1)}–${event.end.toFixed(1)}秒${
+                            event.text ? ` ${event.text}` : ""
+                          }`,
+                      )
+                      .join("\n")}
+                    aria-label={`${cluster.events.length}件のイベント ${cluster.start.toFixed(1)}秒へ移動`}
+                  >
+                    {cluster.events.map((event) => (
+                      <span
                         key={event.id}
-                        className="coding-event-marker"
+                        className="coding-event-seg"
                         style={{
-                          left: `${percent(event.time, duration)}%`,
-                          width: `max(9px, ${Math.max(spanPct, 0)}%)`,
-                          top: `calc(${(row / rowCount) * 100}% + 1px)`,
-                          height: `calc(${100 / rowCount}% - 2px)`,
-                          minHeight: 0,
-                          margin: 0,
-                          transform: "none",
-                          background: eventColors[event.label] ?? "#f0a92e",
+                          background:
+                            categoryColors[categoryByLabel[event.label]] ?? "#f0a92e",
                         }}
-                        onClick={(clickEvent) => {
-                          clickEvent.stopPropagation()
-                          onSeek(event.time)
-                        }}
-                        title={`${event.label} ${event.time.toFixed(1)}–${event.end.toFixed(1)}秒${event.text ? ` ${event.text}` : ""}`}
-                        aria-label={`${event.label} ${event.time.toFixed(1)}秒へ移動`}
                       />
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })()}
+                    ))}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
         {duration > 0 && currentTime !== undefined && (
           <div
             className="coding-playhead"
@@ -200,12 +215,12 @@ const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, curre
           />
         )}
       </div>
-      {visibleEventLabels.length > 0 && (
+      {visibleCategories.length > 0 && (
         <div className="coding-legend">
-          {visibleEventLabels.map((label) => (
-            <span className="coding-legend-item" key={label}>
-              <i className="coding-legend-swatch" style={{ background: eventColors[label] }} />
-              {label}
+          {visibleCategories.map((category) => (
+            <span className="coding-legend-item" key={category}>
+              <i className="coding-legend-swatch" style={{ background: categoryColors[category] }} />
+              {category}
             </span>
           ))}
         </div>

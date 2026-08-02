@@ -1,4 +1,4 @@
-import { Download } from "lucide-react"
+import { Download, Plus, Trash2 } from "lucide-react"
 import type React from "react"
 import { useMemo, useState } from "react"
 import type {
@@ -28,6 +28,11 @@ const eventLabels: CodingEventLabel[] = [
   "応答なし発話",
   "ガイド発話",
 ]
+// スキーム表の併記ルール: 質問が新話題を開く場合は「話題提示」を、
+// AI情報の共有には「話題提示」か「質問」を必ず併記する
+const coLabelValues = ["話題提示", "質問"]
+const surroundTag = "周囲の話題"
+const eventSpeakers: CodingEvent["speaker"][] = ["視覚障害者", "同行者", "実験者"]
 
 type ReviewStatus = CodingReview["status"]
 
@@ -40,6 +45,9 @@ interface ReviewRow {
   end: number
   speaker?: string
   text?: string
+  source?: string
+  coLabels?: string[]
+  tags?: string[]
   review: CodingReview
 }
 
@@ -49,8 +57,20 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${String(remainder).padStart(2, "0")}`
 }
 
+const eventCoLabels = (event: CodingEvent): string[] => {
+  const raw = event.attrs?.co_labels
+  return Array.isArray(raw) ? raw.filter((value): value is string => typeof value === "string") : []
+}
+
+const newRowId = (prefix: string) =>
+  `${prefix}-hm-${Date.now().toString(36)}-${Math.floor(Math.random() * 46656).toString(36)}`
+
 const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTime, onSeek, onChange }) => {
   const [selectedLabel, setSelectedLabel] = useState("")
+  const [addKind, setAddKind] = useState<"interval" | "event">("event")
+  const [addIntervalLabel, setAddIntervalLabel] = useState<CodingIntervalLabel>("会話")
+  const [addEventLabel, setAddEventLabel] = useState<CodingEventLabel>(eventLabels[0])
+  const [addSpeaker, setAddSpeaker] = useState<CodingEvent["speaker"]>("視覚障害者")
 
   const rows = useMemo<ReviewRow[]>(() => {
     const intervalRows = coding.intervals.map((interval, index) => ({
@@ -60,6 +80,7 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
       label: interval.label,
       start: interval.start,
       end: interval.end,
+      source: interval.source,
       review: interval.review,
     }))
     const eventRows = coding.events.map((event, index) => ({
@@ -71,6 +92,9 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
       end: event.end,
       speaker: event.speaker,
       text: event.text,
+      source: event.source,
+      coLabels: eventCoLabels(event),
+      tags: event.tags ?? [],
       review: event.review,
     }))
     return [...intervalRows, ...eventRows].sort((a, b) => a.start - b.start || a.end - b.end)
@@ -115,11 +139,81 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
     }
   }
 
+  const toggleCoLabel = (row: ReviewRow, value: string) => {
+    const event = coding.events[row.index]
+    const current = eventCoLabels(event)
+    const next = current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value]
+    updateEvent(row.index, { attrs: { ...event.attrs, co_labels: next } })
+  }
+
+  const toggleTag = (row: ReviewRow) => {
+    const event = coding.events[row.index]
+    const current = event.tags ?? []
+    const next = current.includes(surroundTag)
+      ? current.filter((item) => item !== surroundTag)
+      : [...current, surroundTag]
+    updateEvent(row.index, { tags: next })
+  }
+
+  const addRow = () => {
+    const start = Number(currentTime.toFixed(1))
+    const review: CodingReview = { status: null, note: "" }
+    if (addKind === "interval") {
+      const interval: CodingInterval = {
+        id: newRowId("iv"),
+        label: addIntervalLabel,
+        start,
+        end: Number((start + 5).toFixed(1)),
+        source: "human",
+        note: "",
+        review,
+      }
+      onChange({ ...coding, intervals: [...coding.intervals, interval] })
+    } else {
+      const event: CodingEvent = {
+        id: newRowId("ev"),
+        label: addEventLabel,
+        time: start,
+        end: Number((start + 3).toFixed(1)),
+        speaker: addSpeaker,
+        tags: [],
+        attrs: {},
+        text: "",
+        note: "",
+        source: "human",
+        review,
+      }
+      onChange({ ...coding, events: [...coding.events, event] })
+    }
+  }
+
+  const removeRow = (row: ReviewRow) => {
+    if (row.kind === "interval") {
+      onChange({
+        ...coding,
+        intervals: coding.intervals.filter((_, itemIndex) => itemIndex !== row.index),
+      })
+    } else {
+      onChange({
+        ...coding,
+        events: coding.events.filter((_, itemIndex) => itemIndex !== row.index),
+      })
+    }
+  }
+
   const exportReview = () => {
+    // schema は (start/time, end) の昇順を要求する。手動追加や時刻修正で
+    // 順序が崩れていてもエクスポート時に整列して常に検証に通る形にする
     const payload: CodingData = {
       ...coding,
-      intervals: coding.intervals.map((item) => ({ ...item, review: { ...item.review } })),
-      events: coding.events.map((item) => ({ ...item, review: { ...item.review } })),
+      intervals: [...coding.intervals]
+        .sort((a, b) => a.start - b.start || a.end - b.end)
+        .map((item) => ({ ...item, review: { ...item.review } })),
+      events: [...coding.events]
+        .sort((a, b) => a.time - b.time || a.end - b.end)
+        .map((item) => ({ ...item, review: { ...item.review } })),
     }
     const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json" })
     const url = URL.createObjectURL(blob)
@@ -155,9 +249,65 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
           </button>
         </div>
       </div>
+      <div className="coding-review-add">
+        <span className="coding-review-add-title">ラベル追加</span>
+        <select
+          aria-label="追加する種別"
+          value={addKind}
+          onChange={(event) => setAddKind(event.target.value as "interval" | "event")}
+        >
+          <option value="event">イベント</option>
+          <option value="interval">区間</option>
+        </select>
+        {addKind === "interval" ? (
+          <select
+            aria-label="追加するラベル"
+            value={addIntervalLabel}
+            onChange={(event) => setAddIntervalLabel(event.target.value as CodingIntervalLabel)}
+          >
+            {intervalLabels.map((label) => (
+              <option key={label} value={label}>
+                {label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <>
+            <select
+              aria-label="追加するラベル"
+              value={addEventLabel}
+              onChange={(event) => setAddEventLabel(event.target.value as CodingEventLabel)}
+            >
+              {eventLabels.map((label) => (
+                <option key={label} value={label}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="話者"
+              value={addSpeaker}
+              onChange={(event) => setAddSpeaker(event.target.value as CodingEvent["speaker"])}
+            >
+              {eventSpeakers.map((speaker) => (
+                <option key={speaker} value={speaker}>
+                  {speaker}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+        <button type="button" className="coding-add-button" onClick={addRow}>
+          <Plus size={14} />
+          {formatTime(currentTime)} に追加
+        </button>
+      </div>
       <div className="coding-review-list">
         {filteredRows.map((row) => {
           const isActive = currentTime >= row.start && currentTime < row.end
+          const isHuman = row.source === "human"
+          const needsCoLabel =
+            row.kind === "event" && row.label === "AI情報の共有" && (row.coLabels ?? []).length === 0
           return (
             <article
               className={`coding-review-item ${isActive ? "active" : ""}`}
@@ -168,27 +318,68 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
                 <button type="button" className="coding-review-time" onClick={() => onSeek(row.start)}>
                   {formatTime(row.start)}
                 </button>
-                <select
-                  aria-label="ラベル"
-                  value={row.label}
-                  onClick={(event) => event.stopPropagation()}
-                  onChange={(event) => {
-                    if (row.kind === "interval") {
-                      updateInterval(row.index, { label: event.target.value as CodingIntervalLabel })
-                    } else {
-                      updateEvent(row.index, { label: event.target.value as CodingEventLabel })
-                    }
-                  }}
-                >
-                  {(row.kind === "interval" ? intervalLabels : eventLabels).map((label) => (
-                    <option key={label} value={label}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                <span className="coding-review-label-cell">
+                  <span className={`coding-kind-badge ${row.kind}`}>
+                    {row.kind === "interval" ? "区間" : "イベント"}
+                  </span>
+                  {isHuman && <span className="coding-kind-badge human">手動</span>}
+                  <select
+                    aria-label="ラベル"
+                    value={row.label}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={(event) => {
+                      if (row.kind === "interval") {
+                        updateInterval(row.index, { label: event.target.value as CodingIntervalLabel })
+                      } else {
+                        updateEvent(row.index, { label: event.target.value as CodingEventLabel })
+                      }
+                    }}
+                  >
+                    {(row.kind === "interval" ? intervalLabels : eventLabels).map((label) => (
+                      <option key={label} value={label}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </span>
                 {row.speaker && <span className="coding-review-speaker">{row.speaker}</span>}
-                {row.text && <span className="coding-review-text">{row.text}</span>}
+                {row.kind === "event" && isHuman ? (
+                  <input
+                    className="coding-review-text-input"
+                    aria-label="発話内容"
+                    placeholder="発話内容"
+                    value={row.text ?? ""}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={(event) => updateEvent(row.index, { text: event.target.value })}
+                  />
+                ) : (
+                  row.text && <span className="coding-review-text">{row.text}</span>
+                )}
               </div>
+              {row.kind === "event" && (
+                <div className="coding-review-chips" onClick={(event) => event.stopPropagation()}>
+                  {coLabelValues.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`coding-chip ${(row.coLabels ?? []).includes(value) ? "on" : ""}`}
+                      aria-pressed={(row.coLabels ?? []).includes(value)}
+                      onClick={() => toggleCoLabel(row, value)}
+                    >
+                      併記: {value}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={`coding-chip tag ${(row.tags ?? []).includes(surroundTag) ? "on" : ""}`}
+                    aria-pressed={(row.tags ?? []).includes(surroundTag)}
+                    onClick={() => toggleTag(row)}
+                  >
+                    タグ: {surroundTag}
+                  </button>
+                  {needsCoLabel && <span className="coding-chip-warning">併記必須(話題提示か質問)</span>}
+                </div>
+              )}
               <div className="coding-review-editors" onClick={(event) => event.stopPropagation()}>
                 <label>
                   開始
@@ -234,6 +425,16 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
                   >
                     ✗要修正
                   </button>
+                  {isHuman && (
+                    <button
+                      type="button"
+                      className="coding-row-delete"
+                      aria-label="この行を削除"
+                      onClick={() => removeRow(row)}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </div>
                 <input
                   className="coding-review-note"

@@ -1611,6 +1611,135 @@ mark {
   min-width: 120px;
 }
 
+.coding-review-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #d9dee5;
+  background: #f4f7fa;
+  font-size: 12px;
+}
+
+.coding-review-add-title {
+  color: #66717d;
+  font-size: 11px;
+}
+
+.coding-review-add select {
+  padding: 4px 6px;
+  border: 1px solid #b7c0ca;
+  border-radius: 4px;
+  background: #fff;
+  color: #20262d;
+}
+
+.coding-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border: 1px solid #2e7d32;
+  border-radius: 4px;
+  background: #e8f5e9;
+  color: #1b5e20;
+  font-size: 12px;
+}
+
+.coding-add-button:hover {
+  background: #d3ecd5;
+}
+
+.coding-review-label-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.coding-kind-badge {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.coding-kind-badge.interval {
+  background: #e3ecf7;
+  color: #1c5da8;
+}
+
+.coding-kind-badge.event {
+  background: #f0e8f7;
+  color: #6a3fa8;
+}
+
+.coding-kind-badge.human {
+  background: #fff3d6;
+  color: #8a6100;
+}
+
+.coding-review-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.coding-chip {
+  padding: 2px 8px;
+  border: 1px solid #c4cbd3;
+  border-radius: 10px;
+  background: #fff;
+  color: #66717d;
+  font-size: 11px;
+}
+
+.coding-chip.on {
+  border-color: #6a3fa8;
+  background: #f0e8f7;
+  color: #4d2b80;
+}
+
+.coding-chip.tag.on {
+  border-color: #1baf7a;
+  background: #e2f5ec;
+  color: #0c6b48;
+}
+
+.coding-chip-warning {
+  color: #c62828;
+  font-size: 11px;
+}
+
+.coding-review-text-input {
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid #b7c0ca;
+  border-radius: 4px;
+  background: #fff;
+  color: #20262d;
+  font-size: 12px;
+}
+
+.coding-row-delete {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid #c4cbd3;
+  background: #fff;
+  color: #8a4a4a;
+}
+
+.coding-row-delete:hover {
+  border-color: #c62828;
+  background: #ffebee;
+  color: #b71c1c;
+}
+
 @media (max-width: 900px) {
   .coding-review-summary {
     grid-template-columns: 52px minmax(130px, 1fr);

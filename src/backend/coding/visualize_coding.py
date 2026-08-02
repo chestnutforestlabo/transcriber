@@ -32,6 +32,8 @@ EVENT_ORDER = [
     "ガイド発話",
 ]
 TAG_ROW = "周囲の話題(タグ)"
+CO_TOPIC_ROW = "併記: 話題提示"
+CO_QUESTION_ROW = "併記: 質問"
 
 
 def _fmt_mmss(seconds: float) -> str:
@@ -55,10 +57,12 @@ def _load_one(path: Path) -> dict:
         review = item.get("review")
         if isinstance(review, dict) and review.get("status"):
             reviewed += 1
+    kept_intervals = []
     for item in data.get("intervals", []):
         if _is_rejected(item):
             rejected += 1
             continue
+        kept_intervals.append(item)
         start = float(item["start"])
         end = float(item["end"])
         if math.isfinite(start) and math.isfinite(end) and end > start:
@@ -70,10 +74,24 @@ def _load_one(path: Path) -> dict:
     for item in data.get("events", []):
         max_end = max(max_end, float(item.get("end") or item.get("time") or 0.0))
     tag_count = sum(1 for item in kept_events if "周囲の話題" in (item.get("tags") or []))
+
+    def _co_labels(event: dict) -> list:
+        attrs = event.get("attrs") or {}
+        co = attrs.get("co_labels")
+        return co if isinstance(co, list) else []
+
+    co_topic = sum(1 for item in kept_events if "話題提示" in _co_labels(item))
+    co_question = sum(1 for item in kept_events if "質問" in _co_labels(item))
+    human = sum(
+        1 for item in kept_intervals + kept_events if item.get("source") == "human"
+    )
     return {
         "intervals": dict(durations),
         "events": dict(events),
         "tags": tag_count,
+        "co_topic": co_topic,
+        "co_question": co_question,
+        "human": human,
         "max_end": max_end,
         "rejected": rejected,
         "reviewed": reviewed,
@@ -107,6 +125,9 @@ def build_dataset(
                 "intervals": one["intervals"],
                 "events": one["events"],
                 "tags": one["tags"],
+                "co_topic": one["co_topic"],
+                "co_question": one["co_question"],
+                "human": one["human"],
                 "rejected": one["rejected"],
                 "reviewed": one["reviewed"],
             }
@@ -116,6 +137,8 @@ def build_dataset(
         "interval_order": INTERVAL_ORDER,
         "event_order": EVENT_ORDER,
         "tag_row": TAG_ROW,
+        "co_topic_row": CO_TOPIC_ROW,
+        "co_question_row": CO_QUESTION_ROW,
     }
 
 
@@ -190,7 +213,8 @@ HTML_TEMPLATE = """<!doctype html>
 <div id="intervals"></div>
 
 <h2>イベントラベル — 件数</h2>
-<p class="note">セルの濃さは件数(録音ごとの補正なし)。最下段の「周囲の話題」はイベントに併記されるタグの件数。</p>
+<p class="note">セルの濃さは件数(録音ごとの補正なし)。「周囲の話題」はイベントに併記されるタグの件数。
+「併記: 話題提示 / 質問」は attrs.co_labels の集計(新話題を開く質問への話題提示併記、AI情報の共有への必須併記)。</p>
 <div id="events" style="overflow-x:auto"></div>
 
 <div class="foot">生成: transcriber visualize_coding.py(コーディング JSON から決定論的に集計)。
@@ -217,9 +241,10 @@ DATA.interval_order.forEach((lab, i) => {
 const ivRoot = document.getElementById("intervals");
 DATA.recordings.forEach(rec => {
   const div = document.createElement("div"); div.className = "rec";
-  const revNote = rec.reviewed > 0
+  let revNote = rec.reviewed > 0
     ? ` / レビュー済み${rec.reviewed}件` + (rec.rejected > 0 ? `・要修正除外${rec.rejected}件` : "")
     : "";
+  if (rec.human > 0) revNote += `・手動追加${rec.human}件`;
   div.innerHTML = `<div class="rec-name">${rec.name} <span>(${fmt(rec.duration)}${revNote})</span></div>`;
   DATA.interval_order.forEach((lab, i) => {
     if (!(lab in rec.intervals)) return;
@@ -242,6 +267,8 @@ const evRoot = document.getElementById("events");
 const names = DATA.recordings.map(r => r.name);
 const rows = DATA.event_order.map(lab => ({lab, vals: DATA.recordings.map(r => r.events[lab] || 0)}));
 rows.push({lab: DATA.tag_row, vals: DATA.recordings.map(r => r.tags)});
+rows.push({lab: DATA.co_topic_row, vals: DATA.recordings.map(r => r.co_topic || 0)});
+rows.push({lab: DATA.co_question_row, vals: DATA.recordings.map(r => r.co_question || 0)});
 const maxVal = Math.max(1, ...rows.flatMap(r => r.vals));
 function mix(hex1, hex2, t) {
   const a = hex1.match(/\\w\\w/g).map(x => parseInt(x, 16));

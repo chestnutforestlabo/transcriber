@@ -42,7 +42,7 @@ export interface CodingInterval {
   label: CodingIntervalLabel
   start: number
   end: number
-  source: "auto" | "llm"
+  source: "auto" | "llm" | "human"
   note: string
   review: CodingReview
 }
@@ -52,11 +52,12 @@ export interface CodingEvent {
   label: CodingEventLabel
   time: number
   end: number
-  speaker: "視覚障害者" | "同行者"
+  speaker: "視覚障害者" | "同行者" | "実験者"
   tags: string[]
   attrs: Record<string, unknown>
   text: string
   note: string
+  source?: "llm" | "human"
   review: CodingReview
 }
 

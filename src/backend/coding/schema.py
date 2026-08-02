@@ -20,7 +20,7 @@ EVENT_LABELS = frozenset(
     }
 )
 SPEAKERS = frozenset({"視覚障害者", "同行者", "実験者"})
-SOURCES = frozenset({"auto", "llm"})
+SOURCES = frozenset({"auto", "llm", "human"})
 TAGS = frozenset({"周囲の話題"})
 CO_LABELS = frozenset({"話題提示", "質問"})
 RESPONSE_TYPES = frozenset({"自発", "質問応答"})
@@ -90,7 +90,7 @@ def _validate_interval(
     if item.get("label") not in INTERVAL_LABELS:
         errors.append(f"{location}.label is not an allowed interval label")
     if item.get("source") not in SOURCES:
-        errors.append(f"{location}.source must be 'auto' or 'llm'")
+        errors.append(f"{location}.source must be 'auto', 'llm' or 'human'")
     if not isinstance(item.get("note"), str):
         errors.append(f"{location}.note must be a string")
 
@@ -190,6 +190,9 @@ def _validate_event(
     if not isinstance(tags, list) or any(tag not in TAGS for tag in tags):
         errors.append(f"{location}.tags may contain only '周囲の話題'")
     _validate_attrs(item.get("attrs"), label, location, errors)
+    # source はイベントでは任意(LLM 出力には無く、レビュー UI の手動追加が "human" を付ける)
+    if "source" in item and item.get("source") not in SOURCES:
+        errors.append(f"{location}.source must be 'auto', 'llm' or 'human'")
 
     start = item.get("time")
     end = item.get("end")

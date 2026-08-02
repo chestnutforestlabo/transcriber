@@ -46,8 +46,9 @@
 ### 4. 可視化・成果物の配置と報告
 
 - **可視化レポートを生成する**(コーディングが1件でも成功した場合は必須):
-  `docker compose exec -T backend uv run src/backend/coding/visualize_coding.py --coding "調査1=outputs/coding/chosa1/coding.json" ...(成功した全ファイルを表示順に) "インタビュー=outputs/coding/interview/coding.json" --audio "調査1=audios/num_speakers_2/chosa1.wav" ...(あるもののみ) --subtitle "<セッション名と日付>" --output outputs/coding/coding_summary.html`
-  - 各録音の区間ラベル時間(録音時間比)とイベント件数ヒートマップの HTML が生成される。最終報告にこのパスを必ず記載する
+  `docker compose exec -T backend uv run src/backend/coding/visualize_coding.py --auto outputs/coding --reviewed outputs/coding/reviewed --audio "調査1=audios/num_speakers_2/chosa1.wav" ...(あるもののみ) --subtitle "<セッション名と日付>" --output outputs/coding/coding_summary.html`
+  - `--auto` が `outputs/coding/*/coding.json` を自動収集する(インタビューは実験条件ではないため自動で除外される)。レビュー済みエクスポートが reviewed/ にあればそちらが優先される
+  - 区間ラベル時間・イベント件数ヒートマップ・ラベル件数の箱ひげ図の HTML が生成される。最終報告にこのパスを必ず記載する
 - 各 coding.json のフロントエンドコピー(スクリプトが自動配置)を確認
 - **最終報告**(これが成果物)を以下の表形式でまとめる:
   - ファイルごと: 発話数 / コーディングモード(AI付き・文字起こしのみ) / 区間ラベル分布 / イベントラベル分布 / 警告(チャンネル異常・アライメント低信頼・ブラケット欠落・検証エラー)

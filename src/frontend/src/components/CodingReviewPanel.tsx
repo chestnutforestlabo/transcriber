@@ -1,6 +1,6 @@
 import { Download, Plus, Trash2 } from "lucide-react"
 import type React from "react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type {
   CodingData,
   CodingEvent,
@@ -114,6 +114,23 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
 
   const filteredRows = selectedLabel ? rows.filter((row) => row.label === selectedLabel) : rows
   const labels = [...new Set(rows.map((row) => row.label))]
+
+  // タイムラインのピルクリック等で再生位置が変わったら該当行へスクロールする。
+  // 長い会話区間が常時ヒットしてしまうため、イベント行を優先して選ぶ
+  const listRef = useRef<HTMLDivElement>(null)
+  const lastScrolledKeyRef = useRef<string | null>(null)
+  const activeRow =
+    filteredRows.find(
+      (row) => row.kind === "event" && currentTime >= row.start && currentTime < row.end,
+    ) ?? filteredRows.find((row) => currentTime >= row.start && currentTime < row.end)
+  const activeKey = activeRow ? `${activeRow.kind}-${activeRow.id}` : null
+  useEffect(() => {
+    if (!activeKey || activeKey === lastScrolledKeyRef.current) return
+    lastScrolledKeyRef.current = activeKey
+    const element = listRef.current?.querySelector(`[data-row-key="${CSS.escape(activeKey)}"]`)
+    // smooth にすると文字起こし側の smooth スクロールと相互キャンセルされるため即時で行う
+    element?.scrollIntoView({ block: "nearest" })
+  }, [activeKey])
 
   const updateInterval = (index: number, patch: Partial<CodingInterval>) => {
     onChange({
@@ -329,7 +346,7 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
           {formatTime(currentTime)} に追加
         </button>
       </div>
-      <div className="coding-review-list">
+      <div className="coding-review-list" ref={listRef}>
         {filteredRows.map((row) => {
           const isActive = currentTime >= row.start && currentTime < row.end
           const isHuman = row.source === "human"
@@ -339,6 +356,7 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
             <article
               className={`coding-review-item ${isActive ? "active" : ""}`}
               key={`${row.kind}-${row.id}`}
+              data-row-key={`${row.kind}-${row.id}`}
               onClick={() => onSeek(row.start)}
             >
               <div className="coding-review-summary">

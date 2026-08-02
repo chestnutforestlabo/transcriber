@@ -240,8 +240,11 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
   return (
     <div className="audio-controls">
-      <div className="waveform-container" ref={waveformRef}></div>
-      {coding && <CodingTimeline coding={coding} duration={duration} onSeek={onSeek} />}
+      {/* wavesurfer は再生エンジンとして必要なので DOM には残し、表示だけ畳む */}
+      <div className="waveform-container waveform-hidden" ref={waveformRef}></div>
+      {coding && (
+        <CodingTimeline coding={coding} duration={duration} currentTime={currentTime} onSeek={onSeek} />
+      )}
       <div className="controls-container">
         <div className="playback-rate-container" ref={playbackRateContainerRef}>
           <button onClick={() => setShowPlaybackRates(!showPlaybackRates)} className="playback-rate-button">

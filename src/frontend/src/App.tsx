@@ -63,6 +63,15 @@ function App() {
   const saveInProgressRef = useRef(false)
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [coding, setCoding] = useState<CodingData | null>(null)
+  // 3領域(文字起こし/レビュー/タイムライン)の高さ。ドラッグで変更し再訪時も保持する
+  const [codingPanelHeight, setCodingPanelHeight] = useState<number | null>(() => {
+    const saved = localStorage.getItem("codingPanelHeight")
+    return saved ? Number(saved) : null
+  })
+  const [codingTimelineHeight, setCodingTimelineHeight] = useState<number | null>(() => {
+    const saved = localStorage.getItem("codingTimelineHeight")
+    return saved ? Number(saved) : null
+  })
 
   const isInitialSpeakerSave = useRef(true)
   const isInitialTranscriptSave = useRef(true)
@@ -231,6 +240,36 @@ function App() {
     setCurrentTime(0)
     setLastPlaybackPosition(0)
     setSelectedAudio(audio)
+  }
+
+  // 仕切りバーのドラッグで対象領域の高さを変える。仕切りは対象の上辺にあるので
+  // 上へドラッグ=拡大。開始時の実測高さを基準に差分を適用する
+  const startPaneDrag = (target: "panel" | "timeline") => (event: React.MouseEvent) => {
+    event.preventDefault()
+    const element = document.querySelector(
+      target === "panel" ? ".coding-review-panel" : ".coding-timeline",
+    )
+    if (!element) return
+    const startHeight = element.getBoundingClientRect().height
+    const startY = event.clientY
+    const minHeight = target === "panel" ? 120 : 56
+    const onMove = (moveEvent: MouseEvent) => {
+      const next = Math.round(startHeight - (moveEvent.clientY - startY))
+      const clamped = Math.max(minHeight, Math.min(Math.round(window.innerHeight * 0.75), next))
+      if (target === "panel") {
+        setCodingPanelHeight(clamped)
+        localStorage.setItem("codingPanelHeight", String(clamped))
+      } else {
+        setCodingTimelineHeight(clamped)
+        localStorage.setItem("codingTimelineHeight", String(clamped))
+      }
+    }
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+    }
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
   }
 
   const handleTimeUpdate = (time: number) => {
@@ -576,7 +615,17 @@ function App() {
             </div>
           )}
         </div>
-        <div className="transcript-container">
+        <div
+          className="transcript-container"
+          style={
+            {
+              ...(codingPanelHeight ? { "--coding-panel-height": `${codingPanelHeight}px` } : {}),
+              ...(codingTimelineHeight
+                ? { "--coding-timeline-height": `${codingTimelineHeight}px` }
+                : {}),
+            } as React.CSSProperties
+          }
+        >
           <div className="transcript-header">
             <div>
               {selectedAudio} {"("}
@@ -603,11 +652,30 @@ function App() {
             onDeleteEntry={handleDeleteEntry}
           />
           {coding && (
+            <div
+              className="pane-divider"
+              role="separator"
+              aria-orientation="horizontal"
+              title="ドラッグで文字起こしとレビューの高さを変更"
+              onMouseDown={startPaneDrag("panel")}
+            />
+          )}
+          {coding && (
             <CodingReviewPanel
               coding={coding}
               currentTime={currentTime}
+              duration={duration}
               onSeek={jumpToTime}
               onChange={setCoding}
+            />
+          )}
+          {coding && (
+            <div
+              className="pane-divider"
+              role="separator"
+              aria-orientation="horizontal"
+              title="ドラッグでタイムラインの高さを変更"
+              onMouseDown={startPaneDrag("timeline")}
             />
           )}
           <AudioControls

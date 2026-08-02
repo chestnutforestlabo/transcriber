@@ -879,6 +879,14 @@
   border-radius: 6px;
   padding: 10px;
 }
+
+/* wavesurfer は再生エンジンとして残しつつ波形表示だけを畳む */
+.waveform-container.waveform-hidden {
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
 .controls-container {
   display: flex;
   justify-content: space-between;
@@ -1343,17 +1351,29 @@ mark {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  height: var(--coding-timeline-height, auto);
   margin: -2px 0 8px;
   padding: 6px 8px;
+  overflow: hidden;
   border: 1px solid #d9dee5;
   border-radius: 6px;
   background: #fff;
+}
+
+.coding-timeline-lanes {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
 }
 
 .coding-lane {
   display: grid;
   grid-template-columns: 82px 1fr;
   align-items: center;
+  flex: 1 1 auto;
   min-height: 14px;
 }
 
@@ -1367,7 +1387,8 @@ mark {
 
 .coding-lane-track {
   position: relative;
-  height: 12px;
+  height: calc(100% - 2px);
+  min-height: 12px;
   overflow: visible;
   border-radius: 3px;
   background: #f1f3f5;
@@ -1375,8 +1396,8 @@ mark {
 
 .coding-band {
   position: absolute;
-  top: 1px;
-  height: 10px;
+  top: 5%;
+  height: 90%;
   min-width: 2px;
   margin: 0;
   padding: 0;
@@ -1391,46 +1412,76 @@ mark {
   transform: scaleY(1.25);
 }
 
-.coding-band-会話 {
-  background: #43a047;
-}
-
-.coding-band-無言 {
-  background: #9aa0a6;
-}
-
-.coding-band-AI説明 {
-  background: #2563eb;
-}
-
-.coding-band-AI応答 {
-  background: #22b8cf;
-}
-
-.coding-band-システム停止 {
-  background: #e53935;
-}
-
 .coding-event-lane .coding-lane-track {
-  background: #fff8e1;
+  background: #fbfbf4;
 }
 
+/* 色は CodingTimeline.tsx の eventColors からインラインで付く */
 .coding-event-marker {
   position: absolute;
-  top: -2px;
+  top: 50%;
   width: 9px;
-  height: 16px;
+  height: 120%;
+  min-height: 16px;
   margin: 0 0 0 -4px;
   padding: 0;
-  border: 1px solid #7a4f00;
-  border-radius: 5px 5px 2px 2px;
-  background: #ffb300;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 4px;
+  transform: translateY(-50%);
   z-index: 2;
 }
 
 .coding-event-marker:hover {
-  border-color: #4e3300;
-  background: #ff8f00;
+  border-color: rgba(0, 0, 0, 0.7);
+  filter: brightness(1.15);
+}
+
+.coding-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e5484d;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.coding-legend {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding-top: 4px;
+  border-top: 1px dashed #e4e8ec;
+  color: #52616e;
+  font-size: 11px;
+}
+
+.coding-legend-item {
+  white-space: nowrap;
+}
+
+.coding-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.pane-divider {
+  flex: 0 0 auto;
+  height: 7px;
+  border-top: 1px solid #cfd6dd;
+  border-bottom: 1px solid #cfd6dd;
+  background: #e9edf2;
+  cursor: row-resize;
+}
+
+.pane-divider:hover,
+.pane-divider:active {
+  background: #c9d7e4;
 }
 
 /* ===== Conversation coding review ===== */
@@ -1438,8 +1489,8 @@ mark {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  max-height: 34vh;
-  min-height: 150px;
+  height: var(--coding-panel-height, 34vh);
+  min-height: 120px;
   border-top: 2px solid #b8c0ca;
   background: #f8fafc;
 }
@@ -1713,6 +1764,10 @@ mark {
 .coding-chip-warning {
   color: #c62828;
   font-size: 11px;
+}
+
+.coding-time-warning {
+  grid-column: 1 / -1;
 }
 
 .coding-review-text-input {

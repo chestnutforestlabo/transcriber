@@ -13,6 +13,7 @@ import type {
 interface CodingReviewPanelProps {
   coding: CodingData
   currentTime: number
+  duration?: number
   onSeek: (time: number) => void
   onChange: (coding: CodingData) => void
 }
@@ -32,6 +33,8 @@ const eventLabels: CodingEventLabel[] = [
 // AI情報の共有には「話題提示」か「質問」を必ず併記する
 const coLabelValues = ["話題提示", "質問"]
 const surroundTag = "周囲の話題"
+// スキーム表: 同行者からの周囲説明は 自発/質問応答 の属性記録が必須
+const responseTypes = ["自発", "質問応答"]
 const eventSpeakers: CodingEvent["speaker"][] = ["視覚障害者", "同行者", "実験者"]
 
 type ReviewStatus = CodingReview["status"]
@@ -48,6 +51,7 @@ interface ReviewRow {
   source?: string
   coLabels?: string[]
   tags?: string[]
+  responseType?: string
   review: CodingReview
 }
 
@@ -65,7 +69,13 @@ const eventCoLabels = (event: CodingEvent): string[] => {
 const newRowId = (prefix: string) =>
   `${prefix}-hm-${Date.now().toString(36)}-${Math.floor(Math.random() * 46656).toString(36)}`
 
-const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTime, onSeek, onChange }) => {
+const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({
+  coding,
+  currentTime,
+  duration,
+  onSeek,
+  onChange,
+}) => {
   const [selectedLabel, setSelectedLabel] = useState("")
   const [addKind, setAddKind] = useState<"interval" | "event">("event")
   const [addIntervalLabel, setAddIntervalLabel] = useState<CodingIntervalLabel>("会話")
@@ -95,6 +105,8 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
       source: event.source,
       coLabels: eventCoLabels(event),
       tags: event.tags ?? [],
+      responseType:
+        typeof event.attrs?.response_type === "string" ? event.attrs.response_type : undefined,
       review: event.review,
     }))
     return [...intervalRows, ...eventRows].sort((a, b) => a.start - b.start || a.end - b.end)
@@ -130,6 +142,8 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
   }
 
   const updateNumber = (row: ReviewRow, field: "start" | "end", rawValue: string) => {
+    // Number("") は 0 になる: 入力欄を消しただけで時刻が 0 に飛ばないよう空は無視
+    if (rawValue.trim() === "") return
     const value = Number(rawValue)
     if (!Number.isFinite(value)) return
     if (row.kind === "interval") {
@@ -157,15 +171,26 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
     updateEvent(row.index, { tags: next })
   }
 
+  const setResponseType = (row: ReviewRow, value: string) => {
+    const event = coding.events[row.index]
+    updateEvent(row.index, { attrs: { ...event.attrs, response_type: value } })
+  }
+
   const addRow = () => {
-    const start = Number(currentTime.toFixed(1))
+    // 録音末尾でも start < end ≤ duration を満たすよう丸め込む(schemaの要求)
+    const clampEnd = (value: number) =>
+      duration && duration > 0 ? Math.min(value, duration) : value
+    let start = Number(currentTime.toFixed(1))
+    if (duration && duration > 0) {
+      start = Math.min(start, Math.max(0, Number((duration - 0.5).toFixed(1))))
+    }
     const review: CodingReview = { status: null, note: "" }
     if (addKind === "interval") {
       const interval: CodingInterval = {
         id: newRowId("iv"),
         label: addIntervalLabel,
         start,
-        end: Number((start + 5).toFixed(1)),
+        end: Number(clampEnd(start + 5).toFixed(1)),
         source: "human",
         note: "",
         review,
@@ -176,7 +201,7 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
         id: newRowId("ev"),
         label: addEventLabel,
         time: start,
-        end: Number((start + 3).toFixed(1)),
+        end: Number(clampEnd(start + 3).toFixed(1)),
         speaker: addSpeaker,
         tags: [],
         attrs: {},
@@ -187,6 +212,8 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
       }
       onChange({ ...coding, events: [...coding.events, event] })
     }
+    // ラベルフィルタ中でも追加した行がすぐ見えるようにフィルタを解除する
+    setSelectedLabel("")
   }
 
   const removeRow = (row: ReviewRow) => {
@@ -377,6 +404,24 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
                   >
                     タグ: {surroundTag}
                   </button>
+                  {row.label === "同行者からの周囲説明" && (
+                    <>
+                      {responseTypes.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`coding-chip ${row.responseType === value ? "on" : ""}`}
+                          aria-pressed={row.responseType === value}
+                          onClick={() => setResponseType(row, value)}
+                        >
+                          属性: {value}
+                        </button>
+                      ))}
+                      {!row.responseType && (
+                        <span className="coding-chip-warning">属性必須(自発か質問応答)</span>
+                      )}
+                    </>
+                  )}
                   {needsCoLabel && <span className="coding-chip-warning">併記必須(話題提示か質問)</span>}
                 </div>
               )}
@@ -443,6 +488,11 @@ const CodingReviewPanel: React.FC<CodingReviewPanelProps> = ({ coding, currentTi
                   value={row.review.note}
                   onChange={(event) => updateReview(row, undefined, event.target.value)}
                 />
+                {row.end <= row.start && (
+                  <span className="coding-chip-warning coding-time-warning">
+                    時刻が逆転しています(終了は開始より後にする)
+                  </span>
+                )}
               </div>
             </article>
           )

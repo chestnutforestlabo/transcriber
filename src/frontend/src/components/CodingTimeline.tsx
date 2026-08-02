@@ -47,6 +47,27 @@ const percent = (value: number, duration: number) => {
   return Math.max(0, Math.min(100, (value / duration) * 100))
 }
 
+// 時間の重なる(または見た目上つぶれる)イベントを別の行へ振り分ける貪欲パッキング。
+// 戻り値: イベントid→行番号 と 必要行数
+const packEventRows = (events: CodingData["events"], duration: number) => {
+  const minSpan = duration > 0 ? duration * 0.012 : 1
+  const sorted = [...events].sort((a, b) => a.time - b.time || a.end - b.end)
+  const rowEnds: number[] = []
+  const rowById = new Map<string, number>()
+  for (const event of sorted) {
+    const visualEnd = Math.max(event.end, event.time + minSpan)
+    let row = rowEnds.findIndex((end) => end <= event.time)
+    if (row === -1) {
+      row = rowEnds.length
+      rowEnds.push(visualEnd)
+    } else {
+      rowEnds[row] = visualEnd
+    }
+    rowById.set(event.id, row)
+  }
+  return { rowById, rowCount: Math.max(1, rowEnds.length) }
+}
+
 const renderBand = (
   interval: CodingData["intervals"][number],
   duration: number,
@@ -125,30 +146,49 @@ const CodingTimeline: React.FC<CodingTimelineProps> = ({ coding, duration, curre
             </div>
           </div>
         ))}
-        {coding.events.length > 0 && (
-          <div className="coding-lane coding-event-lane">
-            <span className="coding-lane-label">イベント</span>
-            <div className="coding-lane-track">
-              {coding.events.map((event) => (
-                <button
-                  type="button"
-                  key={event.id}
-                  className="coding-event-marker"
-                  style={{
-                    left: `${percent(event.time, duration)}%`,
-                    background: eventColors[event.label] ?? "#f0a92e",
-                  }}
-                  onClick={(clickEvent) => {
-                    clickEvent.stopPropagation()
-                    onSeek(event.time)
-                  }}
-                  title={`${event.label} ${event.time.toFixed(1)}秒`}
-                  aria-label={`${event.label} ${event.time.toFixed(1)}秒へ移動`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {coding.events.length > 0 &&
+          (() => {
+            const { rowById, rowCount } = packEventRows(coding.events, duration)
+            const laneHeight = rowCount * 14 + 4
+            return (
+              <div
+                className="coding-lane coding-event-lane"
+                style={{ height: laneHeight, maxHeight: laneHeight }}
+              >
+                <span className="coding-lane-label">イベント</span>
+                <div className="coding-lane-track">
+                  {coding.events.map((event) => {
+                    const row = rowById.get(event.id) ?? 0
+                    const spanPct =
+                      percent(event.end, duration) - percent(event.time, duration)
+                    return (
+                      <button
+                        type="button"
+                        key={event.id}
+                        className="coding-event-marker"
+                        style={{
+                          left: `${percent(event.time, duration)}%`,
+                          width: `max(9px, ${Math.max(spanPct, 0)}%)`,
+                          top: `calc(${(row / rowCount) * 100}% + 1px)`,
+                          height: `calc(${100 / rowCount}% - 2px)`,
+                          minHeight: 0,
+                          margin: 0,
+                          transform: "none",
+                          background: eventColors[event.label] ?? "#f0a92e",
+                        }}
+                        onClick={(clickEvent) => {
+                          clickEvent.stopPropagation()
+                          onSeek(event.time)
+                        }}
+                        title={`${event.label} ${event.time.toFixed(1)}–${event.end.toFixed(1)}秒${event.text ? ` ${event.text}` : ""}`}
+                        aria-label={`${event.label} ${event.time.toFixed(1)}秒へ移動`}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })()}
         {duration > 0 && currentTime !== undefined && (
           <div
             className="coding-playhead"

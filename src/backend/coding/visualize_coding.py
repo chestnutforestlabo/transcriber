@@ -20,7 +20,9 @@ import math
 from collections import Counter, defaultdict
 from pathlib import Path
 
-INTERVAL_ORDER = ["会話", "無言", "AI説明", "AI応答", "システム停止"]
+# スキーム 2026-08-01 改訂で AI 由来の区間ラベル(AI説明/AI応答/システム停止)は
+# コーディング対象外になったため、サマリーには会話/無言だけを載せる
+INTERVAL_ORDER = ["会話", "無言"]
 EVENT_ORDER = [
     "視覚障害者からの話題提示",
     "同行者からの話題提示",
@@ -198,6 +200,26 @@ HTML_TEMPLATE = """<!doctype html>
   table.heat th { font-weight: 400; color: var(--text-secondary); padding: 4px 6px; }
   table.heat th.rowh { text-align: right; white-space: nowrap; }
   table.heat td { text-align: center; padding: 6px 4px; border-radius: 4px; min-width: 44px; }
+  .box-select { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; font-size: 12px; }
+  .box-select label { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+                      border: 1px solid var(--grid); border-radius: 12px; cursor: pointer;
+                      color: var(--text-secondary); user-select: none; }
+  .box-select label.on { border-color: var(--s1); color: var(--text-primary);
+                         background: var(--seq-lo); }
+  .box-row { display: grid; grid-template-columns: 150px 1fr 150px; align-items: center;
+             gap: 10px; margin: 6px 0; font-size: 12px; }
+  .box-row .lab { color: var(--text-secondary); text-align: right; }
+  .box-row .stat { color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+  .box-track { position: relative; height: 26px; background: var(--surface-2); border-radius: 4px; }
+  .box-whisker { position: absolute; top: 50%; height: 0; border-top: 1px solid var(--text-muted); }
+  .box-cap { position: absolute; top: 25%; height: 50%; width: 0; border-left: 1px solid var(--text-muted); }
+  .box-iqr { position: absolute; top: 18%; height: 64%; background: var(--seq-lo);
+             border: 1px solid var(--s1); border-radius: 3px; min-width: 2px; }
+  .box-median { position: absolute; top: 12%; height: 76%; width: 0; border-left: 2px solid var(--s1); }
+  .box-mean { position: absolute; top: 50%; width: 7px; height: 7px; background: var(--s2);
+              transform: translate(-50%, -50%) rotate(45deg); }
+  .box-pt { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--text-secondary); opacity: 0.65; transform: translate(-50%, -50%); }
   .foot { color: var(--text-muted); font-size: 11px; margin-top: 24px; }
   .tip { position: fixed; pointer-events: none; background: var(--text-primary);
          color: var(--surface-1); padding: 4px 8px; border-radius: 6px; font-size: 12px;
@@ -216,6 +238,12 @@ HTML_TEMPLATE = """<!doctype html>
 <p class="note">セルの濃さは件数(録音ごとの補正なし)。「周囲の話題」はイベントに併記されるタグの件数。
 「併記: 話題提示 / 質問」は attrs.co_labels の集計(新話題を開く質問への話題提示併記、AI情報の共有への必須併記)。</p>
 <div id="events" style="overflow-x:auto"></div>
+
+<h2>ラベル件数の分布 — 箱ひげ図</h2>
+<p class="note">チェックした録音の間での各ラベル件数の分布。箱=四分位範囲(Q1〜Q3)、縦線=中央値、◆=平均、
+○=各録音の値。右の数値は μ=平均 / σ²=不偏分散(録音1つだけの場合は分散なし)。</p>
+<div class="box-select" id="boxSelect"></div>
+<div id="boxplots"></div>
 
 <div class="foot">生成: transcriber visualize_coding.py(コーディング JSON から決定論的に集計)。
 ラベル件数は LLM コーディングの実行ごとに数件変動しうる。確定値はレビュー UI での人間確認後の値を用いること。</div>
@@ -292,6 +320,83 @@ evRoot.querySelectorAll("td[data-tip]").forEach(td => {
   td.addEventListener("mousemove", e => showTip(e, td.dataset.tip));
   td.addEventListener("mouseleave", hideTip);
 });
+
+// ===== ラベル件数の箱ひげ図(録音の選択に追従) =====
+const boxRows = [
+  ...DATA.event_order.map(lab => ({lab, get: r => r.events[lab] || 0})),
+  {lab: DATA.tag_row, get: r => r.tags || 0},
+  {lab: DATA.co_topic_row, get: r => r.co_topic || 0},
+  {lab: DATA.co_question_row, get: r => r.co_question || 0},
+];
+const boxSelect = document.getElementById("boxSelect");
+const boxRoot = document.getElementById("boxplots");
+const selected = new Set(DATA.recordings.map(r => r.name));
+DATA.recordings.forEach(rec => {
+  const label = document.createElement("label");
+  label.className = "on";
+  const cb = document.createElement("input");
+  cb.type = "checkbox"; cb.checked = true;
+  cb.addEventListener("change", () => {
+    if (cb.checked) selected.add(rec.name); else selected.delete(rec.name);
+    label.classList.toggle("on", cb.checked);
+    renderBoxplots();
+  });
+  label.appendChild(cb);
+  label.appendChild(document.createTextNode(rec.name));
+  boxSelect.appendChild(label);
+});
+function quantile(sorted, p) {
+  if (sorted.length === 1) return sorted[0];
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+function boxStats(vals) {
+  const s = [...vals].sort((a, b) => a - b);
+  const n = s.length;
+  const mean = s.reduce((a, b) => a + b, 0) / n;
+  const variance = n > 1 ? s.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1) : null;
+  return {min: s[0], q1: quantile(s, 0.25), med: quantile(s, 0.5),
+          q3: quantile(s, 0.75), max: s[n - 1], mean, variance, n};
+}
+function renderBoxplots() {
+  const recs = DATA.recordings.filter(r => selected.has(r.name));
+  boxRoot.innerHTML = "";
+  if (recs.length === 0) {
+    boxRoot.innerHTML = '<p class="note">録音を1つ以上選択してください。</p>';
+    return;
+  }
+  const scaleMax = Math.max(1, ...boxRows.flatMap(row => recs.map(row.get)));
+  const x = v => (v / scaleMax) * 100;
+  boxRows.forEach(row => {
+    const vals = recs.map(row.get);
+    const st = boxStats(vals);
+    const div = document.createElement("div");
+    div.className = "box-row";
+    const varText = st.variance === null ? "" : ` / σ²=${st.variance.toFixed(1)}`;
+    const pts = recs.map((r, i) =>
+      `<span class="box-pt" style="left:${x(vals[i])}%" data-tip="${r.name}: ${vals[i]}件"></span>`).join("");
+    div.innerHTML = `<div class="lab">${row.lab}</div>
+      <div class="box-track">
+        <div class="box-whisker" style="left:${x(st.min)}%; width:${x(st.max) - x(st.min)}%"></div>
+        <div class="box-cap" style="left:${x(st.min)}%"></div>
+        <div class="box-cap" style="left:${x(st.max)}%"></div>
+        <div class="box-iqr" style="left:${x(st.q1)}%; width:${Math.max(x(st.q3) - x(st.q1), 0.2)}%"></div>
+        <div class="box-median" style="left:${x(st.med)}%"></div>
+        <div class="box-mean" style="left:${x(st.mean)}%"></div>
+        ${pts}
+      </div>
+      <div class="stat">μ=${st.mean.toFixed(1)}${varText}</div>`;
+    div.querySelector(".box-track").addEventListener("mousemove", e => {
+      const tipTarget = e.target.closest("[data-tip]");
+      showTip(e, tipTarget ? tipTarget.dataset.tip :
+        `${row.lab} (n=${st.n})<br>最小${st.min} / Q1 ${st.q1.toFixed(1)} / 中央値${st.med.toFixed(1)} / Q3 ${st.q3.toFixed(1)} / 最大${st.max}<br>μ=${st.mean.toFixed(1)}${varText}`);
+    });
+    div.querySelector(".box-track").addEventListener("mouseleave", hideTip);
+    boxRoot.appendChild(div);
+  });
+}
+renderBoxplots();
 </script></body></html>
 """
 
@@ -300,7 +405,9 @@ DISPLAY_NAMES = {
     "chosa1": "調査1", "chosa2": "調査2", "chosa3": "調査3",
     "chosa4": "調査4", "chosa5": "調査5", "interview": "インタビュー",
 }
-AUTO_ORDER = ["chosa1", "chosa2", "chosa3", "chosa4", "chosa5", "interview"]
+AUTO_ORDER = ["chosa1", "chosa2", "chosa3", "chosa4", "chosa5"]
+# インタビューは実験条件ではないため結果サマリーに含めない
+AUTO_EXCLUDE = {"interview"}
 
 
 def _discover(auto_dir: Path, reviewed_dir: Path | None) -> dict[str, Path]:
@@ -314,6 +421,8 @@ def _discover(auto_dir: Path, reviewed_dir: Path | None) -> dict[str, Path]:
     aliases: dict[str, str] = {}
     for path in sorted(auto_dir.glob("*/coding.json")):
         key = path.parent.name
+        if key in AUTO_EXCLUDE:
+            continue
         base[key] = path
         aliases[key] = key
         if key in DISPLAY_NAMES:

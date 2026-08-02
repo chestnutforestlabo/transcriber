@@ -69,6 +69,12 @@ function App() {
     const saved = localStorage.getItem("codingPanelHeight")
     return saved ? Number(saved) : null
   })
+  // タイムラインは「レーン1本の太さ」を記憶する。ファイルごとにレーン数が
+  // 違っても(実験者レーンの有無など)ピルの太さが変わらないようにするため
+  const [codingLaneHeight, setCodingLaneHeight] = useState<number | null>(() => {
+    const saved = localStorage.getItem("codingLaneHeight")
+    return saved ? Number(saved) : null
+  })
 
   const isInitialSpeakerSave = useRef(true)
   const isInitialTranscriptSave = useRef(true)
@@ -252,6 +258,28 @@ function App() {
       const clamped = Math.max(120, Math.min(Math.round(window.innerHeight * 0.75), next))
       setCodingPanelHeight(clamped)
       localStorage.setItem("codingPanelHeight", String(clamped))
+    }
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+    }
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
+  }
+
+  // タイムライン下辺の仕切り: 下へドラッグ=拡大。実測レーン高さを基準に、
+  // ドラッグ量をレーン数で割ってレーン1本の太さへ換算する
+  const startTimelineDrag = (event: React.MouseEvent) => {
+    event.preventDefault()
+    const lanes = document.querySelectorAll(".coding-timeline .coding-lane")
+    if (lanes.length === 0) return
+    const startLaneHeight = lanes[0].getBoundingClientRect().height
+    const startY = event.clientY
+    const onMove = (moveEvent: MouseEvent) => {
+      const perLane = (moveEvent.clientY - startY) / lanes.length
+      const clamped = Math.round(Math.max(14, Math.min(64, startLaneHeight + perLane)))
+      setCodingLaneHeight(clamped)
+      localStorage.setItem("codingLaneHeight", String(clamped))
     }
     const onUp = () => {
       document.removeEventListener("mousemove", onMove)
@@ -607,9 +635,10 @@ function App() {
         <div
           className="transcript-container"
           style={
-            (codingPanelHeight
-              ? { "--coding-panel-height": `${codingPanelHeight}px` }
-              : {}) as React.CSSProperties
+            {
+              ...(codingPanelHeight ? { "--coding-panel-height": `${codingPanelHeight}px` } : {}),
+              ...(codingLaneHeight ? { "--coding-lane-height": `${codingLaneHeight}px` } : {}),
+            } as React.CSSProperties
           }
         >
           <div className="transcript-header">
@@ -629,6 +658,15 @@ function App() {
               duration={duration}
               currentTime={currentTime}
               onSeek={jumpToTime}
+            />
+          )}
+          {coding && (
+            <div
+              className="pane-divider"
+              role="separator"
+              aria-orientation="horizontal"
+              title="ドラッグでタイムラインの太さを変更"
+              onMouseDown={startTimelineDrag}
             />
           )}
           <TranscriptViewer

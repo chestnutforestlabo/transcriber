@@ -1363,19 +1363,18 @@ mark {
 .coding-timeline-lanes {
   position: relative;
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: 3px;
-  min-height: 0;
 }
 
 .coding-lane {
   display: grid;
   grid-template-columns: 82px 1fr;
   align-items: center;
-  flex: 1 1 auto;
-  /* 領域を広げてもバーが間延びしないよう上限を設ける */
-  max-height: 28px;
+  flex: 0 0 auto;
+  /* レーン1本の太さは全ファイル共通(ドラッグで変更、ピルは%指定で追従) */
+  height: var(--coding-lane-height, 20px);
   min-height: 14px;
 }
 

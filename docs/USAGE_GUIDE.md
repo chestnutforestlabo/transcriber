@@ -193,6 +193,7 @@ ssh -N -L 5175:localhost:5173 arata
 
 - **退避は自動**: 全自動パイプラインが完了時に `outputs/participants/<参加者ID>/` へ結果をコピーする。参加者IDはセッションフォルダ名(プロンプト末尾に「参加者ID: P01」を書けばそちらが優先)。同じ参加者の再実行は旧アーカイブを置き換える
 - **レビューを反映したい場合**: その参加者の review.json を `outputs/participants/<ID>/reviewed/` に置く(ファイル名は任意、中の audio 名で chosaN に自動対応付け)。置いたものが coding.json より優先される
+- **非公式データ(ドライラン等)を集計から外す**: 参加者IDを「`_`」始まりにする(例 `_dryrun_test`)と `--auto` 収集からスキップされる。実行時に `--exclude 名前` で個別除外も可
 - 生成:
    ```bash
    ssh arata 'cd ~/transcriber/environments && docker compose exec -T backend uv run src/backend/coding/visualize_conditions.py --auto outputs/participants --output outputs/coding/conditions_summary.html'

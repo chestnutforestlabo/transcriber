@@ -282,11 +282,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="参加者横断の条件比較箱ひげ図を生成")
     parser.add_argument(
         "--auto", metavar="DIR",
-        help="DIR/<参加者ID>/chosaN/coding.json を自動収集",
+        help="DIR/<参加者ID>/chosaN/coding.json を自動収集"
+             "(名前が '_' で始まるフォルダは非公式データとしてスキップ)",
     )
     parser.add_argument(
         "--participant", nargs="*", default=[], metavar="名前=DIR",
         help="参加者名=コーディングディレクトリ(chosaN/coding.json を含む)",
+    )
+    parser.add_argument(
+        "--exclude", nargs="*", default=[], metavar="名前",
+        help="--auto 収集から除外する参加者ID",
     )
     parser.add_argument("--output", required=True)
     parser.add_argument("--subtitle", default="")
@@ -296,14 +301,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.auto:
         parent = Path(args.auto)
         for child in sorted(parent.iterdir()) if parent.is_dir() else []:
-            if child.is_dir():
-                participants[child.name] = child
+            if not child.is_dir():
+                continue
+            if child.name.startswith("_") or child.name in args.exclude:
+                print(f"除外: {child.name}")
+                continue
+            participants[child.name] = child
     for pair in args.participant:
         name, sep, path = pair.partition("=")
         if not sep:
             raise SystemExit(f"名前=DIR の形式で指定してください: {pair!r}")
         participants[name.strip()] = Path(path.strip())
     if not participants:
+        if args.auto:
+            raise SystemExit(
+                "集計対象の参加者がありません"
+                "('_' 始まりと --exclude 指定はスキップされます)"
+            )
         raise SystemExit("--auto か --participant で参加者を1人以上指定してください")
 
     dataset = collect(participants)

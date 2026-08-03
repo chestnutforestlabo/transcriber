@@ -187,6 +187,21 @@ ssh -N -L 5175:localhost:5173 arata
 
 反映ルール: **✗要修正の項目は集計から除外**、ラベル・時刻の修正値と手動追加行はそのまま反映、各録音に「レビュー済み n 件・要修正除外 m 件・手動追加 k 件」が注記される。複数ラベルの発話は複数イベントとして各ラベルの件数へ直接カウントされる。区間はサマリーでは 会話/無言/AI応答(Q&A使用窓)のみ集計(システム停止はタイムライン表示専用)。
 
+### 参加者横断の条件比較(箱ひげ図)
+
+複数参加者ぶんの結果が揃ったら、**同じ指標を条件(調査1〜5)間で比較する**箱ひげ図レポートを生成できる(箱=参加者間の分布、○=各参加者、◆=平均、μ/σ² 表示、指標はプルダウン切替)。
+
+1. 各参加者のパイプライン実行後(レビュー反映まで済ませてから)、結果を退避:
+   ```bash
+   ssh arata 'cp -r ~/transcriber/outputs/coding ~/transcriber/outputs/participants/P01'
+   ```
+2. 全員ぶん揃ったら生成:
+   ```bash
+   ssh arata 'cd ~/transcriber/environments && docker compose exec -T backend uv run src/backend/coding/visualize_conditions.py --auto outputs/participants --output outputs/coding/conditions_summary.html'
+   ```
+
+指標: 各イベントラベルの件数(8種)/周囲の話題タグ件数/会話・無言・AI応答の時間(秒)/会話時間の割合(%)。条件の提示順を参加者間でカウンターバランスする場合は、調査N=条件の対応表を別途管理すること(現状は調査N軸のまま表示)。
+
 ---
 
 ## 5. アプリログの確認(LogViewer)

@@ -224,12 +224,6 @@ HTML_TEMPLATE = """<!doctype html>
 複数ラベルは同一発話への複数イベントとして直接件数に含まれる。</p>
 <div id="events" style="overflow-x:auto"></div>
 
-<h2>ラベル件数の分布 — 箱ひげ図</h2>
-<p class="note">チェックした録音の間での各ラベル件数の分布。箱=四分位範囲(Q1〜Q3)、縦線=中央値、◆=平均、
-○=各録音の値。右の数値は μ=平均 / σ²=不偏分散(録音1つだけの場合は分散なし)。</p>
-<div class="box-select" id="boxSelect"></div>
-<div id="boxplots"></div>
-
 <div class="foot">生成: transcriber visualize_coding.py(コーディング JSON から決定論的に集計)。
 ラベル件数は LLM コーディングの実行ごとに数件変動しうる。確定値はレビュー UI での人間確認後の値を用いること。</div>
 <div class="tip" id="tip"></div>
@@ -304,23 +298,6 @@ evRoot.querySelectorAll("td[data-tip]").forEach(td => {
   td.addEventListener("mouseleave", hideTip);
 });
 
-// ===== ラベル件数の箱ひげ図(録音の選択に追従) =====
-const boxRows = [
-  ...DATA.event_order.map(lab => ({lab, get: r => r.events[lab] || 0})),
-  {lab: DATA.tag_row, get: r => r.tags || 0},
-];
-const boxSelect = document.getElementById("boxSelect");
-const boxRoot = document.getElementById("boxplots");
-const selected = new Set(DATA.recordings.map(r => r.name));
-DATA.recordings.forEach(rec => {
-  const label = document.createElement("label");
-  label.className = "on";
-  const cb = document.createElement("input");
-  cb.type = "checkbox"; cb.checked = true;
-  cb.addEventListener("change", () => {
-    if (cb.checked) selected.add(rec.name); else selected.delete(rec.name);
-    label.classList.toggle("on", cb.checked);
-    renderBoxplots();
   });
   label.appendChild(cb);
   label.appendChild(document.createTextNode(rec.name));

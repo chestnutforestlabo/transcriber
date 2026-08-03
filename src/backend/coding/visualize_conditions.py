@@ -58,6 +58,24 @@ def _metric_value(one: dict, key: str) -> float:
     raise ValueError(f"unknown metric {key}")
 
 
+def _reviewed_overrides(directory: Path) -> dict[str, Path]:
+    """<参加者DIR>/reviewed/*.json をレビュー済みエクスポートとして拾い、
+    中の "audio"(例 chosa1.wav)から条件キーへ対応付ける。"""
+    overrides: dict[str, Path] = {}
+    reviewed_dir = directory / "reviewed"
+    if not reviewed_dir.is_dir():
+        return overrides
+    for path in sorted(reviewed_dir.glob("*.json")):
+        try:
+            audio = json.loads(path.read_text(encoding="utf-8")).get("audio", "")
+        except (OSError, json.JSONDecodeError):
+            continue
+        stem = Path(str(audio)).stem.split(".")[0]
+        if stem in CONDITION_KEYS:
+            overrides[stem] = path
+    return overrides
+
+
 def collect(participants: dict[str, Path]) -> dict:
     values: dict[str, dict[str, list[dict]]] = {
         metric["key"]: {CONDITION_NAMES[c]: [] for c in CONDITION_KEYS} for metric in METRICS
@@ -65,8 +83,9 @@ def collect(participants: dict[str, Path]) -> dict:
     loaded_names: list[str] = []
     for name, directory in participants.items():
         found_any = False
+        overrides = _reviewed_overrides(directory)
         for condition in CONDITION_KEYS:
-            path = directory / condition / "coding.json"
+            path = overrides.get(condition, directory / condition / "coding.json")
             if not path.is_file():
                 continue
             one = _load_one(path)

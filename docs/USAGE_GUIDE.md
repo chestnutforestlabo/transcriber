@@ -191,11 +191,9 @@ ssh -N -L 5175:localhost:5173 arata
 
 複数参加者ぶんの結果が揃ったら、**同じ指標を条件(調査1〜5)間で比較する**箱ひげ図レポートを生成できる(箱=参加者間の分布、○=各参加者、◆=平均、μ/σ² 表示、指標はプルダウン切替)。
 
-1. 各参加者のパイプライン実行後(レビュー反映まで済ませてから)、結果を退避:
-   ```bash
-   ssh arata 'cp -r ~/transcriber/outputs/coding ~/transcriber/outputs/participants/P01'
-   ```
-2. 全員ぶん揃ったら生成:
+- **退避は自動**: 全自動パイプラインが完了時に `outputs/participants/<参加者ID>/` へ結果をコピーする。参加者IDはセッションフォルダ名(プロンプト末尾に「参加者ID: P01」を書けばそちらが優先)。同じ参加者の再実行は旧アーカイブを置き換える
+- **レビューを反映したい場合**: その参加者の review.json を `outputs/participants/<ID>/reviewed/` に置く(ファイル名は任意、中の audio 名で chosaN に自動対応付け)。置いたものが coding.json より優先される
+- 生成:
    ```bash
    ssh arata 'cd ~/transcriber/environments && docker compose exec -T backend uv run src/backend/coding/visualize_conditions.py --auto outputs/participants --output outputs/coding/conditions_summary.html'
    ```

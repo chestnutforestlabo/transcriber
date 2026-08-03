@@ -297,64 +297,6 @@ evRoot.querySelectorAll("td[data-tip]").forEach(td => {
   td.addEventListener("mousemove", e => showTip(e, td.dataset.tip));
   td.addEventListener("mouseleave", hideTip);
 });
-
-  });
-  label.appendChild(cb);
-  label.appendChild(document.createTextNode(rec.name));
-  boxSelect.appendChild(label);
-});
-function quantile(sorted, p) {
-  if (sorted.length === 1) return sorted[0];
-  const idx = (sorted.length - 1) * p;
-  const lo = Math.floor(idx), hi = Math.ceil(idx);
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-function boxStats(vals) {
-  const s = [...vals].sort((a, b) => a - b);
-  const n = s.length;
-  const mean = s.reduce((a, b) => a + b, 0) / n;
-  const variance = n > 1 ? s.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1) : null;
-  return {min: s[0], q1: quantile(s, 0.25), med: quantile(s, 0.5),
-          q3: quantile(s, 0.75), max: s[n - 1], mean, variance, n};
-}
-function renderBoxplots() {
-  const recs = DATA.recordings.filter(r => selected.has(r.name));
-  boxRoot.innerHTML = "";
-  if (recs.length === 0) {
-    boxRoot.innerHTML = '<p class="note">録音を1つ以上選択してください。</p>';
-    return;
-  }
-  const scaleMax = Math.max(1, ...boxRows.flatMap(row => recs.map(row.get)));
-  const x = v => (v / scaleMax) * 100;
-  boxRows.forEach(row => {
-    const vals = recs.map(row.get);
-    const st = boxStats(vals);
-    const div = document.createElement("div");
-    div.className = "box-row";
-    const varText = st.variance === null ? "" : ` / σ²=${st.variance.toFixed(1)}`;
-    const pts = recs.map((r, i) =>
-      `<span class="box-pt" style="left:${x(vals[i])}%" data-tip="${r.name}: ${vals[i]}件"></span>`).join("");
-    div.innerHTML = `<div class="lab">${row.lab}</div>
-      <div class="box-track">
-        <div class="box-whisker" style="left:${x(st.min)}%; width:${x(st.max) - x(st.min)}%"></div>
-        <div class="box-cap" style="left:${x(st.min)}%"></div>
-        <div class="box-cap" style="left:${x(st.max)}%"></div>
-        <div class="box-iqr" style="left:${x(st.q1)}%; width:${Math.max(x(st.q3) - x(st.q1), 0.2)}%"></div>
-        <div class="box-median" style="left:${x(st.med)}%"></div>
-        <div class="box-mean" style="left:${x(st.mean)}%"></div>
-        ${pts}
-      </div>
-      <div class="stat">μ=${st.mean.toFixed(1)}${varText}</div>`;
-    div.querySelector(".box-track").addEventListener("mousemove", e => {
-      const tipTarget = e.target.closest("[data-tip]");
-      showTip(e, tipTarget ? tipTarget.dataset.tip :
-        `${row.lab} (n=${st.n})<br>最小${st.min} / Q1 ${st.q1.toFixed(1)} / 中央値${st.med.toFixed(1)} / Q3 ${st.q3.toFixed(1)} / 最大${st.max}<br>μ=${st.mean.toFixed(1)}${varText}`);
-    });
-    div.querySelector(".box-track").addEventListener("mouseleave", hideTip);
-    boxRoot.appendChild(div);
-  });
-}
-renderBoxplots();
 </script></body></html>
 """
 
